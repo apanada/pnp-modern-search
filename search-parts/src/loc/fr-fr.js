@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         Tokens: {
             SelectTokenLabel: "Sélectionnez un jeton...",
@@ -160,6 +160,16 @@ define([], function() {
                     EditSortLabel: "Modifier l’ordre de tri",
                     SortInvalidSortableFieldMessage: "Cette propriété n’est pas triable",
                     SortFieldColumnPlaceholder: "Sélectionner le champ..."
+                },
+                Synonyms: {
+                    "EditSynonymLabel": "Modifier les synonymes",
+                    "SynonymListDescription": "Inclure tous les synonymes utilisés pour la recherche. Chaque terme sera bonifié avec tous les synonymes associés au moment de lancer la requête au serveur. Si un synonyme contient plus d'un mot, celui-ci doit être encapsulé par des double guillements.",
+                    "SynonymPropertyPanelFieldLabel": "Configurer les synonymes",
+                    "SynonymListTerm": "Terme",
+                    "SynonymListSynonyms": "Synonymes",
+                    "SynonymIsTwoWays": "Bidirectionnel?",
+                    "SynonymListSynonymsExemple": "Portable, \"Tour et écran\"",
+                    "SynonymListTermExemple": "Ordinateur"
                 }
             }
         },

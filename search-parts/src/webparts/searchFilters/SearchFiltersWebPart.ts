@@ -669,6 +669,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                             {
                                 key: BuiltinFilterTemplates.ComboBox,
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.ComboBoxTemplate
+                            },
+                            {
+                                key: BuiltinFilterTemplates.TaxonomyPicker,
+                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.TaxonomyPickerTemplate
                             }
                         ]
                     },

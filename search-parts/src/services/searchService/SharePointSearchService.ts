@@ -1,4 +1,4 @@
-import { Text } from '@microsoft/sp-core-library';
+import { Guid, Text } from '@microsoft/sp-core-library';
 import { ServiceKey, ServiceScope, Log } from "@microsoft/sp-core-library";
 import { SPHttpClient } from "@microsoft/sp-http";
 import { ISharePointSearchService } from './ISharePointSearchService';
@@ -15,6 +15,7 @@ import { ISuggestResult, ISuggestQuery } from '../../models/search/ISuggestQuery
 import { ISharePointSearchQuery, SortDirection } from '../../models/search/ISharePointSearchQuery';
 import { cloneDeep } from "@microsoft/sp-lodash-subset";
 import { Constants } from '../../common/Constants';
+import { ISynonymTable } from '../../models/search/ISynonym';
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -48,6 +49,10 @@ export class SharePointSearchService implements ISharePointSearchService {
      */
     private clientStorage: PnPClientStorage;
 
+    private _synonymTable: ISynonymTable = null;
+    public set synonymTable(value: ISynonymTable) { this._synonymTable = value; }
+    public get synonymTable(): ISynonymTable { return this._synonymTable; }
+
     constructor(serviceScope: ServiceScope) {
 
         this.serviceScope = serviceScope;
@@ -69,6 +74,10 @@ export class SharePointSearchService implements ISharePointSearchService {
      * @return The search results
      */
     public async search(searchQuery: ISharePointSearchQuery): Promise<ISharePointSearchResults> {
+
+        if (searchQuery.Querytext !== null && searchQuery.Querytext !== undefined && searchQuery.Querytext !== "") {
+            searchQuery.Querytext = this._injectSynonyms(searchQuery.Querytext);
+        }
 
         let results: ISharePointSearchResults = {
             queryKeywords: searchQuery.Querytext,
@@ -379,6 +388,10 @@ export class SharePointSearchService implements ISharePointSearchService {
         }
     }
 
+    public setSynonymTable(value: ISynonymTable):void {
+        this._synonymTable = value;
+    }
+
     /**
      * Extracts search results from search response rows
      * @param resultRows the search result rows
@@ -441,4 +454,82 @@ export class SharePointSearchService implements ISharePointSearchService {
         }
         return { results: Array.isArray(prop) ? prop : [prop] };
     }
+
+    // Function to inject synonyms at run-time
+    private _injectSynonyms(query: string): string {
+        const origQuery = query = query.trim();
+        // match longest term first
+        const synonymKeys = Object.keys(this._synonymTable).sort((a, b) => {
+            return b.length - a.length;
+        });
+
+        if (this._synonymTable && synonymKeys.length > 0) {
+            // Remove complex query parts AND/OR/NOT/ANY/ALL/parenthasis/property queries/exclusions - can probably be improved
+            const cleanQuery = query.replace(/((^|\s)-[\w-]+[\s$])|(-"\w+.*?")|(-?\w+[:=<>]+\w+)|(-?\w+[:=<>]+".*?")|((\w+)?\(.*?\))|(AND)|(OR)|(NOT)/g, ` `).toLocaleLowerCase();
+            const replaceTable = {};
+
+            //Check if synonyms are in the include parts of the query
+            for (let i = 0; i < synonymKeys.length; i++) {
+                const synonym = synonymKeys[i];
+                if (cleanQuery.indexOf(synonym) !== -1) {
+                    let tokenGuid = Guid.newGuid().toString();
+                    replaceTable[tokenGuid] = synonym;
+                    query = query.replace(new RegExp("\\b" + synonym + "\\b", "gi"), tokenGuid);
+                }
+            }
+
+            // Expand synonym
+            for (let tokenGuid in replaceTable) {
+                let key = replaceTable[tokenGuid];
+                let value = this._synonymTable[key];
+
+                if (value) {
+                    // Replace the current query part in the query with all the synonyms
+                    query = query.replace(tokenGuid,
+                        Text.format('({0} OR {1})',
+                            tokenGuid,
+                            this._formatSynonymsSearchQuery(value)));
+                }
+            }
+
+            // replace guids back
+            for (let tokenGuid in replaceTable) {
+                query = query.replace(new RegExp(tokenGuid, "g"), this._formatSynonym(replaceTable[tokenGuid]));
+            }
+        }
+        if (origQuery !== query && query.length > 0) {
+            return Text.format('({0}) OR ({1})', origQuery, query);
+        }
+        return origQuery;
+    }
+
+    private _formatSynonym(value: string): string {
+        if (!value) return "";
+        value = value.trim().replace(/"/g, '').trim();
+        if (value.indexOf(' ') > -1) {
+            value = '"' + value + '"';
+        }
+
+        return value;
+    }
+
+    private _formatSynonymsSearchQuery(items: string[]): string {
+        let result = '';
+
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+
+            if (item.length > 0) {
+                item = this._formatSynonym(item);
+
+                result += item;
+
+                if (i < items.length - 1) {
+                    result += ' OR ';
+                }
+            }
+        }
+
+        return result;
+    }    
 }

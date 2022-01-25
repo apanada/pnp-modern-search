@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         Tokens: {
             SelectTokenLabel: "Select a token...",
@@ -160,6 +160,16 @@ define([], function() {
                     EditSortLabel: "Edit sort order",
                     SortInvalidSortableFieldMessage: "This property is not sortable",
                     SortFieldColumnPlaceholder: "Select field..."
+                },
+                Synonyms: {
+                    "EditSynonymLabel": "Edit synonyms",
+                    "SynonymListDescription": "Specify all the synonyms that will be used when searching. Each term a search will be enhanced with all the associated synonyms when the query is sent to the server. If a synonym contains more than one word, it has to be wrapped in double quotes.",
+                    "SynonymPropertyPanelFieldLabel": "Configure synonyms",
+                    "SynonymListTerm": "Term",
+                    "SynonymListSynonyms": "Synonyms",
+                    "SynonymIsTwoWays": "Two-ways?",
+                    "SynonymListSynonymsExemple": "Laptop, \"Desktop with monitor\"",
+                    "SynonymListTermExemple": "Computer"
                 }
             }
         },

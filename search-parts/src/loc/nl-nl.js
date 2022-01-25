@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         Tokens: {
             SelectTokenLabel: "Selecteer een token...",
@@ -65,8 +65,8 @@ define([], function() {
             DateTolabel: "Tot",
             DatePickerStrings: {
                 months: ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'],
-                shortMonths: ['jan','feb','maa','apr','mei','jun','jul','aug', 'sep','okt','nov','dec'],
-                days: ['Zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'],
+                shortMonths: ['jan', 'feb', 'maa', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
+                days: ['Zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
                 shortDays: ['Z', 'M', 'D', 'W', 'D', 'V', 'Z'],
                 goToToday: 'Ga naar vandaag',
                 prevMonthAriaLabel: 'Ga naar vorige maand',
@@ -160,6 +160,16 @@ define([], function() {
                     EditSortLabel: "Bewerk sorteervolgorde",
                     SortInvalidSortableFieldMessage: "Deze eigenschap kan niet worden gesorteerd",
                     SortFieldColumnPlaceholder: "Selecteer veld..."
+                },
+                Synonyms: {
+                    "EditSynonymLabel": "Bewerk synoniemen",
+                    "SynonymListDescription": "Geef alle synoniemen op die worden gebruikt bij het zoeken. Elke zoekterm wordt uitgebreid met alle bijbehorende synoniemen wanneer de zoekopdracht naar de server wordt verzonden. Als een synoniem meer dan één woord bevat, moet dit tussen dubbele aanhalingstekens worden geplaatst.",
+                    "SynonymPropertyPanelFieldLabel": "Configureer synoniemen",
+                    "SynonymListTerm": "Term",
+                    "SynonymListSynonyms": "Synoniemen",
+                    "SynonymIsTwoWays": "Twee-wegs?",
+                    "SynonymListSynonymsExemple": "Laptop, \"Desktop met monitor\"",
+                    "SynonymListTermExemple": "Computer"
                 }
             }
         },

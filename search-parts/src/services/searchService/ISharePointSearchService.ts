@@ -1,6 +1,7 @@
 import ISharePointManagedProperty from "../../models/search/ISharePointManagedProperty";
 import { ISharePointSearchResults } from "../../models/search/ISharePointSearchResults";
 import { ISharePointSearchQuery } from "../../models/search/ISharePointSearchQuery";
+import { ISynonymTable } from "../../models/search/ISynonym";
 
 export interface ISharePointSearchService {
 
@@ -32,4 +33,6 @@ export interface ISharePointSearchService {
      * @param query the term to suggest from
      */
      suggest(query: string): Promise<string[]>;
+
+     setSynonymTable(value: ISynonymTable): void;
 }

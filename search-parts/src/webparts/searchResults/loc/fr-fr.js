@@ -1,11 +1,11 @@
-define([], function() {
+define([], function () {
   return {
     General: {
       PlaceHolder: {
-            EditLabel: "Modifier",
-            IconText: "Composant Web des résultats de recherche par @PnP",
-            Description: "Affiche les résultats de la recherche dans SharePoint ou Microsoft.",
-            ConfigureBtnLabel: "Configurer"
+        EditLabel: "Modifier",
+        IconText: "Composant Web des résultats de recherche par @PnP",
+        Description: "Affiche les résultats de la recherche dans SharePoint ou Microsoft.",
+        ConfigureBtnLabel: "Configurer"
       },
       WebPartDefaultTitle: "Composant Web des résultats de recherche",
       ShowBlankEditInfoMessage: "Cette requête n’a donné aucun résultat. Ce composant Web doit demeurer vide en mode d’affichage en fonction des critères.",
@@ -13,15 +13,15 @@ define([], function() {
     },
     PropertyPane: {
       DataSourcePage: {
-            DataSourceConnectionGroupName: "Sources de données disponibles",
-            PagingOptionsGroupName: "Options de pagination",
-            ItemsCountPerPageFieldName: "Nombre d’éléments par page",
-            PagingRangeFieldName: "Nombre de pages à afficher dans la série",
-            ShowPagingFieldName: "Afficher la pagination",
-            HidePageNumbersFieldName: "Masquer les numéros de page",
-            HideNavigationFieldName: "Masquer les boutons de navigation (page précédente, page suivante)",
-            HideFirstLastPagesFieldName: "Masquer les boutons de navigation (première, dernière)",
-            HideDisabledFieldName: "Masquer les boutons de navigation (précédente, suivante, première, dernière) s’ils sont désactivés.",
+        DataSourceConnectionGroupName: "Sources de données disponibles",
+        PagingOptionsGroupName: "Options de pagination",
+        ItemsCountPerPageFieldName: "Nombre d’éléments par page",
+        PagingRangeFieldName: "Nombre de pages à afficher dans la série",
+        ShowPagingFieldName: "Afficher la pagination",
+        HidePageNumbersFieldName: "Masquer les numéros de page",
+        HideNavigationFieldName: "Masquer les boutons de navigation (page précédente, page suivante)",
+        HideFirstLastPagesFieldName: "Masquer les boutons de navigation (première, dernière)",
+        HideDisabledFieldName: "Masquer les boutons de navigation (précédente, suivante, première, dernière) s’ils sont désactivés.",
         TemplateSlots: {
           GroupName: "Emplacements de la mise en page",
           ConfigureSlotsLabel: "Modifier les emplacements de la mise en page pour cette source de données",
@@ -35,18 +35,18 @@ define([], function() {
       },
       LayoutPage: {
         LayoutSelectionGroupName: "Mises en page disponibles",
-          LayoutTemplateOptionsGroupName: "Options de mise en page",
-          CommonOptionsGroupName: "Courantes",
+        LayoutTemplateOptionsGroupName: "Options de mise en page",
+        CommonOptionsGroupName: "Courantes",
         TemplateUrlFieldLabel: "Utiliser une adresse URL de modèle externe",
         TemplateUrlPlaceholder: "https://myfile.html",
         ErrorTemplateExtension: "Le modèle doit être un fichier .htm ou .html valide",
         ErrorTemplateResolve: "Impossible de résoudre le modèle indiqué. Renseignements sur l’erreur '{0}'",
-          DialogButtonLabel: "Modifier le modèle de résultats",
-          DialogTitle: "Modifier le modèle de résultats",
-          ShowSelectedFilters: "Afficher les filtres sélectionnés",
-          ShowBlankIfNoResult: "Masquer ce composant Web s’il n’y a rien à afficher",
-          ShowResultsCount: "Afficher le nombre de résultats",
-          UseMicrosoftGraphToolkit: "Utiliser la boîte à outils Microsoft Graph",
+        DialogButtonLabel: "Modifier le modèle de résultats",
+        DialogTitle: "Modifier le modèle de résultats",
+        ShowSelectedFilters: "Afficher les filtres sélectionnés",
+        ShowBlankIfNoResult: "Masquer ce composant Web s’il n’y a rien à afficher",
+        ShowResultsCount: "Afficher le nombre de résultats",
+        UseMicrosoftGraphToolkit: "Utiliser la boîte à outils Microsoft Graph",
         ResultTypes: {
           ResultTypeslabel: "Type de résultat",
           ResultTypesDescription: "Ajoutez ici les modèles à utiliser pour les éléments de résultat selon une ou plusieurs conditions supplémentaires. Les conditions sont évaluées dans l’ordre configuré et les modèles externes ont préséance sur les modèles intégrés. Assurez-vous également que les champs de la source des données que vous utilisez sont présents dans la réponse aux données.",

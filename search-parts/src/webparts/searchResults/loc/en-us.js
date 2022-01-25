@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         General: {
             PlaceHolder: {
@@ -87,7 +87,7 @@ define([], function() {
                 UseFiltersFromComponentLabel: "Use filters from this component",
                 UseDynamicFilteringsWebPartLabel: "Connect to a search results Web Part",
                 UseDataResultsFromComponentsLabel: "Use data from this Web Part",
-                UseDataResultsFromComponentsDescription: "Use data from selected items in these Web Parts",                
+                UseDataResultsFromComponentsDescription: "Use data from selected items in these Web Parts",
                 UseSearchVerticalsWebPartLabel: "Connect to a verticals Web Part",
                 UseSearchVerticalsFromComponentLabel: "Use verticals from this component",
                 LinkToVerticalLabel: "Display data only when the following vertical is selected",

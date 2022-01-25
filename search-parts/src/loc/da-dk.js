@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         Tokens: {
             SelectTokenLabel: "Vælg token...",
@@ -160,6 +160,16 @@ define([], function() {
                     EditSortLabel: "Redigér sorteringsrækkefølge",
                     SortInvalidSortableFieldMessage: "Denne egenskab er ikke sorterbar",
                     SortFieldColumnPlaceholder: "Vælg felt..."
+                },
+                Synonyms: {
+                    "EditSynonymLabel": "Rediger synonymer",
+                    "SynonymListDescription": "Specificer alle synonymer der skal bruges i søgninger. Hvert term pr. søgning vil forbedres med alle tilknyttede synonymer, når forespørgslen sendes til serveren. Hvis et synonym indeholder mere end et ord, skal det markeres med citationstegn.",
+                    "SynonymPropertyPanelFieldLabel": "Konfigurér synonymer",
+                    "SynonymListTerm": "Term",
+                    "SynonymListSynonyms": "Synonymer",
+                    "SynonymIsTwoWays": "Begge veje?",
+                    "SynonymListSynonymsExemple": "Bærbar, \"Skrivebord med skærm\"",
+                    "SynonymListTermExemple": "Computer"
                 }
             }
         },

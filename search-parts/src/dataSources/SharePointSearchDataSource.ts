@@ -34,6 +34,7 @@ import { ITerm } from '../services/taxonomyService/ITaxonomyItems';
 import { DataFilterHelper } from '../helpers/DataFilterHelper';
 import { ISortFieldConfiguration, SortFieldDirection } from '../models/search/ISortFieldConfiguration';
 import { EnumHelper } from '../helpers/EnumHelper';
+import { ISynonymFieldConfiguration, ISynonymTable } from '../models/search/ISynonym';
 
 export enum BuiltinSourceIds {
     Documents = 'e7ec8cee-ded8-43c9-beb5-436b54b31e84',
@@ -102,6 +103,8 @@ export interface ISharePointSearchDataSourceProperties {
      * Flag indicating if the audience targeting should be enabled
      */
     enableAudienceTargeting: boolean;
+
+    synonymList: ISynonymFieldConfiguration[];
 }
 
 export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearchDataSourceProperties> {
@@ -118,6 +121,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
     private _propertyFieldCollectionData: any = null;
     private _customCollectionFieldType: any = null;
     private _propertyPaneWebPartInformation: any = null;
+    private _synonymTable: ISynonymTable = null;
 
     /**
      * The data source items count
@@ -378,6 +382,37 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
                         label: commonStrings.DataSources.SharePointSearch.EnableLocalizationLabel,
                         onText: commonStrings.DataSources.SharePointSearch.EnableLocalizationOnLabel,
                         offText: commonStrings.DataSources.SharePointSearch.EnableLocalizationOffLabel
+                    }),
+                    this._propertyFieldCollectionData('dataSourceProperties.synonymList', {
+                        manageBtnLabel: commonStrings.DataSources.SearchCommon.Synonyms.EditSynonymLabel,
+                        key: 'synonymList',
+                        enableSorting: false,
+                        panelHeader: commonStrings.DataSources.SearchCommon.Synonyms.EditSynonymLabel,
+                        panelDescription: commonStrings.DataSources.SearchCommon.Synonyms.SynonymListDescription,
+                        label: commonStrings.DataSources.SearchCommon.Synonyms.SynonymPropertyPanelFieldLabel,
+                        value: this.properties.synonymList,
+                        fields: [
+                            {
+                                id: 'Term',
+                                title: commonStrings.DataSources.SearchCommon.Synonyms.SynonymListTerm,
+                                type: this._customCollectionFieldType.string,
+                                required: true,
+                                placeholder: commonStrings.DataSources.SearchCommon.Synonyms.SynonymListTermExemple
+                            },
+                            {
+                                id: 'Synonyms',
+                                title: commonStrings.DataSources.SearchCommon.Synonyms.SynonymListSynonyms,
+                                type: this._customCollectionFieldType.string,
+                                required: true,
+                                placeholder: commonStrings.DataSources.SearchCommon.Synonyms.SynonymListSynonymsExemple
+                            },
+                            {
+                                id: 'TwoWays',
+                                title: commonStrings.DataSources.SearchCommon.Synonyms.SynonymIsTwoWays,
+                                type: this._customCollectionFieldType.boolean,
+                                required: false
+                            }
+                        ]
                     })
                 ]
             }
@@ -398,6 +433,9 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             this.context.propertyPane.refresh();
             this.render();
         }
+        
+        this._synonymTable = this._convertToSynonymTable(this.properties.synonymList);
+        this._sharePointSearchService.setSynonymTable(this._synonymTable);
     }
 
     public onPropertyUpdate(propertyPath: string, oldValue: any, newVlue: any) {
@@ -532,6 +570,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             ];
         this.properties.resultSourceId = this.properties.resultSourceId !== undefined ? this.properties.resultSourceId : BuiltinSourceIds.LocalSharePointResults;
         this.properties.sortList = this.properties.sortList !== undefined ? this.properties.sortList : [];
+        this.properties.synonymList = Array.isArray(this.properties.synonymList) ? this.properties.synonymList : [];        
     }
 
     private getBuiltinSourceIdOptions(): IComboBoxOption[] {
@@ -699,6 +738,8 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
         }
 
         searchQuery.Querytext = dataContext.inputQueryText;
+        this._synonymTable = this._convertToSynonymTable(this.properties.synonymList);
+        this._sharePointSearchService.setSynonymTable(this._synonymTable);
 
         searchQuery.EnableQueryRules = this.properties.enableQueryRules;
         searchQuery.QueryTemplate = await this._tokenService.resolveTokens(this.properties.queryTemplate);
@@ -1256,5 +1297,34 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             return (optionWithComma.key as string).split(",").map(k => { return { key: k.trim(), text: k.trim(), selected: true }; });
         }
         return options;
+    }
+
+    private _convertToSynonymTable(synonymList: ISynonymFieldConfiguration[]): ISynonymTable {
+        let synonymsTable: ISynonymTable = {};
+
+        if (synonymList) {
+            synonymList.forEach(item => {
+                const currentTerm = item.Term.toLowerCase().replace(/\"/g, "");
+                const currentSynonyms = this._splitSynonyms(item.Synonyms);
+
+                //add to array
+                synonymsTable[currentTerm] = currentSynonyms;
+
+                if (item.TwoWays) {
+                    // Loop over the list of synonyms
+                    let tempSynonyms: string[] = currentSynonyms;
+                    tempSynonyms.push(currentTerm.trim());
+
+                    currentSynonyms.forEach(s => {
+                        synonymsTable[s.toLowerCase().trim()] = tempSynonyms.filter(f => { return f !== s; });
+                    });
+                }
+            });
+        }
+        return synonymsTable;
+    }
+
+    private _splitSynonyms(value: string) {
+        return value.split(",").map(v => { return v.toLowerCase().trim().replace(/\"/g, ""); });
     }
 }
