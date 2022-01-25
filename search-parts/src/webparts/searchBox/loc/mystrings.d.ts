@@ -16,6 +16,16 @@ declare interface ISearchBoxWebPartStrings {
             QueryStringParameterName: string;
             QueryParameterNotEmpty: string;
         },
+        SearchBoxQueryNlpSettingsGroup: {
+            GroupName: string;
+            GroupDescription: string;
+            EnableNlpPropertyLabel: string;
+            ServiceUrlLabel: string;
+            ServiceUrlDescription: string;
+            ServiceUrlErrorMessage: string;
+            UseStagingEndpoint: string;
+            UrlNotResolvedErrorMessage: string;
+        },
         AvailableConnectionsGroup: {
             GroupName: string;
             UseDynamicDataSourceLabel: string;

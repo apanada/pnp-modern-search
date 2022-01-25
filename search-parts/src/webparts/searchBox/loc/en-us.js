@@ -17,6 +17,16 @@ define([], function() {
                 QueryStringParameterName: "Parameter name",
                 QueryParameterNotEmpty: "Please provide a value for the parameter."
             },
+            SearchBoxQueryNlpSettingsGroup: {
+                GroupName: "Search query enhancement",
+                GroupDescription: "Use this service to enhance the search query by detecting user intents and get more relevant search keywords using Microsoft LUIS.",
+                EnableNlpPropertyLabel: "Use Natural Language Processing service",
+                ServiceUrlLabel: "Service URL",
+                ServiceUrlDescription: "Notice: make sure the server allows cross-origin calls from this domain ('{0}') in CORS settings.",
+                ServiceUrlErrorMessage: "Please specify a valid URL",
+                UseStagingEndpoint: "Use LUIS staging endpoint",
+                UrlNotResolvedErrorMessage: "URL '{0}' can't be resolved. Error: '{1}'."
+            },
             AvailableConnectionsGroup: {
                 GroupName: "Available connections",
                 UseDynamicDataSourceLabel: "Use dynamic data source as default input",

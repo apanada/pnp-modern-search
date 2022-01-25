@@ -1,3 +1,5 @@
+import { INlpResponse } from "../../../models/search/INlpResponse";
+
 export interface ISearchBoxContainerState {
 
     /**
@@ -14,4 +16,11 @@ export interface ISearchBoxContainerState {
      * Show Clear button in the Search Box
      */
     showClearButton: boolean;
+
+    /**
+     * The enhanced query response
+     */
+    enhancedQuery: INlpResponse;
+
+    showSpellCheckPanel: boolean;
 }

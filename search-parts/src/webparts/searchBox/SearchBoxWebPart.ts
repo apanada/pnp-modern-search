@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { Version, ServiceKey, Text } from '@microsoft/sp-core-library';
+import { Version, ServiceKey, Text, Environment, EnvironmentType } from '@microsoft/sp-core-library';
 import { GlobalSettings } from 'office-ui-fabric-react';
 import { IWebPartPropertiesMetadata } from '@microsoft/sp-webpart-base';
 import { uniqBy } from '@microsoft/sp-lodash-subset';
@@ -17,7 +17,8 @@ import {
     PropertyPaneToggle,
     DynamicDataSharedDepth,
     IPropertyPanePage,
-    IPropertyPaneGroup
+    IPropertyPaneGroup,
+    PropertyPaneLabel
 } from "@microsoft/sp-property-pane";
 import SearchBoxContainer from './components/SearchBoxContainer';
 import { ISearchBoxContainerProps } from './components/ISearchBoxContainerProps';
@@ -41,6 +42,9 @@ import { ITokenService } from '@pnp/modern-search-extensibility';
 import { BuiltinTokenNames, TokenService } from '../../services/tokenService/TokenService';
 import { BaseWebPart } from '../../common/BaseWebPart';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
+import { INlpService } from '../../services/nlpService/INlpService';
+import { NlpService } from '../../services/nlpService/NlpService';
+import { ServiceHelper } from '../../helpers/ServiceHelper';
 
 export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps> implements IDynamicDataCallables {
 
@@ -87,6 +91,10 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
      * The token service instance
      */
     private tokenService: ITokenService;
+
+    private nlpService: INlpService;
+
+    private serviceHelper: ServiceHelper;
 
     constructor() {
         super();
@@ -183,7 +191,10 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             onSearch: this._onSearch,
             suggestionProviders: this._selectedCustomProviders,
             numberOfSuggestionsPerGroup: this.properties.numberOfSuggestionsPerGroup,
-            tokenService: this.tokenService
+            tokenService: this.tokenService,
+            enableNlpService: this.properties.enableNlpService,
+            nlpService: this.nlpService,
+            isStaging: this.properties.isStaging
         } as ISearchBoxContainerProps);
 
         // Error message
@@ -236,7 +247,11 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     {
                         groupName: webPartStrings.PropertyPane.SearchBoxSettingsGroup.GroupName,
                         groupFields: this._getSearchBoxSettingsFields()
-                    }
+                    },
+                    {
+                        groupName: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.GroupName,
+                        groupFields: this._getSearchQueryOptimizationFields()
+                    },
                 ],
                 displayGroupsAsAccordion: true
             },
@@ -361,6 +376,20 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         switch (propertyId) {
             case ComponentType.SearchBox:
                 return this._searchQueryText;
+        }
+    }
+
+    /**
+   * Initializes the query optimization data provider instance according to the current environment
+   */
+    private initNlpService() {
+        this.serviceHelper = new ServiceHelper(this.context.httpClient);
+
+        if (this.properties.enableNlpService && this.properties.nlpServiceUrl) {
+            if (Environment.type === EnvironmentType.SharePoint) {
+                this.nlpService = this.context.serviceScope.consume<INlpService>(NlpService.ServiceKey);
+                this.nlpService.setServiceUrl(this.properties.nlpServiceUrl);
+            }
         }
     }
 
@@ -542,6 +571,40 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         return searchBehaviorOptionsFields;
     }
 
+    /**
+     * Determines the group fields for the search query optimization inside the property pane
+     */
+    private _getSearchQueryOptimizationFields(): IPropertyPaneField<any>[] {
+
+        let searchQueryOptimizationFields: IPropertyPaneField<any>[] = [
+            PropertyPaneLabel("", {
+                text: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.GroupDescription
+            }),
+            PropertyPaneToggle("enableNlpService", {
+                checked: false,
+                label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.EnableNlpPropertyLabel,
+            })
+        ];
+
+        if (this.properties.enableNlpService) {
+
+            searchQueryOptimizationFields.push(
+                PropertyPaneTextField("nlpServiceUrl", {
+                    label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlLabel,
+                    disabled: !this.properties.enableNlpService,
+                    onGetErrorMessage: this._validateServiceUrl.bind(this),
+                    description: Text.format(webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlDescription, window.location.host)
+                }),                
+                PropertyPaneToggle("isStaging", {
+                    label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.UseStagingEndpoint,
+                    disabled: !this.properties.enableNlpService,
+                }),
+            );
+        }
+
+        return searchQueryOptimizationFields;
+    }
+
     private getExtensibilityFields(): IPropertyPaneField<any>[] {
 
         let extensibilityFields: IPropertyPaneField<any>[] = [
@@ -629,6 +692,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
     }
 
     private initializeWebPartServices(): void {
+        this.initNlpService();
         this.tokenService = this.context.serviceScope.consume<ITokenService>(TokenService.ServiceKey);
         this.webPartInstanceServiceScope = this.context.serviceScope.startNewChild();
         this.dynamicDataService = this.webPartInstanceServiceScope.createDefaultAndProvide(DynamicDataService.ServiceKey);
@@ -868,6 +932,28 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
 
         if (source && source.id === ComponentType.PageEnvironment) {
             this.render();
+        }
+    }
+
+    /**
+   * Ensures the service URL is valid 
+   * @param value the service URL
+   */
+    private async _validateServiceUrl(value: string) {
+
+        if ((!/^(https?):\/\/[^\s/$.?#].[^\s]*/.test(value) || !value)) {
+            return webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlErrorMessage;
+        } else {
+            if (Environment.type !== EnvironmentType.Local) {
+                try {
+                    await this.serviceHelper.ensureUrlResovles(value);
+                    return '';
+                } catch (errorMessage) {
+                    return Text.format(webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.UrlNotResolvedErrorMessage, value, errorMessage);
+                }
+            } else {
+                return '';
+            }
         }
     }
 }

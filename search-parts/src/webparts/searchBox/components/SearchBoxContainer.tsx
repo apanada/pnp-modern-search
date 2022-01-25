@@ -8,6 +8,7 @@ import * as webPartStrings from 'SearchBoxWebPartStrings';
 import SearchBoxAutoComplete from './SearchBoxAutoComplete/SearchBoxAutoComplete';
 import styles from './SearchBoxContainer.module.scss';
 import { BuiltinTokenNames } from '../../../services/tokenService/TokenService';
+import NlpSpellCheckPanel from './NlpSpellCheckPanel/NlpSpellCheckPanel';
 
 export default class SearchBoxContainer extends React.Component<ISearchBoxContainerProps, ISearchBoxContainerState> {
 
@@ -16,6 +17,8 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
         super(props);
 
         this.state = {
+            enhancedQuery: null,
+            showSpellCheckPanel: false,
             searchInputValue: (props.inputValue) ? decodeURIComponent(props.inputValue) : '',
             errorMessage: null,
             showClearButton: !!props.inputValue,
@@ -84,6 +87,25 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
                 showClearButton: !isReset
             });
 
+            if (this.props.enableNlpService && this.props.nlpService && queryText) {
+
+                try {
+                    debugger;
+                    let enhancedQuery = await this.props.nlpService.enhanceSearchQuery(queryText, this.props.isStaging);
+                    this.setState({
+                        enhancedQuery: enhancedQuery
+                    });
+                    
+                    if(this.state.enhancedQuery){
+                        this.setState({
+                            showSpellCheckPanel: true
+                        });
+                    }            
+                } catch (error) {
+
+                }
+            }
+
             if (this.props.searchInNewPage && !isReset && this.props.pageUrl) {
 
                 this.props.tokenService.setTokenValue(BuiltinTokenNames.inputQueryText, queryText);
@@ -136,6 +158,11 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
     public render(): React.ReactElement<ISearchBoxContainerProps> {
         let renderErrorMessage: JSX.Element = null;
 
+        const renderNlpSpellCheckPanel =
+            this.props.enableNlpService && this.state.showSpellCheckPanel && this.state.enhancedQuery ?
+                <NlpSpellCheckPanel rawResponse={this.state.enhancedQuery} rawQueryText={this.state.searchInputValue} _onSpellCheckCallback={this._handleSpellCheckCallback.bind(this)} /> :
+                null;
+
         if (this.state.errorMessage) {
             renderErrorMessage = <MessageBar messageBarType={MessageBarType.error}
                 dismissButtonAriaLabel='Close'
@@ -156,7 +183,19 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
             <div className={styles.searchBox}>
                 {renderErrorMessage}
                 {renderSearchBox}
+                {renderNlpSpellCheckPanel}
             </div>
         );
+    }
+
+    public _handleSpellCheckCallback(enhancedQuery: string) {
+        const queryText: string = enhancedQuery;
+        this.setState({
+            searchInputValue: queryText,
+            showSpellCheckPanel: false
+        });
+
+        // Notify the dynamic data controller
+        this.props.onSearch(queryText);
     }
 }

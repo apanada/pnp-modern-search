@@ -1,6 +1,7 @@
 import { PageOpenBehavior, QueryPathBehavior } from "../../../helpers/UrlHelper";
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 import { ISuggestionProvider, ITokenService } from "@pnp/modern-search-extensibility";
+import { INlpService } from "../../../services/nlpService/INlpService";
 
 export interface ISearchBoxContainerProps {
 
@@ -75,4 +76,10 @@ export interface ISearchBoxContainerProps {
     themeVariant: IReadonlyTheme | undefined;
 
     tokenService: ITokenService;
+
+    enableNlpService: boolean;
+
+    nlpService: INlpService;
+
+    isStaging: boolean;
 }

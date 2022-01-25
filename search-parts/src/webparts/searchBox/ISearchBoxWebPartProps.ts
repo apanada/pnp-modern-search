@@ -77,4 +77,10 @@ export interface ISearchBoxWebPartProps extends IBaseWebPartProps {
      * The extensibility configuraion to load
      */
     extensibilityLibraryConfiguration: IExtensibilityConfiguration[];
+
+    enableNlpService: boolean;
+
+    nlpServiceUrl: string;
+    
+    isStaging: boolean;
 }
