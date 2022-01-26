@@ -194,7 +194,8 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             tokenService: this.tokenService,
             enableNlpService: this.properties.enableNlpService,
             nlpService: this.nlpService,
-            isStaging: this.properties.isStaging
+            isStaging: this.properties.isStaging,
+            context: this.context
         } as ISearchBoxContainerProps);
 
         // Error message

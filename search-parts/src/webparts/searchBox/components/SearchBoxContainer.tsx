@@ -9,7 +9,7 @@ import SearchBoxAutoComplete from './SearchBoxAutoComplete/SearchBoxAutoComplete
 import styles from './SearchBoxContainer.module.scss';
 import { BuiltinTokenNames } from '../../../services/tokenService/TokenService';
 import NlpSpellCheckPanel from './NlpSpellCheckPanel/NlpSpellCheckPanel';
-
+import { ModernTaxonomyPicker } from "shell-search-extensibility/lib/controls/modernTaxonomyPicker";
 export default class SearchBoxContainer extends React.Component<ISearchBoxContainerProps, ISearchBoxContainerState> {
 
     public constructor(props: ISearchBoxContainerProps) {
@@ -44,33 +44,47 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
         let searchBoxRef = React.createRef<ISearchBox>();
 
         return (
-            <div className={styles.searchBoxWrapper}>
-                <SearchBox
-                    componentRef={searchBoxRef}
-                    placeholder={this.props.placeholderText ? this.props.placeholderText : webPartStrings.SearchBox.DefaultPlaceholder}
-                    ariaLabel={this.props.placeholderText ? this.props.placeholderText : webPartStrings.SearchBox.DefaultPlaceholder}
-                    theme={this.props.themeVariant as ITheme}
-                    className={styles.searchTextField}
-                    value={this.state.searchInputValue}
-                    autoComplete="off"
-                    onChange={(event) => this.setState({ searchInputValue: event.currentTarget.value })}
-                    onSearch={() => this._onSearch(this.state.searchInputValue)}
-                    onClear={() => {
-                        this._onSearch('', true);
-                        searchBoxRef.current.focus();
-                    }}
-                />
-                <div className={styles.searchButton}>
-                    {this.state.searchInputValue &&
-                        <IconButton
-                            onClick={() => this._onSearch(this.state.searchInputValue)}
-                            iconProps={{ iconName: 'Forward' }}
-                            ariaLabel={webPartStrings.SearchBox.SearchButtonLabel}
-                        />
-                    }
+            <>
+                <div className={styles.searchBoxWrapper}>
+                    <SearchBox
+                        componentRef={searchBoxRef}
+                        placeholder={this.props.placeholderText ? this.props.placeholderText : webPartStrings.SearchBox.DefaultPlaceholder}
+                        ariaLabel={this.props.placeholderText ? this.props.placeholderText : webPartStrings.SearchBox.DefaultPlaceholder}
+                        theme={this.props.themeVariant as ITheme}
+                        className={styles.searchTextField}
+                        value={this.state.searchInputValue}
+                        autoComplete="off"
+                        onChange={(event) => this.setState({ searchInputValue: event.currentTarget.value })}
+                        onSearch={() => this._onSearch(this.state.searchInputValue)}
+                        onClear={() => {
+                            this._onSearch('', true);
+                            searchBoxRef.current.focus();
+                        }}
+                    />
+                    <div className={styles.searchButton}>
+                        {this.state.searchInputValue &&
+                            <IconButton
+                                onClick={() => this._onSearch(this.state.searchInputValue)}
+                                iconProps={{ iconName: 'Forward' }}
+                                ariaLabel={webPartStrings.SearchBox.SearchButtonLabel}
+                            />
+                        }
+                    </div>
                 </div>
-            </div>
+                <div>
+                    <ModernTaxonomyPicker allowMultipleSelections={true}
+                        termSetId="8ed8c9ea-7052-4c1d-a4d7-b9c10bffea6f"
+                        panelTitle="Select Term"
+                        label="Taxonomy Picker"
+                        context={this.props.context}
+                        onChange={this.onModernTaxPickerChange} />
+                </div>
+            </>
         );
+    }
+
+    private onModernTaxPickerChange(terms: any[]) {
+        console.log("Terms", terms);
     }
 
     /**
@@ -95,12 +109,12 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
                     this.setState({
                         enhancedQuery: enhancedQuery
                     });
-                    
-                    if(this.state.enhancedQuery){
+
+                    if (this.state.enhancedQuery) {
                         this.setState({
                             showSpellCheckPanel: true
                         });
-                    }            
+                    }
                 } catch (error) {
 
                 }

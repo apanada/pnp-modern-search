@@ -16,9 +16,12 @@
     "@microsoft/sp-property-pane": "1.12.1",
     "@microsoft/sp-webpart-base": "1.12.1",
     "@pnp/modern-search-extensibility": "1.0.9",
+    "@pnp/sp": "^2.11.0",
+    "@pnp/telemetry-js": "^2.0.0",
     "@webcomponents/custom-elements": "^1.5.0",
     "@webcomponents/webcomponentsjs": "2.6.0",
     "handlebars": "4.7.7",
+    "lodash": "4.17.21",
     "office-ui-fabric-react": "7.156.0",
     "react": "16.9.0",
     "react-dom": "16.9.0"
@@ -32,6 +35,7 @@
     "@types/react": "16.9.36",
     "@types/react-dom": "16.9.8",
     "@types/webpack-env": "1.13.1",
+    "@types/lodash": "4.14.149",
     "gulp": "~4.0.2",
     "ajv": "~5.2.2"
   }

@@ -2,6 +2,7 @@ import { PageOpenBehavior, QueryPathBehavior } from "../../../helpers/UrlHelper"
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 import { ISuggestionProvider, ITokenService } from "@pnp/modern-search-extensibility";
 import { INlpService } from "../../../services/nlpService/INlpService";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 export interface ISearchBoxContainerProps {
 
@@ -82,4 +83,6 @@ export interface ISearchBoxContainerProps {
     nlpService: INlpService;
 
     isStaging: boolean;
+
+    context: WebPartContext;
 }

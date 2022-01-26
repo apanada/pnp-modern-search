@@ -13,6 +13,7 @@
   },
   "externals": {},
   "localizedResources": {
-    "SearchExtensionLibraryStrings": "lib/libraries/searchExtension/loc/{locale}.js"
+    "SearchExtensionLibraryStrings": "lib/libraries/searchExtension/loc/{locale}.js",
+    "ControlStrings": "lib/loc/{locale}.js"
   }
 }
