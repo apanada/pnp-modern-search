@@ -26,7 +26,6 @@
         "@microsoft/sp-webpart-base": "1.12.1",
         "@pnp/common": "2.0.13",
         "@pnp/modern-search-extensibility": "1.0.9",
-        "shell-search-extensibility": "0.0.1",
         "@pnp/spfx-controls-react": "3.3.0",
         "@pnp/spfx-property-controls": "3.2.0",
         "@pnp/telemetry-js": "2.0.0",
@@ -53,6 +52,7 @@
         "react-ace": "5.8.0",
         "react-dom": "16.9.0",
         "react-js-pagination": "3.0.3",
+        "shell-search-extensibility": "0.0.1",
         "webpack": "4.42.0"
     },
     "resolutions": {

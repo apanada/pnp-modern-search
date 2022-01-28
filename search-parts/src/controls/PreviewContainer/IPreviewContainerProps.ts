@@ -25,6 +25,10 @@ export interface IPreviewContainerProps {
     */
    previewType: PreviewType;
 
+   /**
+    * The search result item
+    */
+   resultItem?: any;
 }
 
 export enum PreviewType {

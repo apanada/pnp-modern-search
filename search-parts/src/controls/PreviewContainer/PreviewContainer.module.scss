@@ -1,3 +1,5 @@
+@import "~office-ui-fabric-react/dist/sass/_References.scss";
+
 .calloutContainer {
 
     .calloutHeader {
@@ -8,13 +10,13 @@
 
 /* https://blog.theodo.fr/2018/01/responsive-iframes-css-trick/ */
 .calloutContentContainer {
-    padding-left: 15px;
+    padding-left: 0px;
     padding-right: 15px;
     padding-bottom: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 500px;
+    width: 1250px;
     min-height: 280px;
     background-size: cover;
     background-clip: content-box;
@@ -39,6 +41,8 @@
             position: absolute;
             top: 0;
             left: 0;
+            bottom: 0;
+            right: 0;
             width: 100%;
             height: 100%;
             border: 0;
@@ -48,4 +52,17 @@
 
 .hide {
     display: none;
+}
+
+.keyValueList {
+    padding: 10px 15px;
+    width: 34%;    
+
+    .pill {
+        border-radius: 30px 60px 90px 15px;
+        background-color: "[theme: themePrimary, default: #005a9e]";
+        padding: 0.3em 1em;
+        margin: 0 5px 0 0;
+        color: #ffffff;
+    }
 }

@@ -1,5 +1,5 @@
 interface IPreviewContainerState {
-    showCallout: boolean;
+    showDialog: boolean;
     isLoading: boolean;
 }
 

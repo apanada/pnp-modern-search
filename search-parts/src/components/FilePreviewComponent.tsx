@@ -27,6 +27,8 @@ export interface IFilePreviewProps {
      * The inner HTML content to wrap with the file viewer
      */
     template?: string;
+
+    resultItem?: any;
 }
 
 export interface IFileIconState {
@@ -67,6 +69,7 @@ export class FilePreview extends React.Component<IFilePreviewProps, IFileIconSta
                 targetElement={this.elementPreviewRef.current}
                 previewType={PreviewType.Document}
                 showPreview={this.state.isCalloutVisible}
+                resultItem={this.props.resultItem}
             />;
         }
 
