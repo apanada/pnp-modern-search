@@ -41,6 +41,8 @@ import { BaseWebPart } from '../../common/BaseWebPart';
 import commonStyles from '../../styles/Common.module.scss';
 import { IDataVerticalSourceData } from '../../models/dynamicData/IDataVerticalSourceData';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
+import { PageContext } from '@microsoft/sp-page-context';
+import { sp } from "shell-search-extensibility/lib/index";
 
 export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebPartProps> implements IDynamicDataCallables {
 
@@ -134,6 +136,13 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         // Web components are only defined once.
         // We need to register components here in the case where the Search Results WP is not present on the page
         await this.templateService.registerWebComponents(this.availableWebComponentDefinitions, this.instanceId);
+
+        const pageContext = this.context.serviceScope.consume<PageContext>(PageContext.serviceKey);
+        sp.setup({
+          sp: {
+            baseUrl: pageContext.web.absoluteUrl
+          }
+        });
 
         return super.onInit();
     }

@@ -10,6 +10,7 @@ import styles from './SearchBoxContainer.module.scss';
 import { BuiltinTokenNames } from '../../../services/tokenService/TokenService';
 import NlpSpellCheckPanel from './NlpSpellCheckPanel/NlpSpellCheckPanel';
 import { ModernTaxonomyPicker } from "shell-search-extensibility/lib/controls/modernTaxonomyPicker";
+
 export default class SearchBoxContainer extends React.Component<ISearchBoxContainerProps, ISearchBoxContainerState> {
 
     public constructor(props: ISearchBoxContainerProps) {
@@ -72,12 +73,12 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
                     </div>
                 </div>
                 <div>
-                    <ModernTaxonomyPicker allowMultipleSelections={true}
+                    {/* <ModernTaxonomyPicker allowMultipleSelections={true}
                         termSetId="8ed8c9ea-7052-4c1d-a4d7-b9c10bffea6f"
                         panelTitle="Departments"
                         label="Departments"
                         serviceScope={this.props.serviceScope}
-                        onChange={this.onModernTaxPickerChange} />
+                        onChange={this.onModernTaxPickerChange} /> */}
                 </div>
             </>
         );

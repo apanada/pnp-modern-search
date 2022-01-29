@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BaseWebComponent, FilterComparisonOperator, IDataFilterInfo, IDataFilterValueInfo, IDataFilterInternal, ExtensibilityConstants } from '@pnp/modern-search-extensibility';
+import { BaseWebComponent, FilterComparisonOperator, IDataFilterInfo, IDataFilterValueInfo, IDataFilterInternal, ExtensibilityConstants, IDataFilterValueInternal } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
 import { ITheme } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
@@ -41,7 +41,7 @@ export interface IFilterTaxonomyComponentState {
      */
     selectedTerms: ITermInfo[];
 
-    initialTermsState: ITermInfo[];
+    initialFilterValues: IDataFilterValueInternal[];
 }
 
 export interface ITermDetails {
@@ -59,64 +59,75 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
 
         this.state = {
             selectedTerms: null,
-            initialTermsState: null
+            initialFilterValues: null
         };
     }
 
     public render() {
 
-        console.log(this.state.initialTermsState);
-
-        return <div>
-            <ModernTaxonomyPicker allowMultipleSelections={true}
-                termSetId={TERM_SET_ID}
-                panelTitle="Departments"
-                label="Departments"
-                placeHolder="Search a value..."
-                initialValues={this.state.initialTermsState}
-                serviceScope={this.props.serviceScope}
-                onChange={this._onPickerChange.bind(this)} />
-            <Link theme={this.props.themeVariant as ITheme}>{strings.Filters.ClearAllFiltersButtonLabel}</Link>
-        </div>;
+        if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
+            return <div>
+                <ModernTaxonomyPicker allowMultipleSelections={true}
+                    termSetId={TERM_SET_ID}
+                    panelTitle="Departments"
+                    label="Departments"
+                    placeHolder="Search a value..."
+                    initialValues={this.state.selectedTerms}
+                    serviceScope={this.props.serviceScope}
+                    onChange={this._onPickerChange.bind(this)} />
+            </div>;
+        } else {
+            return <div>
+                <ModernTaxonomyPicker allowMultipleSelections={true}
+                    termSetId={TERM_SET_ID}
+                    panelTitle="Departments"
+                    label="Departments"
+                    placeHolder="Search a value..."
+                    serviceScope={this.props.serviceScope}
+                    onChange={this._onPickerChange.bind(this)} />
+            </div>;
+        }
     }
 
     public componentDidMount() {
+        this.setState({
+            initialFilterValues: this.props.filter.values
+        }, () => {
+            if (this.state.initialFilterValues && this.state.initialFilterValues.length > 0) {
+                const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
 
-        if (this.props.filter.values.length > 0) {
-
-            let initialValues: ITermDetails[] = [];
-
-            this.props.filter.values.filter(value => value.selected).forEach(filterValue => {
-                initialValues.push({
-                    id: filterValue.value,
-                    name: filterValue.name,
-                    selected: filterValue.selected
-                });
-            });
-
-            if (Array.isArray(initialValues) && initialValues.length > 0) {
-                var promises: Promise<ITermInfo>[] = initialValues.map(async (termDetails: ITermDetails) => {
-                    const term = await this.getTermById(Guid.parse(TERM_SET_ID), Guid.parse(termDetails.id));
-                    return new Promise<ITermInfo>((resolve, reject) => resolve(term));
-                });
-
-                var results: Promise<ITermInfo[]> = Promise.all(promises);
-                results.then((data: ITermInfo[]) => {
-                    this.setState({ initialTermsState: data }, () => {
-                        console.log("logged");
+                this._setInitialTerms(initialValues).then(data => {
+                    this.setState({
+                        selectedTerms: data
+                    }, () => {
+                        console.log(this.state);
+                        if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
+                            this._updateFilter(this.state.selectedTerms, true);
+                        }
                     });
                 });
             }
-        }
+        });
     }
 
     private _onPickerChange(terms: ITermInfo[]) {
 
-        this.setState({
-            selectedTerms: terms
-        });
-
-        this._updateFilter(terms, true);
+        if (this.state.selectedTerms === null || (this.state.selectedTerms && this.state.selectedTerms.length === 0)) {
+            this.setState({
+                selectedTerms: terms
+            }, () => {
+                const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
+                if (initialValues && initialValues.length === 0) {
+                    this._updateFilter(this.state.selectedTerms, true);
+                }
+            });
+        } else {
+            this.setState({
+                selectedTerms: terms
+            }, () => {
+                this._updateFilter(this.state.selectedTerms, true);
+            });
+        }
     }
 
     private _updateFilter(terms: ITermInfo[], selected: boolean) {
@@ -152,6 +163,53 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         } catch (error) {
             return undefined;
         }
+    }
+
+    private _setInitialTerms = async (initialValues: ITermDetails[]): Promise<ITermInfo[]> => {
+        if (Array.isArray(initialValues) && initialValues.length > 0) {
+            var promises: Promise<ITermInfo>[] = initialValues.map(async (termDetails: ITermDetails) => {
+                const term = await this.getTermById(Guid.parse(TERM_SET_ID), Guid.parse(termDetails.id));
+                return new Promise<ITermInfo>((resolve, reject) => resolve(term));
+            });
+
+            var results: Promise<ITermInfo[]> = Promise.all(promises);
+            const terms: ITermInfo[] = await results as ITermInfo[];
+            let { selectedTerms } = this.state;
+            const initialTermsState = selectedTerms ?? [];
+            terms.map(v => initialTermsState.push({
+                id: v.id,
+                createdDateTime: v.createdDateTime,
+                childrenCount: v.childrenCount,
+                customSortOrder: v.customSortOrder,
+                descriptions: v.descriptions,
+                isAvailableForTagging: v.isAvailableForTagging,
+                isDeprecated: v.isDeprecated,
+                labels: v.labels,
+                lastModifiedDateTime: v.lastModifiedDateTime,
+                topicRequested: v.topicRequested,
+                localProperties: v.localProperties,
+                parent: v.parent,
+                properties: v.properties
+            }));
+
+            return initialTermsState;
+        }
+
+        return [] as ITermInfo[];
+    }
+
+    private _getInitialActiveFilterValues = (initialFilterValues: IDataFilterValueInternal[]) => {
+        let initialValues: ITermDetails[] = [];
+
+        initialFilterValues.filter(value => value.selected).forEach(filterValue => {
+            initialValues.push({
+                id: filterValue.value,
+                name: filterValue.name,
+                selected: filterValue.selected
+            });
+        });
+
+        return initialValues;
     }
 }
 
