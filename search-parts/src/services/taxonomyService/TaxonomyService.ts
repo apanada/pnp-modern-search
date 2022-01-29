@@ -1,10 +1,9 @@
-import { Text, Log } from '@microsoft/sp-core-library';
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
-import { isEmpty, findIndex } from '@microsoft/sp-lodash-subset';
+import { Log } from '@microsoft/sp-core-library';
+import { SPHttpClient } from '@microsoft/sp-http';
 import { ServiceKey, ServiceScope } from "@microsoft/sp-core-library";
 import { ITaxonomyService } from './ITaxonomyService';
 import { Constants } from '../../common/Constants';
-import { ITermSet, ITerms, ITerm, TaxonomyItemType, ITaxonomyItem, ITermStore, IGroup } from './ITaxonomyItems';
+import { ITerms, ITerm } from './ITaxonomyItems';
 
 const TaxonomyService_ServiceKey = 'PnPModernSearchTaxonomyService';
 
@@ -15,22 +14,22 @@ export class TaxonomyService implements ITaxonomyService {
 	/**
 	 * The SPHttpClient instance
 	 */
-    private spHttpClient: SPHttpClient;
+	private spHttpClient: SPHttpClient;
 
-    constructor(serviceScope: ServiceScope) {
+	constructor(serviceScope: ServiceScope) {
 
 		serviceScope.whenFinished(() => {
 			this.spHttpClient = serviceScope.consume<SPHttpClient>(SPHttpClient.serviceKey);
 		});
-    }
+	}
 
-    /**
-     * Gets multiple terms by their ids using the current taxonomy context
-     * @param siteUrl The site URL to use for the taxonomy session 
-     * @param termIds An array of term ids to search for
-     * @return {Promise<ITerm[]>} A promise containing the terms.
-     */
-    public async getTermsById(siteUrl: string, termIds: string[]): Promise<ITerm[]> {
+	/**
+	 * Gets multiple terms by their ids using the current taxonomy context
+	 * @param siteUrl The site URL to use for the taxonomy session 
+	 * @param termIds An array of term ids to search for
+	 * @return {Promise<ITerm[]>} A promise containing the terms.
+	 */
+	public async getTermsById(siteUrl: string, termIds: string[]): Promise<ITerm[]> {
 
 		let terms: ITerm[] = [];
 		const clientServiceUrl = `${siteUrl}/_vti_bin/client.svc/ProcessQuery`;
@@ -41,7 +40,7 @@ export class TaxonomyService implements ITaxonomyService {
 		});
 
 		const data = `<Request xmlns="http://schemas.microsoft.com/sharepoint/clientquery/2009" SchemaVersion="15.0.0.0" LibraryVersion="16.0.0.0" ApplicationName="pnp"><Actions><ObjectPath Id="1" ObjectPathId="0"/><ObjectPath Id="3" ObjectPathId="2"/><ObjectPath Id="5" ObjectPathId="4"/><Query Id="6" ObjectPathId="4"><Query SelectAllProperties="true"><Properties/></Query><ChildItemQuery SelectAllProperties="false"><Properties><Property Name="Id" SelectAll="true"/><Property Name="Labels" SelectAll="true"/></Properties></ChildItemQuery></Query></Actions><ObjectPaths><StaticMethod Id="0" Name="GetTaxonomySession" TypeId="{981cbc68-9edc-4f8d-872f-71146fcbb84f}"/><Method Id="2" ParentId="0" Name="GetDefaultSiteCollectionTermStore"/><Method Id="4" ParentId="2" Name="GetTermsById"><Parameters><Parameter Type="Array">${xmlQueryParameters.join('')}</Parameter></Parameters></Method></ObjectPaths></Request>`;
-		
+
 		const response = await this.spHttpClient.post(clientServiceUrl, SPHttpClient.configurations.v1, {
 			headers: {
 				'Accept': 'application/json;odata.metadata=none',

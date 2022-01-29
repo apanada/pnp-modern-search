@@ -74,9 +74,9 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
                 <div>
                     <ModernTaxonomyPicker allowMultipleSelections={true}
                         termSetId="8ed8c9ea-7052-4c1d-a4d7-b9c10bffea6f"
-                        panelTitle="Select Term"
-                        label="Taxonomy Picker"
-                        context={this.props.context}
+                        panelTitle="Departments"
+                        label="Departments"
+                        serviceScope={this.props.serviceScope}
                         onChange={this.onModernTaxPickerChange} />
                 </div>
             </>

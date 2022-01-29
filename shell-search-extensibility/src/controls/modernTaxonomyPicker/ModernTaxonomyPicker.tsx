@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { BaseComponentContext } from '@microsoft/sp-component-base';
-import { Guid } from '@microsoft/sp-core-library';
+import { Guid, ServiceScope } from '@microsoft/sp-core-library';
 import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
 import {
   PrimaryButton,
@@ -29,7 +28,7 @@ import { TaxonomyPanelContents } from './taxonomyPanelContents';
 import styles from './ModernTaxonomyPicker.module.scss';
 import * as strings from 'ControlStrings';
 import { TooltipHost, ITooltipHostStyles } from 'office-ui-fabric-react/lib/Tooltip';
-import { useId } from '@uifabric/react-hooks';
+import { useId, useControllableValue } from '@uifabric/react-hooks';
 import {
   ITermInfo,
   ITermSetInfo,
@@ -40,6 +39,7 @@ import { ModernTermPicker } from './modernTermPicker/ModernTermPicker';
 import { IModernTermPickerProps, ITermItemProps } from './modernTermPicker/ModernTermPicker.types';
 import { TermItem } from './termItem/TermItem';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
+import { PageContext } from "@microsoft/sp-page-context";
 
 export const TERMSET_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACaSURBVDhPrZLRCcAgDERdpZMIjuQA7uWH4CqdxMY0EQtNjKWB0A/77sxF55SKMTalk8a61lqCFqsLiwKac84ZRUUBi7MoYHVmAfjfjzE6vJqZQfie0AcwBQVW8ATi7AR7zGGGNSE6Q2cyLSPIjRswjO7qKhcPDN2hK46w05wZMcEUIG+HrzzcrRsQBIJ5hS8C9fGAPmRwu/9RFxW6L8CM4Ry8AAAAAElFTkSuQmCC'; // /_layouts/15/Images/EMMTermSet.png
 
@@ -51,7 +51,7 @@ export interface IModernTaxonomyPickerProps {
   anchorTermId?: string;
   panelTitle: string;
   label: string;
-  context: BaseComponentContext;
+  serviceScope: ServiceScope;
   initialValues?: ITermInfo[];
   disabled?: boolean;
   required?: boolean;
@@ -65,7 +65,7 @@ export interface IModernTaxonomyPickerProps {
 }
 
 export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
-  const [taxonomyService] = React.useState(() => new SPTaxonomyService(props.context));
+  const [taxonomyService] = React.useState(() => new SPTaxonomyService());
   const [panelIsOpen, setPanelIsOpen] = React.useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<ITermInfo[]>([]);
   const [selectedPanelOptions, setSelectedPanelOptions] = React.useState<ITermInfo[]>([]);
@@ -75,12 +75,18 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   const [currentLanguageTag, setCurrentLanguageTag] = React.useState<string>("");
 
   React.useEffect(() => {
-    sp.setup(props.context);
+    const pageContext = props.serviceScope.consume<PageContext>(PageContext.serviceKey);
+    sp.setup({
+      sp: {
+        baseUrl: pageContext.web.absoluteUrl
+      }
+    });
+
     taxonomyService.getTermStoreInfo()
       .then((termStoreInfo) => {
         setCurrentTermStoreInfo(termStoreInfo);
-        setCurrentLanguageTag(props.context.pageContext.cultureInfo.currentUICultureName !== '' ?
-          props.context.pageContext.cultureInfo.currentUICultureName :
+        setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
+          pageContext.cultureInfo.currentUICultureName :
           currentTermStoreInfo.defaultLanguageTag);
         setSelectedOptions(Array.isArray(props.initialValues) ?
           props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; }) :
@@ -190,7 +196,7 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   const tooltipId = useId('tooltip');
   const hostStyles: Partial<ITooltipHostStyles> = { root: { display: 'inline-block' } };
   const addTermButtonStyles: IButtonStyles = { rootHovered: { backgroundColor: 'inherit' }, rootPressed: { backgroundColor: 'inherit' } };
-  const termPickerStyles: IStyleFunctionOrObject<IBasePickerStyleProps, IBasePickerStyles> = { input: { minheight: 34 }, text: { minheight: 34 } };
+  const termPickerStyles: IStyleFunctionOrObject<IBasePickerStyleProps, IBasePickerStyles> = { input: { minheight: 34 }, text: { minheight: 34, borderStyle: 'none', borderWidth: '0px', border: 'none' }, };
 
   return (
     <div className={styles.modernTaxonomyPicker}>
@@ -263,7 +269,6 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
                 anchorTermInfo={currentAnchorTermInfo}
                 termSetInfo={currentTermSetInfo}
                 termStoreInfo={currentTermStoreInfo}
-                context={props.context}
                 termSetId={Guid.parse(props.termSetId)}
                 pageSize={50}
                 selectedPanelOptions={selectedPanelOptions}

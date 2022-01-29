@@ -2,7 +2,7 @@ import { PageOpenBehavior, QueryPathBehavior } from "../../../helpers/UrlHelper"
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 import { ISuggestionProvider, ITokenService } from "@pnp/modern-search-extensibility";
 import { INlpService } from "../../../services/nlpService/INlpService";
-import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { ServiceScope } from "@microsoft/sp-core-library";
 
 export interface ISearchBoxContainerProps {
 
@@ -60,7 +60,7 @@ export interface ISearchBoxContainerProps {
      * The placeholder text to display in the search box
      */
     placeholderText: string;
-    
+
     /**
      * The Web Part root DOM element
      */
@@ -84,5 +84,8 @@ export interface ISearchBoxContainerProps {
 
     isStaging: boolean;
 
-    context: WebPartContext;
+    /**
+     * The current service scope
+     */
+    serviceScope: ServiceScope;
 }

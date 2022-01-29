@@ -4,7 +4,7 @@ import { DetailsListWebComponent } from './DetailsListComponent';
 import { FileIconWebComponent } from './FileIconComponent';
 import { IconWebComponent } from './IconComponent';
 import { DocumentCardWebComponent } from './DocumentCardComponent';
-import { DocumentCardShimmersWebComponent } from './DocumentCardShimmersComponent'; 
+import { DocumentCardShimmersWebComponent } from './DocumentCardShimmersComponent';
 import { SliderWebComponent } from './SliderComponent';
 import { FilePreviewWebComponent } from './FilePreviewComponent';
 import { PaginationWebComponent } from './PaginationComponent';
@@ -16,9 +16,10 @@ import { CollapsibleContentWebComponent } from './CollapsibleContentComponent';
 import { FilterDateRangeWebComponent } from './filters/FilterDateRangeComponent';
 import { FilterComboBoxWebComponent } from './filters/FilterComboBoxComponent';
 import { FilterDateIntervalWebComponent } from './filters/FilterDateIntervalComponent';
+import { FilterTaxonomyWebComponent } from './filters/FilterTaxonomyComponent';
 import { PersonaWebComponent } from './PersonaComponent';
 import { PersonaShimmersWebComponent } from './PersonaShimmersComponent';
-import { ImageWebComponent} from './ImageComponent';
+import { ImageWebComponent } from './ImageComponent';
 import { ItemSelectionWebComponent } from './ItemSelectionComponent';
 import { FilterSearchBoxWebComponent } from './filters/FilterSearchBoxComponent';
 import { FilterValueOperatorWebComponent } from './filters/FilterValueOperatorComponent';
@@ -96,6 +97,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-filtercombobox',
             componentClass: FilterComboBoxWebComponent
+        },
+        {
+            componentName: 'pnp-filtertaxonomy',
+            componentClass: FilterTaxonomyWebComponent
         },
         {
             componentName: 'pnp-persona',

@@ -57,18 +57,14 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
 
         // Dialog props definition
         const dialogContentProps = {
-            type: DialogType.normal,
+            type: DialogType.largeHeader,
             title: this.props.resultItem["Title"]
         };
         const modalProps: IModalProps = {
-            isBlocking: true,
+            isBlocking: false,
             topOffsetFixed: false,
             styles: modalPropsStyles,
-            dragOptions: {
-                moveMenuItemText: 'Move',
-                closeMenuItemText: 'Close',
-                menu: ContextualMenu,
-            },
+            dragOptions: undefined,
         };
 
         const createdDate: string = this._getDate(this.props.resultItem["Created"]);

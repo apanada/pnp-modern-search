@@ -433,7 +433,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             this.context.propertyPane.refresh();
             this.render();
         }
-        
+
         this._synonymTable = this._convertToSynonymTable(this.properties.synonymList);
         this._sharePointSearchService.setSynonymTable(this._synonymTable);
     }
@@ -578,7 +578,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             ];
         this.properties.resultSourceId = this.properties.resultSourceId !== undefined ? this.properties.resultSourceId : BuiltinSourceIds.LocalSharePointResults;
         this.properties.sortList = this.properties.sortList !== undefined ? this.properties.sortList : [];
-        this.properties.synonymList = Array.isArray(this.properties.synonymList) ? this.properties.synonymList : [];        
+        this.properties.synonymList = Array.isArray(this.properties.synonymList) ? this.properties.synonymList : [];
     }
 
     private getBuiltinSourceIdOptions(): IComboBoxOption[] {
@@ -756,7 +756,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
 
             if (Guid.isValid(this.properties.resultSourceId)) {
                 searchQuery.SourceId = this.properties.resultSourceId;
-                
+
                 // enable phoenetic search for people result source
                 if (searchQuery.SourceId && searchQuery.SourceId.toLocaleLowerCase() === BuiltinSourceIds.LocalPeopleResults) {
                     searchQuery.EnableNicknames = true;
@@ -769,7 +769,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
             } else { // result source specified by name: Level|Result source name (i.e: SPSiteSubscription|News in Spain)
                 searchQuery = this._setResultSourceByName(this.properties.resultSourceId, searchQuery);
             }
-        }        
+        }
 
         searchQuery.Culture = this.properties.searchQueryLanguage !== undefined && this.properties.searchQueryLanguage !== null ? this.properties.searchQueryLanguage : this._currentLocaleId;
 
@@ -856,7 +856,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
                     if (!isEmpty(refinementString)) {
                         refinementFilters = refinementFilters.concat([`${dataContext.filters.filterOperator}(${refinementString})`]);
                     }
-                    
+
                 } else {
                     refinementFilters = refinementFilters.concat(DataFilterHelper.buildFqlRefinementString(dataContext.filters.selectedFilters, dataContext.filters.filtersConfiguration, this.moment));
                 }
@@ -892,7 +892,7 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
      * @param value the result source id
      */
     private validateSourceId(value: string): string {
-        if (value.length > 0) {            
+        if (value.length > 0) {
             if (!(/^(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}$/).test(value)) {
                 return this._validateSourceName(value);
             }

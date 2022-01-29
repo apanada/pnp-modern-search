@@ -34,7 +34,6 @@ import {
   ITermStoreInfo
 } from '@pnp/sp/taxonomy';
 import { Guid } from '@microsoft/sp-core-library';
-import { BaseComponentContext } from '@microsoft/sp-component-base';
 import { css } from '@uifabric/utilities/lib/css';
 import * as strings from 'ControlStrings';
 import { useForceUpdate } from '@uifabric/react-hooks';
@@ -45,7 +44,6 @@ import { Optional } from '../ModernTaxonomyPicker';
 import { IButtonStyles, IconButton, IIconProps } from 'office-ui-fabric-react';
 
 export interface ITaxonomyPanelContentsProps {
-  context: BaseComponentContext;
   allowMultipleSelections?: boolean;
   termSetId: Guid;
   pageSize: number;
@@ -426,7 +424,7 @@ export function TaxonomyPanelContents(props: ITaxonomyPanelContentsProps): React
     }
   };
 
-  const termPickerStyles: IStyleFunctionOrObject<IBasePickerStyleProps, IBasePickerStyles> = { root: { paddingTop: 4, paddingBottom: 4, paddingRight: 4, minheight: 34 }, input: { minheight: 34 }, text: { minheight: 34, borderStyle: 'none', borderWidth: '0px' } };
+  const termPickerStyles: IStyleFunctionOrObject<IBasePickerStyleProps, IBasePickerStyles> = { root: { paddingTop: 4, paddingBottom: 4, paddingRight: 4, minheight: 34 }, input: { minheight: 34 }, text: { minheight: 34, borderStyle: 'none', borderWidth: '0px', border: 'none' } };
 
   return (
     <div className={styles.taxonomyPanelContents}>
