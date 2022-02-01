@@ -233,9 +233,9 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                                     </div>
                                                     <div className="keyValueValue" style={{ paddingTop: "5px" }}>
                                                         {
-                                                            authors && authors.map((author: string) => (
+                                                            authors && authors.map((authorItem: string) => (
                                                                 <>
-                                                                    <span className={previewContainerStyles.pill}>{author}</span>
+                                                                    <span className={previewContainerStyles.pill}>{authorItem}</span>
                                                                 </>
                                                             ))
                                                         }
@@ -279,7 +279,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                 const month = itemDate.toLocaleString('default', { month: 'long' });
                 const day = itemDate.getDate();
                 const year = itemDate.getFullYear();
-                return `${month} ${day}, ${year}`
+                return `${month} ${day}, ${year}`;
             }
             return date;
         } catch (error) {

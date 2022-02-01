@@ -7,7 +7,7 @@ export default class NlpSpellCheckPanel extends React.Component<INlpSpellCheckPa
     private _onLinkClick = (queryText: string) => {
         this.setState({
             hidePanel: true
-        })
+        });
         this.props._onSpellCheckCallback(queryText);
     }
 
