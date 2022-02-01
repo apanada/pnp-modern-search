@@ -50,9 +50,11 @@ export interface IModernTaxonomyPickerProps {
   termSetId: string;
   anchorTermId?: string;
   panelTitle: string;
+  labelRequired?: boolean;
   label: string;
   serviceScope: ServiceScope;
   initialValues?: ITermInfo[];
+  termStoreInfo?: ITermStoreInfo;
   disabled?: boolean;
   required?: boolean;
   onChange?: (newValue?: ITermInfo[]) => void;
@@ -176,11 +178,11 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   function onRenderItem(itemProps: ITermItemProps): JSX.Element {
     let labels = itemProps.item.labels.filter((name) => name.languageTag === currentLanguageTag && name.isDefault);
     if (labels.length === 0) {
-      labels = itemProps.item.labels.filter((name) => name.languageTag === currentTermStoreInfo.defaultLanguageTag && name.isDefault);
+      labels = itemProps.item.labels.filter((name) => name.languageTag === (props.termStoreInfo ? props.termStoreInfo.defaultLanguageTag : currentTermStoreInfo.defaultLanguageTag) && name.isDefault);
     }
 
     return labels.length > 0 ? (
-      <TermItem languageTag={currentLanguageTag} termStoreInfo={currentTermStoreInfo} {...itemProps}>{labels[0].name}</TermItem>
+      <TermItem languageTag={currentLanguageTag} termStoreInfo={props.termStoreInfo ?? currentTermStoreInfo} {...itemProps}>{labels[0].name}</TermItem>
     ) : null;
   }
 
@@ -200,7 +202,7 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
 
   return (
     <div className={styles.modernTaxonomyPicker}>
-      {props.label && <Label required={props.required}>{props.label}</Label>}
+      {(props.labelRequired ?? true) && props.label && <Label required={props.required}>{props.label}</Label>}
       <div className={styles.termField}>
         <div className={styles.termFieldInput}>
           <ModernTermPicker
