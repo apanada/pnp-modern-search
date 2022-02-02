@@ -217,6 +217,10 @@ export class SharePointSearchService implements ISharePointSearchService {
         searchQuery.Querytext = '*';
         searchQuery.Refiners = 'ManagedProperties(filter=50000/0/*,sort=name/ascending)';
         searchQuery.RowLimit = 1;
+        searchQuery.SortList = [{
+            Property: "[DocId]",
+            Direction: SortDirection.Ascending
+        }];
 
         try {
 
@@ -388,7 +392,7 @@ export class SharePointSearchService implements ISharePointSearchService {
         }
     }
 
-    public setSynonymTable(value: ISynonymTable):void {
+    public setSynonymTable(value: ISynonymTable): void {
         this._synonymTable = value;
     }
 
@@ -531,5 +535,5 @@ export class SharePointSearchService implements ISharePointSearchService {
         }
 
         return result;
-    }    
+    }
 }

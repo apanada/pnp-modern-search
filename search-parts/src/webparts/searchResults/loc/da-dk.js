@@ -1,4 +1,4 @@
-define([], function () {
+define([], function() {
   return {
     General: {
       PlaceHolder: {
@@ -68,18 +68,18 @@ define([], function () {
           CancelButtonText: "Annuller",
           DialogButtonText: "Redigér skabelon",
           DialogTitle: "Redigér resultatsskabelon",
-          SaveButtonText: "Gem",
-          AllowItemSelection: "Tillad valg af elementer",
-          AllowMultipleItemSelection: "Tillad flere valg",
-          SelectionModeLabel: "Valgtilstand",
-          AsTokensSelectionMode: "Behandl valgte værdier som tokens (manuel tilstand)",
-          AsDataFiltersSelectionMode: "Behandle valgte værdier som filtre (standardtilstand)",
-          AsDataFiltersDescription: "I denne tilstand sendes valgte værdier til datakilden som almindelige filtre",
-          AsTokensDescription: "I denne tilstand bruges de valgte værdier manuelt gennem tokens og tilgængelige metoder. Eksempel med SharePoint søgeforespørgselsskabelon: {?Title:{filters.&lt;destination_field_name&gt;.valueAsText}}",
-          FilterValuesOperator: "Den logiske operator, der skal bruges mellem valgte værdier",
-          FieldToConsumeLabel: "Kildefelt til at forbruge",
-          FieldToConsumeDescription: "Brug denne feltværdi til udvalgte varer"
-        }
+          SaveButtonText: "Gem"
+        },
+        AllowItemSelection: "Tillad valg af elementer",
+        AllowMultipleItemSelection: "Tillad flere valg",
+        SelectionModeLabel: "Valgtilstand",
+        AsTokensSelectionMode: "Behandl valgte værdier som tokens (manuel tilstand)",
+        AsDataFiltersSelectionMode: "Behandle valgte værdier som filtre (standardtilstand)",
+        AsDataFiltersDescription: "I denne tilstand sendes valgte værdier til datakilden som almindelige filtre",
+        AsTokensDescription: "I denne tilstand bruges de valgte værdier manuelt gennem tokens og tilgængelige metoder. Eksempel med SharePoint søgeforespørgselsskabelon: {?Title:{filters.&lt;destination_field_name&gt;.valueAsText}}",
+        FilterValuesOperator: "Den logiske operator, der skal bruges mellem valgte værdier",
+        FieldToConsumeLabel: "Kildefelt til at forbruge",
+        FieldToConsumeDescription: "Brug denne feltværdi til udvalgte varer"
       },
       ConnectionsPage: {
         ConnectionsPageGroupName: "Tilgængelige forbindelser",
@@ -87,7 +87,7 @@ define([], function () {
         UseFiltersFromComponentLabel: "Brug filtre fra dette komponent",
         UseDynamicFilteringsWebPartLabel: "Opret forbindelse til en dataresultatwebdel",
         UseDataResultsFromComponentsLabel: "Brug data fra denne webdel",
-        UseDataResultsFromComponentsDescription: "Brug data fra udvalgte elementer i disse webdele",
+        UseDataResultsFromComponentsDescription: "Brug data fra udvalgte elementer i disse webdele",        
         UseSearchVerticalsWebPartLabel: "Forbind til en vertikal-webpart",
         UseSearchVerticalsFromComponentLabel: "Brug vertikaler fra dette komponent",
         LinkToVerticalLabel: "Vis kun data, når følgende vertikaler er valgt",
@@ -103,7 +103,7 @@ define([], function () {
         SearchQueryTextDefaultValue: "Standard værdi",
         SourceDestinationFieldLabel: "Navn på destinationsfelt",
         SourceDestinationFieldDescription: "Destinationsfelt til brug i denne webdel for at matche de valgte værdier",
-        AvailableFieldValuesFromResults: "Felt, der indeholder filterværdien"
+        AvailableFieldValuesFromResults: "Felt, der indeholder filterværdien"        
       },
       InformationPage: {
         Extensibility: {

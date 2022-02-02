@@ -1,9 +1,10 @@
-import { Log } from '@microsoft/sp-core-library';
-import { SPHttpClient } from '@microsoft/sp-http';
+import { Text, Log } from '@microsoft/sp-core-library';
+import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+import { isEmpty, findIndex } from '@microsoft/sp-lodash-subset';
 import { ServiceKey, ServiceScope } from "@microsoft/sp-core-library";
 import { ITaxonomyService } from './ITaxonomyService';
 import { Constants } from '../../common/Constants';
-import { ITerms, ITerm } from './ITaxonomyItems';
+import { ITermSet, ITerms, ITerm, TaxonomyItemType, ITaxonomyItem, ITermStore, IGroup } from './ITaxonomyItems';
 
 const TaxonomyService_ServiceKey = 'PnPModernSearchTaxonomyService';
 

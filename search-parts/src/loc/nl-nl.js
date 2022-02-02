@@ -119,6 +119,8 @@ define([], function () {
                 SelectedPropertiesFieldLabel: "Geselecteerde eigenschappen",
                 SelectedPropertiesFieldDescription: "Specificeert de uit de zoekresultaten op te halen eigenschappen.",
                 SelectedPropertiesPlaceholderLabel: "Selecteer eigenschappen",
+                HitHighlightedPropertiesFieldLabel: "Hit-gemarkeerde eigenschappen",
+                HitHighlightedPropertiesFieldDescription: "De lijst van beheerde eigenschappen opgeven om markeren in te schakelen. ",
                 TermNotFound: "(Term met ID '{0}' niet gevonden)",
                 ApplyQueryTemplateBtnText: "Toepassen",
                 EnableAudienceTargetingTglLabel: "Schakel doelgroepen in"
@@ -162,14 +164,14 @@ define([], function () {
                     SortFieldColumnPlaceholder: "Selecteer veld..."
                 },
                 Synonyms: {
-                    "EditSynonymLabel": "Bewerk synoniemen",
-                    "SynonymListDescription": "Geef alle synoniemen op die worden gebruikt bij het zoeken. Elke zoekterm wordt uitgebreid met alle bijbehorende synoniemen wanneer de zoekopdracht naar de server wordt verzonden. Als een synoniem meer dan één woord bevat, moet dit tussen dubbele aanhalingstekens worden geplaatst.",
-                    "SynonymPropertyPanelFieldLabel": "Configureer synoniemen",
-                    "SynonymListTerm": "Term",
-                    "SynonymListSynonyms": "Synoniemen",
-                    "SynonymIsTwoWays": "Twee-wegs?",
-                    "SynonymListSynonymsExemple": "Laptop, \"Desktop met monitor\"",
-                    "SynonymListTermExemple": "Computer"
+                    EditSynonymLabel: "Bewerk synoniemen",
+                    SynonymListDescription: "Geef alle synoniemen op die worden gebruikt bij het zoeken. Elke zoekterm wordt uitgebreid met alle bijbehorende synoniemen wanneer de zoekopdracht naar de server wordt verzonden. Als een synoniem meer dan één woord bevat, moet dit tussen dubbele aanhalingstekens worden geplaatst.",
+                    SynonymPropertyPanelFieldLabel: "Configureer synoniemen",
+                    SynonymListTerm: "Term",
+                    SynonymListSynonyms: "Synoniemen",
+                    SynonymIsTwoWays: "Twee-wegs?",
+                    SynonymListSynonymsExemple: "Laptop, \"Desktop met monitor\"",
+                    SynonymListTermExemple: "Computer"
                 }
             }
         },

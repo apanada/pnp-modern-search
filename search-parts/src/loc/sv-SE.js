@@ -119,6 +119,8 @@ define([], function () {
         SelectedPropertiesFieldLabel: "Valda egenskaper",
         SelectedPropertiesFieldDescription: "Ange egenskaperna som ska hämtas från sökresultaten.",
         SelectedPropertiesPlaceholderLabel: "Välj egenskaper",
+        HitHighlightedPropertiesFieldLabel: "Egenskaper för träffmarkeringar",
+        HitHighlightedPropertiesFieldDescription: "Tillhandahåll lista över hanterade egenskaper till träffmarkeringar. ",
         TermNotFound: "(Term med ID '{0}' hittades inte)",
         ApplyQueryTemplateBtnText: "Tillämpa",
         EnableAudienceTargetingTglLabel: "Aktivera målgruppsanpassning"
@@ -162,14 +164,14 @@ define([], function () {
           SortFieldColumnPlaceholder: "Välj fält..."
         },
         Synonyms: {
-          "EditSynonymLabel": "Redigera synonymer",
-          "SynonymListDescription": "Ange alla synonymer som kommer att användas när du söker. Varje Term sökning kommer att förbättras med alla tillhörande synonymer när frågan skickas till servern. Om en synonym innehåller mer än ett ord, måste det förpackas med citationstecken.",
-          "SynonymPropertyPanelFieldLabel": "Konfigurera synonymer",
-          "SynonymListTerm": "Term",
-          "SynonymListSynonyms": "Synonymer",
-          "SynonymIsTwoWays": "Båda vägarna?",
-          "SynonymListSynonymsExemple": "Bärbar, \"Skrivbord med skärm\"",
-          "SynonymListTermExemple": "Dator"
+          EditSynonymLabel: "Redigera synonymer",
+          SynonymListDescription: "Ange alla synonymer som kommer att användas när du söker. Varje Term sökning kommer att förbättras med alla tillhörande synonymer när frågan skickas till servern. Om en synonym innehåller mer än ett ord, måste det förpackas med citationstecken.",
+          SynonymPropertyPanelFieldLabel: "Konfigurera synonymer",
+          SynonymListTerm: "Term",
+          SynonymListSynonyms: "Synonymer",
+          SynonymIsTwoWays: "Båda vägarna?",
+          SynonymListSynonymsExemple: "Bärbar, \"Skrivbord med skärm\"",
+          SynonymListTermExemple: "Dator"
         }
       }
     },

@@ -119,6 +119,8 @@ define([], function () {
                 SelectedPropertiesFieldLabel: "Valgte egenskaber",
                 SelectedPropertiesFieldDescription: "Specificerer egenskaber der hentes fra søgeresultaterne.",
                 SelectedPropertiesPlaceholderLabel: "Vælg egenskaber",
+                HitHighlightedPropertiesFieldLabel: "Resultatfremhævede egenskaber",
+                HitHighlightedPropertiesFieldDescription: "Angiv listen med administrerede egenskaber til fremhævning af resultater.",
                 TermNotFound: "(Term med ID '{0}' blev ikke fundet)",
                 ApplyQueryTemplateBtnText: "Anvend",
                 EnableAudienceTargetingTglLabel: "Aktivér målgruppestyring"
@@ -162,14 +164,14 @@ define([], function () {
                     SortFieldColumnPlaceholder: "Vælg felt..."
                 },
                 Synonyms: {
-                    "EditSynonymLabel": "Rediger synonymer",
-                    "SynonymListDescription": "Specificer alle synonymer der skal bruges i søgninger. Hvert term pr. søgning vil forbedres med alle tilknyttede synonymer, når forespørgslen sendes til serveren. Hvis et synonym indeholder mere end et ord, skal det markeres med citationstegn.",
-                    "SynonymPropertyPanelFieldLabel": "Konfigurér synonymer",
-                    "SynonymListTerm": "Term",
-                    "SynonymListSynonyms": "Synonymer",
-                    "SynonymIsTwoWays": "Begge veje?",
-                    "SynonymListSynonymsExemple": "Bærbar, \"Skrivebord med skærm\"",
-                    "SynonymListTermExemple": "Computer"
+                    EditSynonymLabel: "Rediger synonymer",
+                    SynonymListDescription: "Specificer alle synonymer der skal bruges i søgninger. Hvert term pr. søgning vil forbedres med alle tilknyttede synonymer, når forespørgslen sendes til serveren. Hvis et synonym indeholder mere end et ord, skal det markeres med citationstegn.",
+                    SynonymPropertyPanelFieldLabel: "Konfigurér synonymer",
+                    SynonymListTerm: "Term",
+                    SynonymListSynonyms: "Synonymer",
+                    SynonymIsTwoWays: "Begge veje?",
+                    SynonymListSynonymsExemple: "Bærbar, \"Skrivebord med skærm\"",
+                    SynonymListTermExemple: "Computer"
                 }
             }
         },

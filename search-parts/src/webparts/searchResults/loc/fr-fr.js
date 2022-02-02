@@ -1,11 +1,11 @@
-define([], function () {
+define([], function() {
   return {
     General: {
       PlaceHolder: {
-        EditLabel: "Modifier",
-        IconText: "Composant Web des résultats de recherche par @PnP",
-        Description: "Affiche les résultats de la recherche dans SharePoint ou Microsoft.",
-        ConfigureBtnLabel: "Configurer"
+            EditLabel: "Modifier",
+            IconText: "Composant Web des résultats de recherche par @PnP",
+            Description: "Affiche les résultats de la recherche dans SharePoint ou Microsoft.",
+            ConfigureBtnLabel: "Configurer"
       },
       WebPartDefaultTitle: "Composant Web des résultats de recherche",
       ShowBlankEditInfoMessage: "Cette requête n’a donné aucun résultat. Ce composant Web doit demeurer vide en mode d’affichage en fonction des critères.",
@@ -13,15 +13,15 @@ define([], function () {
     },
     PropertyPane: {
       DataSourcePage: {
-        DataSourceConnectionGroupName: "Sources de données disponibles",
-        PagingOptionsGroupName: "Options de pagination",
-        ItemsCountPerPageFieldName: "Nombre d’éléments par page",
-        PagingRangeFieldName: "Nombre de pages à afficher dans la série",
-        ShowPagingFieldName: "Afficher la pagination",
-        HidePageNumbersFieldName: "Masquer les numéros de page",
-        HideNavigationFieldName: "Masquer les boutons de navigation (page précédente, page suivante)",
-        HideFirstLastPagesFieldName: "Masquer les boutons de navigation (première, dernière)",
-        HideDisabledFieldName: "Masquer les boutons de navigation (précédente, suivante, première, dernière) s’ils sont désactivés.",
+            DataSourceConnectionGroupName: "Sources de données disponibles",
+            PagingOptionsGroupName: "Options de pagination",
+            ItemsCountPerPageFieldName: "Nombre d’éléments par page",
+            PagingRangeFieldName: "Nombre de pages à afficher dans la série",
+            ShowPagingFieldName: "Afficher la pagination",
+            HidePageNumbersFieldName: "Masquer les numéros de page",
+            HideNavigationFieldName: "Masquer les boutons de navigation (page précédente, page suivante)",
+            HideFirstLastPagesFieldName: "Masquer les boutons de navigation (première, dernière)",
+            HideDisabledFieldName: "Masquer les boutons de navigation (précédente, suivante, première, dernière) s’ils sont désactivés.",
         TemplateSlots: {
           GroupName: "Emplacements de la mise en page",
           ConfigureSlotsLabel: "Modifier les emplacements de la mise en page pour cette source de données",
@@ -70,17 +70,17 @@ define([], function () {
           DialogButtonText: "Modifier le modèle",
           DialogTitle: "Modifier le modèle de résultats",
           SaveButtonText: "Enregistrer",
-          AllowItemSelection: "Autoriser la sélection d'éléments",
-          AllowMultipleItemSelection: "Autoriser la sélection multiple",
-          SelectionModeLabel: "Mode de sélection",
-          AsTokensSelectionMode: "Traiter les valeurs en tant que tokens (manuel)",
-          AsDataFiltersSelectionMode: "Traiter les valeurs en tant que filtres (default)",
-          AsDataFiltersDescription: "Dans ce mode, les éléments sélectionnés sont traitées en tant que qu'affinements de recherche. Cela signifie que la propriété de destination doit être affinables dans le schéma de recherche.",
-          AsTokensDescription: "Dans ce mode, les éléments sélectionnés sont traitées manuellement en tant que tokens. Exemple avec la recherche SharePoint et le modèle de requête: {?Title:{filters.&lt;destination_field_name&gt;.valueAsText}}",
-          FilterValuesOperator: "L'opérateur logique entre les valeurs sélectionnées",
-          FieldToConsumeLabel: "Champ source à utiliser",
-          FieldToConsumeDescription: "Utiliser la valeur de ce champ pour les éléments sélectionnés"
-        }
+        },
+        AllowItemSelection: "Autoriser la sélection d'éléments",
+        AllowMultipleItemSelection: "Autoriser la sélection multiple",
+        SelectionModeLabel: "Mode de sélection",
+        AsTokensSelectionMode: "Traiter les valeurs en tant que tokens (manuel)",
+        AsDataFiltersSelectionMode: "Traiter les valeurs en tant que filtres (default)",
+        AsDataFiltersDescription: "Dans ce mode, les éléments sélectionnés sont traités en tant que qu'affinements de recherche. Cela signifie que la propriété de destination doit être affinables dans le schéma de recherche.",
+        AsTokensDescription: "Dans ce mode, les éléments sélectionnés sont traités manuellement en tant que tokens. Exemple avec la recherche SharePoint et le modèle de requête: {?Title:{filters.&lt;destination_field_name&gt;.valueAsText}}",
+        FilterValuesOperator: "L'opérateur logique entre les valeurs sélectionnées",
+        FieldToConsumeLabel: "Champ source à utiliser",
+        FieldToConsumeDescription: "Utiliser la valeur de ce champ pour les éléments sélectionnés"
       },
       ConnectionsPage: {
         ConnectionsPageGroupName: "Connexions disponibles",

@@ -119,6 +119,8 @@ define([], function () {
           SelectedPropertiesFieldLabel: "Valgte egenskaper",
           SelectedPropertiesFieldDescription: "Angi egenskapene som skal hentes søkeresultatene.",
           SelectedPropertiesPlaceholderLabel: "Velg egenskaper",
+          HitHighlightedPropertiesFieldLabel: "Treffuthevede egenskaper",
+          HitHighlightedPropertiesFieldDescription: "Angi listen over forvaltede egenskaper som skal utheves etter treff.",
           TermNotFound: "(Term med ID '{0}' ble ikke funnet)",
           ApplyQueryTemplateBtnText: "Lagre",
           EnableAudienceTargetingTglLabel: "Aktiver målgruppetilpasning"
@@ -160,6 +162,16 @@ define([], function () {
             EditSortLabel: "Rediger sorteringsrekkefølge",
             SortInvalidSortableFieldMessage: "Denne egenskapen kan inte sorteres",
             SortFieldColumnPlaceholder: "Velg egenskap…"
+          },
+          Synonyms: {
+              EditSynonymLabel: "Rediger synonymer",
+              SynonymListDescription: "Specificer alle synonymer der skal bruges i søgninger. Hvert term pr. søgning vil forbedres med alle tilknyttede synonymer, når forespørgslen sendes til serveren. Hvis et synonym indeholder mere end et ord, skal det markeres med citationstegn.",
+              SynonymPropertyPanelFieldLabel: "Konfigurér synonymer",
+              SynonymListTerm: "Term",
+              SynonymListSynonyms: "Synonymer",
+              SynonymIsTwoWays: "Begge veje?",
+              SynonymListSynonymsExemple: "Bærbar, \"Skrivebord med skærm\"",
+              SynonymListTermExemple: "Computer"
           }
         }
       },

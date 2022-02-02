@@ -381,8 +381,8 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
     }
 
     /**
-   * Initializes the query optimization data provider instance according to the current environment
-   */
+     * Initializes the query optimization data provider instance according to the current environment
+     */
     private initNlpService() {
         this.serviceHelper = new ServiceHelper(this.context.httpClient);
 
@@ -595,7 +595,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     disabled: !this.properties.enableNlpService,
                     onGetErrorMessage: this._validateServiceUrl.bind(this),
                     description: Text.format(webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlDescription, window.location.host)
-                }),                
+                }),
                 PropertyPaneToggle("isStaging", {
                     label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.UseStagingEndpoint,
                     disabled: !this.properties.enableNlpService,

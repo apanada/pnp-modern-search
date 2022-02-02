@@ -1,4 +1,4 @@
-define([], function() {
+define([], function () {
     return {
         General: {
             DynamicPropertyDefinition: "Search query"
@@ -50,7 +50,7 @@ define([], function() {
                     PanelDescription: "Add/Remove your custom extensibility library IDs here. You can specify a display name and decide if the library should be loaded or not at startup. Only custom suggestions providers will be loaded here.",
                 }
             },
-            
+
         },
         SearchBox: {
             DefaultPlaceholder: "Enter your search terms...",

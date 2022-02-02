@@ -119,6 +119,8 @@ define([], function() {
               SelectedPropertiesFieldLabel: "Wybrane właściwości",
               SelectedPropertiesFieldDescription: "Wskaż właściwości do pobrania.",
               SelectedPropertiesPlaceholderLabel: "Wybierz właściwości",
+              HitHighlightedPropertiesFieldLabel: "Właściwości wyróżnionych trafień",
+              HitHighlightedPropertiesFieldDescription: "Podaj listę właściwości zarządzanych w celu wyróżniania trafień.",
               TermNotFound: "(Nie znaleziono terminu o identyfikatorze '{0}')",
               ApplyQueryTemplateBtnText: "Zastosuj",
               EnableAudienceTargetingTglLabel: "Włącz audiencje"
@@ -160,6 +162,16 @@ define([], function() {
                   EditSortLabel: "Edytuj porządek sortowania",
                   SortInvalidSortableFieldMessage: "Ta właściwość nie jest sortowalna",
                   SortFieldColumnPlaceholder: "Wybierz pole..."
+              },
+              Synonyms: {
+                  EditSynonymLabel: "Bewerk synoniemen",
+                  SynonymListDescription: "Geef alle synoniemen op die worden gebruikt bij het zoeken. Elke zoekterm wordt uitgebreid met alle bijbehorende synoniemen wanneer de zoekopdracht naar de server wordt verzonden. Als een synoniem meer dan één woord bevat, moet dit tussen dubbele aanhalingstekens worden geplaatst.",
+                  SynonymPropertyPanelFieldLabel: "Configureer synoniemen",
+                  SynonymListTerm: "Term",
+                  SynonymListSynonyms: "Synoniemen",
+                  SynonymIsTwoWays: "Twee-wegs?",
+                  SynonymListSynonymsExemple: "Laptop, \"Desktop met monitor\"",
+                  SynonymListTermExemple: "Computer"
               }
           }
       },

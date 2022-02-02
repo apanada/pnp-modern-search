@@ -119,6 +119,8 @@ define([], function () {
                 SelectedPropertiesFieldLabel: "Selected properties",
                 SelectedPropertiesFieldDescription: "Specifies the properties to retrieve from the search results.",
                 SelectedPropertiesPlaceholderLabel: "Select properties",
+                HitHighlightedPropertiesFieldLabel: "Hit-highlighted properties",
+                HitHighlightedPropertiesFieldDescription: "Provide the list of managed properties to hit highlight (i.e. Department,UserName).",
                 TermNotFound: "(Term with ID '{0}' not found)",
                 ApplyQueryTemplateBtnText: "Apply",
                 EnableAudienceTargetingTglLabel: "Enable audience targeting"
@@ -162,14 +164,14 @@ define([], function () {
                     SortFieldColumnPlaceholder: "Select field..."
                 },
                 Synonyms: {
-                    "EditSynonymLabel": "Edit synonyms",
-                    "SynonymListDescription": "Specify all the synonyms that will be used when searching. Each term a search will be enhanced with all the associated synonyms when the query is sent to the server. If a synonym contains more than one word, it has to be wrapped in double quotes.",
-                    "SynonymPropertyPanelFieldLabel": "Configure synonyms",
-                    "SynonymListTerm": "Term",
-                    "SynonymListSynonyms": "Synonyms",
-                    "SynonymIsTwoWays": "Two-ways?",
-                    "SynonymListSynonymsExemple": "Laptop, \"Desktop with monitor\"",
-                    "SynonymListTermExemple": "Computer"
+                    EditSynonymLabel: "Edit synonyms",
+                    SynonymListDescription: "Specify all the synonyms that will be used when searching. Each term a search will be enhanced with all the associated synonyms when the query is sent to the server. If a synonym contains more than one word, it has to be wrapped in double quotes.",
+                    SynonymPropertyPanelFieldLabel: "Configure synonyms",
+                    SynonymListTerm: "Term",
+                    SynonymListSynonyms: "Synonyms",
+                    SynonymIsTwoWays: "Two-ways?",
+                    SynonymListSynonymsExemple: "Laptop, \"Desktop with monitor\"",
+                    SynonymListTermExemple: "Computer"
                 }
             }
         },
