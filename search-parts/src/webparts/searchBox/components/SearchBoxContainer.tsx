@@ -30,7 +30,7 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
 
     private renderSearchBoxWithAutoComplete(): JSX.Element {
         return <SearchBoxAutoComplete
-            inputValue={this.props.inputValue}
+            inputValue={this.state.searchInputValue ?? this.props.inputValue}
             onSearch={this._onSearch}
             placeholderText={this.props.placeholderText}
             suggestionProviders={this.props.suggestionProviders}
@@ -204,13 +204,13 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
     }
 
     public _handleSpellCheckCallback(enhancedQuery: string) {
-        const queryText: string = enhancedQuery;
         this.setState({
-            searchInputValue: queryText,
+            searchInputValue: enhancedQuery,
+            
             showSpellCheckPanel: false
+        }, () => {
+            // Notify the dynamic data controller
+            this.props.onSearch(enhancedQuery);
         });
-
-        // Notify the dynamic data controller
-        this.props.onSearch(queryText);
     }
 }

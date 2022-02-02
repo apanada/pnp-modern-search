@@ -452,7 +452,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         return [
             {
                 slotName: BuiltinTemplateSlots.Title,
-                slotField: 'resource.name'
+                slotField: 'resource.title'
             },
             {
                 slotName: BuiltinTemplateSlots.Path,
@@ -464,7 +464,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             },
             {
                 slotName: BuiltinTemplateSlots.FileType,
-                slotField: 'resource.webUrl'
+                slotField: 'resource.fields.filetype'
             },
             {
                 slotName: BuiltinTemplateSlots.PreviewImageUrl,
@@ -516,7 +516,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
     private initProperties(): void {
         this.properties.entityTypes = this.properties.entityTypes !== undefined ? this.properties.entityTypes : [EntityType.DriveItem];
 
-        const CommonFields = ["name","webUrl","filetype","createdBy","createdDateTime","lastModifiedDateTime","parentReference","size","description","file","folder","subject","bodyPreview","replyTo","from","sender","start","end","displayName","givenName","surname","userPrincipalName","phones","department"];
+        const CommonFields = ["name","title","webUrl","filetype","createdBy","createdDateTime","lastModifiedDateTime","parentReference","size","description","file","folder","subject","bodyPreview","replyTo","from","sender","start","end","displayName","givenName","surname","userPrincipalName","phones","department", "PnPDepartment", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "owstaxIdDepartment", "normSiteID", "normWebID", "normListID", "normUniqueID", "contentTypeId"];
 
         this.properties.fields = this.properties.fields !== undefined ? this.properties.fields : CommonFields;
         this.properties.sortProperties = this.properties.sortProperties !== undefined ? this.properties.sortProperties : [];
