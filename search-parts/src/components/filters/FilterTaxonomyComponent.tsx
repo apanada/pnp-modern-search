@@ -78,7 +78,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                     termStoreInfo={this.props.termStoreInfo}
                     labelRequired={false}
                     serviceScope={this.props.serviceScope}
-                    onChange={this._onPickerChange.bind(this)} />
+                    onChange={this._onModernPickerChange.bind(this)} />
             </div>;
         } else {
             return <div>
@@ -102,7 +102,8 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
             if (this.state.initialFilterValues && this.state.initialFilterValues.length > 0) {
                 const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
 
-                var data = await this._setInitialTerms(initialValues);
+                let data = await this._setInitialTerms(initialValues);
+
                 this.setState({
                     selectedTerms: data
                 }, () => {
@@ -115,6 +116,20 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         });
     }
 
+    private _onModernPickerChange(terms: ITermInfo[]) {
+
+        if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
+            this.setState({
+                selectedTerms: terms
+            }, () => {
+                if (terms && terms.length === 0) {
+                    localStorage.setItem("emptyPicker", JSON.stringify(false));
+                }
+                this._updateFilter(this.state.selectedTerms, true);
+            });
+        }
+    }
+
     private _onPickerChange(terms: ITermInfo[]) {
 
         if (this.state.selectedTerms === null || (this.state.selectedTerms && this.state.selectedTerms.length === 0)) {
@@ -122,15 +137,12 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                 selectedTerms: terms
             }, () => {
                 const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
-                if (initialValues && initialValues.length === 0) {
-                    this._updateFilter(this.state.selectedTerms, true);
+                if (terms && terms.length > 0 && initialValues && initialValues.length === 0) {
+                    if (!localStorage.getItem("emptyPicker") || (localStorage.getItem("emptyPicker") && JSON.parse(localStorage.getItem("emptyPicker")) === false)) {
+                        localStorage.setItem("emptyPicker", JSON.stringify(true));
+                        this._updateFilter(this.state.selectedTerms, true);
+                    }
                 }
-            });
-        } else {
-            this.setState({
-                selectedTerms: terms
-            }, () => {
-                this._updateFilter(this.state.selectedTerms, true);
             });
         }
     }

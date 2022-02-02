@@ -90,9 +90,18 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
         setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
           pageContext.cultureInfo.currentUICultureName :
           currentTermStoreInfo.defaultLanguageTag);
-        setSelectedOptions(Array.isArray(props.initialValues) ?
-          props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; }) :
-          []);
+        if (Array.isArray(props.initialValues)) {
+          const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
+          setSelectedOptions(values);
+          if (props.onChange) {
+            props.onChange(values);
+          }
+        } else {
+          setSelectedOptions([]);
+          if (props.onChange) {
+            props.onChange([]);
+          }
+        }
       });
     taxonomyService.getTermSetInfo(Guid.parse(props.termSetId))
       .then((termSetInfo) => {
@@ -104,13 +113,8 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
           setCurrentAnchorTermInfo(anchorTermInfo);
         });
     }
-  }, []);
+  }, [props.initialValues]);
 
-  React.useEffect(() => {
-    if (props.onChange) {
-      props.onChange(selectedOptions);
-    }
-  }, [selectedOptions]);
 
   function onOpenPanel(): void {
     if (props.disabled === true) {
@@ -127,6 +131,9 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
 
   function onApply(): void {
     setSelectedOptions([...selectedPanelOptions]);
+    if (props.onChange) {
+      props.onChange([...selectedPanelOptions]);
+    }
     onClosePanel();
   }
 
@@ -215,6 +222,9 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
             styles={props.termPickerProps?.styles ?? termPickerStyles}
             onChange={(itms?: ITermInfo[]) => {
               setSelectedOptions(itms || []);
+              if (props.onChange) {
+                props.onChange(itms || []);
+              }
               setSelectedPanelOptions(itms || []);
             }}
             getTextFromItem={getTextFromItem}

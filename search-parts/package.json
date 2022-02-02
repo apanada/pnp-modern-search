@@ -1,6 +1,6 @@
 {
     "name": "@pnp/modern-search-web-parts",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "private": true,
     "main": "lib/index.js",
     "engines": {
@@ -25,7 +25,7 @@
         "@microsoft/sp-property-pane": "1.12.1",
         "@microsoft/sp-webpart-base": "1.12.1",
         "@pnp/common": "^2.11.0",
-        "@pnp/modern-search-extensibility": "1.0.9",
+        "@pnp/modern-search-extensibility": "2.0.0",
         "@pnp/sp": "^2.11.0",
         "@pnp/spfx-controls-react": "3.3.0",
         "@pnp/spfx-property-controls": "3.2.0",
@@ -53,7 +53,7 @@
         "react-ace": "5.8.0",
         "react-dom": "16.9.0",
         "react-js-pagination": "3.0.3",
-        "shell-search-extensibility": "1.0.0",
+        "shell-search-extensibility": "1.0.1",
         "webpack": "4.42.0"
     },
     "resolutions": {
