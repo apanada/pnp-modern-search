@@ -58,7 +58,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         // Dialog props definition
         const dialogContentProps = {
             type: DialogType.largeHeader,
-            title: this.props.resultItem["Title"]
+            title: this.props.resultItem["resource"]["fields"]["filename"]
         };
         const modalProps: IModalProps = {
             isBlocking: false,
@@ -67,17 +67,17 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
             dragOptions: undefined,
         };
 
-        const createdDate: string = this._getDate(this.props.resultItem["Created"]);
-        const lastModifiedDate: string = this._getDate(this.props.resultItem["LastModifiedTime"]);
-        let author: string = this.props.resultItem["AuthorOWSUSER"];
+        const createdDate: string = this._getDate(this.props.resultItem["resource"]["createdDateTime"]);
+        const lastModifiedDate: string = this._getDate(this.props.resultItem["resource"]["lastModifiedDateTime"]);
+        let author: string = this.props.resultItem["resource"]["fields"]["authorOWSUSER"];
         if (author && split(author, "|").length > 1) {
             author = split(author, "|")[1];
         }
 
         let authors: string[] = [];
-        const metadataAuthors: string = this.props.resultItem["MetadataAuthor"];
+        const metadataAuthors: string = this.props.resultItem["resource"]["fields"]["metadataAuthor"];
         if (metadataAuthors) {
-            authors = split(this.props.resultItem["MetadataAuthor"], "\n\n");
+            authors = split(metadataAuthors, "\n\n");
         }
 
         return (
@@ -101,27 +101,27 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                 <Stack horizontal tokens={stackTokens}>
                                     <div className={previewContainerStyles.keyValueList}>
                                         {
-                                            this.props.resultItem["Title"] &&
+                                            this.props.resultItem["resource"]["fields"]["title"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>Title:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["Title"] ?? ""}</span>
+                                                        <span>{this.props.resultItem["resource"]["fields"]["title"] ?? ""}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         }
                                         {
-                                            this.props.resultItem["FileType"] &&
+                                            this.props.resultItem["resource"]["fields"]["fileType"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>File Type:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["FileType"] ?? ""}</span>
+                                                        <span>{this.props.resultItem["resource"]["fields"]["fileType"] ?? ""}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -155,27 +155,27 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                     </div>
                                     <div className={previewContainerStyles.keyValueList}>
                                         {
-                                            this.props.resultItem["Description"] &&
+                                            this.props.resultItem["resource"]["fields"]["description"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>Description:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["Description"] ?? ""}</span>
+                                                        <span>{this.props.resultItem["resource"]["fields"]["description"] ?? ""}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         }
                                         {
-                                            this.props.resultItem["ModifiedBy"] &&
+                                            this.props.resultItem["resource"]["fields"]["modifiedBy"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>Modified By:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["ModifiedBy"] ?? ""}</span>
+                                                        <span>{this.props.resultItem["resource"]["fields"]["modifiedBy"] ?? ""}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -194,15 +194,15 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                             </div>
                                         }
                                         {
-                                            this.props.resultItem["DocumentLink"] &&
+                                            this.props.resultItem["resource"]["fields"]["documentLink"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>DocumentLink:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["Filename"] ?? ""}</span>
-                                                        <Link href={this.props.resultItem["DocumentLink"]} target='_blank' style={{ marginLeft: "8px" }}>
+                                                        <span>{this.props.resultItem["resource"]["fields"]["filename"] ?? ""}</span>
+                                                        <Link href={this.props.resultItem["resource"]["fields"]["documentLink"]} target='_blank' style={{ marginLeft: "8px" }}>
                                                             <Icon iconName="OpenInNewTab" title="Open in new tab" ariaLabel="Open in new tab" />
                                                         </Link>
                                                     </div>
@@ -212,20 +212,33 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                     </div>
                                     <div className={previewContainerStyles.keyValueList}>
                                         {
-                                            this.props.resultItem["Size"] &&
+                                            this.props.resultItem["resource"]["fields"]["siteTitle"] &&
+                                            <div className="keyValueWrapper">
+                                                <div>
+                                                    <div className="keyValueKey">
+                                                        <Label styles={labelStyles}>Site Title:</Label>
+                                                    </div>
+                                                    <div className="keyValueValue">
+                                                        <span>{this.props.resultItem["resource"]["fields"]["siteTitle"]}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        {
+                                            this.props.resultItem["resource"]["fields"]["size"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">
                                                         <Label styles={labelStyles}>File Size:</Label>
                                                     </div>
                                                     <div className="keyValueValue">
-                                                        <span>{this._formatBytes(this.props.resultItem["Size"] ?? 0).toString()}</span>
+                                                        <span>{this._formatBytes(this.props.resultItem["resource"]["fields"]["size"] ?? 0).toString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         }
                                         {
-                                            this.props.resultItem["MetadataAuthor"] &&
+                                            this.props.resultItem["resource"]["fields"]["metadataAuthor"] &&
                                             <div className="keyValueWrapper">
                                                 <div>
                                                     <div className="keyValueKey">

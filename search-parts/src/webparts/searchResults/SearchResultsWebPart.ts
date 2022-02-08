@@ -64,6 +64,8 @@ import { ObjectHelper } from '../../helpers/ObjectHelper';
 import { ItemSelectionMode } from '../../models/common/IItemSelectionProps';
 import { PropertyPaneAsyncCombo } from '../../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
+import { ClientOptions, Client } from "@microsoft/microsoft-graph-client";
+import { MSGraphAuthenticationProvider } from '../../helpers/MSGraphAuthenticationProvider';
 
 const LogSource = "SearchResultsWebPart";
 
@@ -284,7 +286,7 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
                     // "FileType":['docx','pdf']
                     fields[field] = [];
                     this._currentDataResultsSourceData.selectedItems.forEach(selectedItem => {
-                        const fieldValue =  ObjectHelper.byPath(selectedItem, field);
+                        const fieldValue = ObjectHelper.byPath(selectedItem, field);
 
                         // Special case where there value is a taxonomy item. In this case, we only take the GP0 part as it won't work otherwise with SharePoint search refiners or KQL conditions
                         const taxonomyItemRegExp = /GP0\|#0?((\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1})/gi;
@@ -517,6 +519,12 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
         // Initializes dynamic data connections. This could trigger a render if a connection is made with an other component resulting to a render race condition.
         this.ensureDynamicDataSourcesConnection();
+
+        let clientOptions: ClientOptions = {
+            authProvider: new MSGraphAuthenticationProvider(this.context.serviceScope, 'https://M365x083241.onmicrosoft.com/pnp-microsoft-search', await this.context.aadTokenProviderFactory.getTokenProvider()),
+        };
+        const client = Client.initWithMiddleware(clientOptions);
+        let user = await client.api('/me').get();
 
         return super.onInit();
     }
@@ -2226,10 +2234,10 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
                 const filterValues: IDataFilterValue[] = uniq(itemFieldValues) // Remove duplicate values selected by the user
                     .filter(value => !value || typeof value === 'string')
-                    .map(fieldValue => {                       
+                    .map(fieldValue => {
                         return {
                             name: fieldValue,
-                            value: fieldValue, 
+                            value: fieldValue,
                             operator: FilterComparisonOperator.Eq
                         };
                     });

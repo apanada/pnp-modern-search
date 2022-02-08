@@ -103,6 +103,7 @@ export class PersonaComponent extends React.Component<IPersonaComponentProps, IP
         const persona: IPersonaProps = {
             theme: this.props.themeVariant as ITheme,
             imageUrl: this.props.imageUrl ? this.props.imageUrl : processedProps.imageUrl,
+            imageInitials: processedProps.primaryText,
             imageShouldFadeIn: false,
             imageShouldStartVisible: true,
             styles: {
