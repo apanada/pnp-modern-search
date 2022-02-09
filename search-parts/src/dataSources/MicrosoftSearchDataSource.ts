@@ -1,7 +1,6 @@
 import { BaseDataSource, FilterSortType, FilterSortDirection, ITemplateSlot, BuiltinTemplateSlots, IDataContext, ITokenService, FilterBehavior, PagingBehavior, IDataFilterResult, IDataFilterResultValue, FilterComparisonOperator } from "@pnp/modern-search-extensibility";
 import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule } from "@microsoft/sp-property-pane";
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
-import { AadHttpClient, AadHttpClientFactory, HttpClient, HttpClientResponse, IAadHttpClientOptions, IHttpClientOptions, MSGraphClient, MSGraphClientFactory } from "@microsoft/sp-http";
 import { TokenService } from "../services/tokenService/TokenService";
 import { ServiceScope } from '@microsoft/sp-core-library';
 import { IComboBoxOption } from 'office-ui-fabric-react';
@@ -10,7 +9,6 @@ import * as commonStrings from 'CommonStrings';
 import { IMicrosoftSearchRequest, ISearchRequestAggregation, SearchAggregationSortBy, ISearchSortProperty, IMicrosoftSearchQuery, IQueryAlterationOptions } from '../models/search/IMicrosoftSearchRequest';
 import { DateHelper } from '../helpers/DateHelper';
 import { DataFilterHelper } from "../helpers/DataFilterHelper";
-import { IMicrosoftSearchResultSet } from "../models/search/IMicrosoftSearchResponse";
 import { ISortFieldConfiguration, SortFieldDirection } from '../models/search/ISortFieldConfiguration';
 import { AsyncCombo } from "../controls/PropertyPaneAsyncCombo/components/AsyncCombo";
 import { IAsyncComboProps } from "../controls/PropertyPaneAsyncCombo/components/IAsyncComboProps";
@@ -20,8 +18,9 @@ import { SharePointSearchService } from "../services/searchService/SharePointSea
 import { IMicrosoftSearchDataSourceData } from "../models/search/IMicrosoftSearchDataSourceData";
 
 import * as React from "react";
-import { IMicrosoftSearchResponse } from "../models/search/IMicrosoftSearchResponse";
 import { BuiltinDataSourceProviderKeys } from "./AvailableDataSources";
+import { IMicrosoftSearchService } from "../services/searchService/IMicrosoftSearchService";
+import { MicrosoftSearchService } from "../services/searchService/MicrosoftSearchService";
 
 export enum EntityType {
     Message = 'message',
@@ -83,6 +82,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
 
     private _tokenService: ITokenService;
     private _sharePointSearchService: ISharePointSearchService;
+    private _microsoftSearchService: IMicrosoftSearchService;
 
     private _propertyPaneWebPartInformation: any = null;
     private _availableFields: IComboBoxOption[] = [];
@@ -152,6 +152,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         serviceScope.whenFinished(() => {
             this._tokenService = serviceScope.consume<ITokenService>(TokenService.ServiceKey);
             this._sharePointSearchService = serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
+            this._microsoftSearchService = serviceScope.consume<IMicrosoftSearchService>(MicrosoftSearchService.ServiceKey);
         });
     }
 
@@ -703,114 +704,8 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
      */
     private async search(searchQuery: IMicrosoftSearchQuery): Promise<IMicrosoftSearchDataSourceData> {
 
-        let itemsCount = 0;
-        let response: IMicrosoftSearchDataSourceData = {
-            items: [],
-            filters: []
-        };
-        let aggregationResults: IDataFilterResult[] = [];
-
-        debugger;
-        // Get an instance to the AadHttpClientFactory
-        const aadHttpClientFactory = this.serviceScope.consume<AadHttpClientFactory>(AadHttpClientFactory.serviceKey);
-        const aadHttpClient = await aadHttpClientFactory.getClient('https://M365x083241.onmicrosoft.com/pnp-microsoft-search');
-    
-        const serviceUrl = 'https://graph-search-service.azurewebsites.net/api/auth/token?code=9dehTo4tTFEBS5Jv48aHrpaxv4r1JHCIu6Ilt6YrHqplESNWMqDFxQ==';
-        const aadHttpPostOptions: IHttpClientOptions = {
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tenant: "9d40d69a-0f98-48c0-97e2-3f5852ba4e67"
-            }),
-            mode: "cors",
-        };
-
-        const aadHttpResponse: HttpClientResponse = await aadHttpClient.post(serviceUrl, AadHttpClient.configurations.v1, aadHttpPostOptions);
-        if (aadHttpResponse) {
-
-            const aadHttpResponseJSON: any = await aadHttpResponse.json();
-            const graphAccessToken = aadHttpResponseJSON && aadHttpResponseJSON.token ? JSON.parse(aadHttpResponseJSON.token) : undefined;
-
-            const httpClient = this.serviceScope.consume<HttpClient>(HttpClient.serviceKey);
-
-            const httpClientPostOptions: IHttpClientOptions = {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "Authorization": "Bearer " + graphAccessToken,
-                    'Cache-Control': 'no-cache'
-                },
-                body: JSON.stringify(searchQuery)
-            };
-
-            const httpResponse: HttpClientResponse = await httpClient.post(this._microsoftSearchUrl, HttpClient.configurations.v1, httpClientPostOptions);
-            if (httpResponse) {
-
-                const httpResponseJSON: any = await httpResponse.json();
-                const jsonResponse: IMicrosoftSearchResponse = httpResponseJSON;
-
-                if (jsonResponse.value && Array.isArray(jsonResponse.value)) {
-
-                    jsonResponse.value.forEach((value: IMicrosoftSearchResultSet) => {
-
-                        // Map results
-                        value.hitsContainers.forEach(hitContainer => {
-                            itemsCount += hitContainer.total;
-
-                            if (hitContainer.hits) {
-
-                                const hits = hitContainer.hits.map(hit => {
-
-                                    if (hit.resource.fields) {
-
-                                        // Flatten 'fields' to be usable with the Search Fitler WP as refiners
-                                        Object.keys(hit.resource.fields).forEach(field => {
-                                            hit[field] = hit.resource.fields[field];
-                                        });
-                                    }
-
-                                    return hit;
-                                });
-
-                                response.items = response.items.concat(hits);
-                            }
-
-                            if (hitContainer.aggregations) {
-
-                                // Map refinement results
-                                hitContainer.aggregations.forEach((aggregation) => {
-
-                                    let values: IDataFilterResultValue[] = [];
-                                    aggregation.buckets.forEach((bucket) => {
-                                        values.push({
-                                            count: bucket.count,
-                                            name: bucket.key,
-                                            value: bucket.aggregationFilterToken,
-                                            operator: FilterComparisonOperator.Contains
-                                        } as IDataFilterResultValue);
-                                    });
-
-                                    aggregationResults.push({
-                                        filterName: aggregation.field,
-                                        values: values
-                                    });
-                                });
-
-                                response.filters = aggregationResults;
-                            }
-                        });
-                    });
-                }
-
-                if (jsonResponse?.queryAlterationResponse) {
-                    response.queryAlterationResponse = jsonResponse.queryAlterationResponse;
-                }
-
-                this._itemsCount = itemsCount;
-            }
-        }
-
+        const response: IMicrosoftSearchDataSourceData = await this._microsoftSearchService.search(this._microsoftSearchUrl, searchQuery);
+        this._itemsCount = this._microsoftSearchService.itemsCount;
         return response;
     }
 

@@ -3,16 +3,11 @@
     "solution": {
         "name": "PnP Modern Search - Search Web Parts - v4",
         "id": "59903278-dd5d-4e9e-bef6-562aae716b8b",
-        "version": "5.0.0.1",
+        "version": "5.0.0.2",
         "includeClientSideAssets": true,
         "skipFeatureDeployment": true,
         "isDomainIsolated": false,
-        "webApiPermissionRequests": [
-            {
-                "resource": "PnP.Microsoft.Search",
-                "scope": "user_impersonation"
-            }
-        ],
+        "webApiPermissionRequests": [],
         "developer": {
             "mpnId": "",
             "name": "PnP Team",
