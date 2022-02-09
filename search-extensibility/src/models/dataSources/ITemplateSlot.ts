@@ -13,6 +13,7 @@ export enum BuiltinTemplateSlots {
     LegacyPreviewUrl = 'LegacyPreviewUrl',
     Author = 'Author',
     Tags = 'Tags',
+    SiteUrl = "SiteUrl",
     SiteId = 'SiteId',
     WebId = 'WebId',
     ListId = 'ListId',

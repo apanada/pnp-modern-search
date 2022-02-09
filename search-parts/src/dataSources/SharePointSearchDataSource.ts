@@ -517,6 +517,10 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
                 slotField: 'Created'
             },
             {
+                slotName: BuiltinTemplateSlots.SiteUrl,
+                slotField: 'resource.fields.spSiteURL'
+            },
+            {
                 slotName: BuiltinTemplateSlots.SiteId,
                 slotField: 'NormSiteID'
             },

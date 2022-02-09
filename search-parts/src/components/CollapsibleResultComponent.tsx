@@ -85,7 +85,7 @@ export class CollapsibleResultComponent extends React.Component<ICollapsibleResu
                 root: {
                     selectors: {
                         '.ms-List': {
-                            padding: "0 28px"
+                            padding: "0 28px 5px 28px"
                         },
                         '.ms-List-cell': {
                             minHeight: 0

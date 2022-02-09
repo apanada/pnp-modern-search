@@ -328,7 +328,9 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
                     pathProperty = ObjectHelper.byPath(item, BuiltinTemplateSlots.Path); // Fallback to using Path for if DefaultEncodingURL is missing
                 }
                 if (pathProperty && pathProperty.indexOf("?") === -1 && !isContainer) {
-                    item.AutoPreviewUrl = pathProperty + "?web=1";
+                    const itemId = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.ItemId]); // Could be UniqueId or item ID
+                    const spSiteURL = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.SiteUrl]);
+                    item.AutoPreviewUrl = `${spSiteURL}/_layouts/15/viewer.aspx?sourcedoc=${encodeURIComponent(`{${itemId}}`)}`;
                 } else {
                     item.AutoPreviewUrl = pathProperty;
                 }

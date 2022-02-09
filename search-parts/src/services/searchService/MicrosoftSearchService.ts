@@ -3,7 +3,6 @@ import { PnPClientStorage } from "@pnp/common/storage";
 import { PageContext } from '@microsoft/sp-page-context';
 import { IMicrosoftSearchService } from "./IMicrosoftSearchService";
 import { HttpClient, HttpClientResponse, IHttpClientOptions } from "@microsoft/sp-http";
-import { MsalClient } from "@pnp/msaljsclient";
 import { IMicrosoftSearchQuery } from "../../models/search/IMicrosoftSearchRequest";
 import { IMicrosoftSearchDataSourceData } from "../../models/search/IMicrosoftSearchDataSourceData";
 import { FilterComparisonOperator, IDataFilterResult, IDataFilterResultValue } from "@pnp/modern-search-extensibility";
@@ -30,7 +29,7 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
      */
     private serviceScope: ServiceScope;
 
-    private msalClient: MsalClient;
+    private msalClient: any;
 
     /**
      * The client storage instance
@@ -51,6 +50,11 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
         serviceScope.whenFinished(async () => {
 
             this.pageContext = serviceScope.consume<PageContext>(PageContext.serviceKey);
+
+            const { MsalClient } = await import(
+                /* webpackChunkName: '@pnp/msaljsclient' */
+                '@pnp/msaljsclient'
+            );
 
             // note we do not provide scopes here as the second parameter. We certainly could and will get a token
             // based on those scopes by making a call to getToken() without a param.

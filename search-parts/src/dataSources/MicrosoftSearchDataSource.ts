@@ -498,6 +498,10 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 slotField: 'created'
             },
             {
+                slotName: BuiltinTemplateSlots.SiteUrl,
+                slotField: 'resource.fields.spSiteURL'
+            },
+            {
                 slotName: BuiltinTemplateSlots.SiteId,
                 slotField: 'resource.fields.normSiteID'
             },
