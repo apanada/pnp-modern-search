@@ -14,6 +14,15 @@
                 justify-content: space-between;
                 flex-wrap: wrap-reverse;
             }
+            .template--collapsibleListItem {
+                display: flex;
+                padding: 10px;
+                outline: none;
+                justify-content: space-between;
+                flex-wrap: wrap-reverse;
+                margin: 0;
+                padding: 0;
+            }
             .template--listItem {
                 display: flex;
                 padding: 10px;

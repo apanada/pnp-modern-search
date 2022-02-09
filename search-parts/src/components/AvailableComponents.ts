@@ -13,6 +13,7 @@ import { PanelWebComponent } from './PanelComponent';
 import { FilterMultiWebComponent } from './filters/FilterMultiComponent';
 import { SelectedFiltersWebComponent } from './filters/SelectedFiltersComponent';
 import { CollapsibleContentWebComponent } from './CollapsibleContentComponent';
+import { CollapsibleResultWebComponent } from "./CollapsibleResultComponent";
 import { FilterDateRangeWebComponent } from './filters/FilterDateRangeComponent';
 import { FilterComboBoxWebComponent } from './filters/FilterComboBoxComponent';
 import { FilterDateIntervalWebComponent } from './filters/FilterDateIntervalComponent';
@@ -85,6 +86,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-collapsible',
             componentClass: CollapsibleContentWebComponent
+        },
+        {
+            componentName: 'pnp-collapsible-result',
+            componentClass: CollapsibleResultWebComponent
         },
         {
             componentName: 'pnp-filterdaterange',

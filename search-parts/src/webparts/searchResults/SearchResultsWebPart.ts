@@ -64,8 +64,6 @@ import { ObjectHelper } from '../../helpers/ObjectHelper';
 import { ItemSelectionMode } from '../../models/common/IItemSelectionProps';
 import { PropertyPaneAsyncCombo } from '../../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
-import { ClientOptions, Client } from "@microsoft/microsoft-graph-client";
-import { MSGraphAuthenticationProvider } from '../../helpers/MSGraphAuthenticationProvider';
 
 const LogSource = "SearchResultsWebPart";
 
@@ -519,13 +517,6 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
         // Initializes dynamic data connections. This could trigger a render if a connection is made with an other component resulting to a render race condition.
         this.ensureDynamicDataSourcesConnection();
-
-        let clientOptions: ClientOptions = {
-            authProvider: new MSGraphAuthenticationProvider(this.context.serviceScope, 'https://M365x083241.onmicrosoft.com/pnp-microsoft-search', await this.context.aadTokenProviderFactory.getTokenProvider()),
-        };
-        const client = Client.initWithMiddleware(clientOptions);
-        let user = await client.api('/me').get();
-
         return super.onInit();
     }
 

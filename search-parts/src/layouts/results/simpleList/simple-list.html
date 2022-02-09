@@ -31,6 +31,10 @@
         .template--defaultList pnp-select >div:hover {
             box-shadow: 0 1.6px 3.6px 0 rgb(0 0 0 / 13%), 0 0.3px 0.9px 0 rgb(0 0 0 / 11%);
         }
+        
+        .collapsible {
+            width: 100%;
+        }
     </style>
 
     <div class="template">
@@ -117,6 +121,18 @@
                                 </div>
                             </div>
                             {{/if}} {{/resultTypes}}
+                        </li>
+                        <li class="template--collapsibleListItem">
+                            <div class="collapsible">
+                                <pnp-collapsible-result data-default-collapsed="true" data-theme-variant="{{JSONstringify @root.theme}}">
+                                    <template id="collapsible-header">
+						            </template>
+						            
+						            <template id="collapsible-content" item-class="filter--value">
+					                    <span class="template--listItem--title example-themePrimary">{{slot item @root.slots.Title}}</span>
+					                </template>
+					            </pnp-collapsible-result>
+                            </div>
                         </li>
                     </template>
 
