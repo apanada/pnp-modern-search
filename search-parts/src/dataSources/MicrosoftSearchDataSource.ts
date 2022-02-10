@@ -1,12 +1,12 @@
 import { BaseDataSource, FilterSortType, FilterSortDirection, ITemplateSlot, BuiltinTemplateSlots, IDataContext, ITokenService, FilterBehavior, PagingBehavior, IDataFilterResult, IDataFilterResultValue, FilterComparisonOperator } from "@pnp/modern-search-extensibility";
-import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule } from "@microsoft/sp-property-pane";
+import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule, PropertyPaneTextField } from "@microsoft/sp-property-pane";
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
 import { TokenService } from "../services/tokenService/TokenService";
 import { ServiceScope } from '@microsoft/sp-core-library';
 import { IComboBoxOption } from 'office-ui-fabric-react';
 import { PropertyPaneAsyncCombo } from "../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo";
 import * as commonStrings from 'CommonStrings';
-import { IMicrosoftSearchRequest, ISearchRequestAggregation, SearchAggregationSortBy, ISearchSortProperty, IMicrosoftSearchQuery, IQueryAlterationOptions } from '../models/search/IMicrosoftSearchRequest';
+import { IMicrosoftSearchRequest, ISearchRequestAggregation, SearchAggregationSortBy, ISearchSortProperty, IMicrosoftSearchQuery, IQueryAlterationOptions, ICustomAadApplicationOptions } from '../models/search/IMicrosoftSearchRequest';
 import { DateHelper } from '../helpers/DateHelper';
 import { DataFilterHelper } from "../helpers/DataFilterHelper";
 import { ISortFieldConfiguration, SortFieldDirection } from '../models/search/ISortFieldConfiguration';
@@ -76,6 +76,10 @@ export interface IMicrosoftSearchDataSourceProperties {
     * Flag indicating if the Microsoft Search beta endpoint should be used
      */
     useBetaEndpoint: boolean;
+
+    useCustomAadApplication: boolean;
+
+    customAadApplicationOptions: ICustomAadApplicationOptions;
 }
 
 export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDataSourceProperties> {
@@ -271,6 +275,31 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 }).bind(this)
             })
         ];
+
+        let customAadPropertiesFields: IPropertyPaneField<any>[] = [
+            PropertyPaneToggle('dataSourceProperties.useCustomAadApplication', {
+                label: commonStrings.DataSources.MicrosoftSearch.UseCustomAadApplication
+            })
+        ];
+
+        if (this.properties.useCustomAadApplication) {
+            customAadPropertiesFields.push(
+                PropertyPaneTextField('dataSourceProperties.customAadApplicationOptions.tenantId', {
+                    label: commonStrings.DataSources.MicrosoftSearch.TenantIdFieldLabel,
+                    placeholder: commonStrings.DataSources.MicrosoftSearch.TenantIdPlaceholder,
+                    description: commonStrings.DataSources.MicrosoftSearch.TenantIdFieldDescription
+                }),
+                PropertyPaneTextField('dataSourceProperties.customAadApplicationOptions.clientId', {
+                    label: commonStrings.DataSources.MicrosoftSearch.ClientIdFieldLabel,
+                    placeholder: commonStrings.DataSources.MicrosoftSearch.ClientIdPlaceholder
+                }),
+                PropertyPaneTextField('dataSourceProperties.customAadApplicationOptions.redirectUrl', {
+                    label: commonStrings.DataSources.MicrosoftSearch.RedirectUrlFieldLabel,
+                    placeholder: commonStrings.DataSources.MicrosoftSearch.RedirectUrlPlaceholder
+                })
+            );
+        }
+
         let useBetaEndpointFields: IPropertyPaneField<any>[] = [
             PropertyPaneHorizontalRule(),
             PropertyPaneToggle('dataSourceProperties.useBetaEndpoint', {
@@ -399,6 +428,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             ...sortPropertiesFields,
             ...enableTopResultsFields,
             ...contentSourceConnectionIdsFields,
+            ...customAadPropertiesFields,
             ...useBetaEndpointFields,
             ...queryAlterationFields
         ];
@@ -427,6 +457,15 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             }
         }
 
+        if (propertyPath.localeCompare('dataSourceProperties.useCustomAadApplication') === 0) {
+
+            if (newValue) {
+                // Reset custom aad options
+                this.properties.customAadApplicationOptions.tenantId = undefined;
+                this.properties.customAadApplicationOptions.clientId = undefined;
+                this.properties.customAadApplicationOptions.redirectUrl = undefined;
+            }
+        }
     }
 
     public onCustomPropertyUpdate(propertyPath: string, newValue: any, changeCallback?: (targetProperty?: string, newValue?: any) => void): void {
@@ -536,6 +575,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         this.properties.queryAlterationOptions = this.properties.queryAlterationOptions ?? { enableModification: false, enableSuggestion: false };
         this.properties.queryTemplate = this.properties.queryTemplate ? this.properties.queryTemplate : "{searchTerms}";
         this.properties.useBetaEndpoint = this.properties.useBetaEndpoint !== undefined ? this.properties.useBetaEndpoint : false;
+        this.properties.useCustomAadApplication = this.properties.useCustomAadApplication !== undefined ? this.properties.useCustomAadApplication : false;
 
         if (this.properties.useBetaEndpoint) {
             this._microsoftSearchUrl = "https://graph.microsoft.com/beta/search/query";
@@ -708,7 +748,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
      */
     private async search(searchQuery: IMicrosoftSearchQuery): Promise<IMicrosoftSearchDataSourceData> {
 
-        const response: IMicrosoftSearchDataSourceData = await this._microsoftSearchService.search(this._microsoftSearchUrl, searchQuery);
+        const response: IMicrosoftSearchDataSourceData = await this._microsoftSearchService.search(this._microsoftSearchUrl, searchQuery, this.properties.useCustomAadApplication, this.properties.customAadApplicationOptions);
         this._itemsCount = this._microsoftSearchService.itemsCount;
         return response;
     }

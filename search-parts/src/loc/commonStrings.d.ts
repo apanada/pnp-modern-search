@@ -144,6 +144,14 @@ declare interface ICommonStrings {
       QueryTemplateFieldDescription: string;
       ApplyQueryTemplateBtnText: string;
       UseBetaEndpoint: string;
+      UseCustomAadApplication: string;
+      TenantIdFieldLabel: string;
+      TenantIdPlaceholder: string;
+      TenantIdFieldDescription: string;
+      ClientIdFieldLabel: string;
+      ClientIdPlaceholder: string;
+      RedirectUrlFieldLabel: string;
+      RedirectUrlPlaceholder: string;
     },
     SearchCommon: {
       Sort: {

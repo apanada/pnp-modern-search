@@ -56,3 +56,9 @@ export interface IQueryAlterationOptions {
     enableSuggestion: boolean;
     enableModification: boolean;
 }
+
+export interface ICustomAadApplicationOptions {
+    tenantId: string;
+    clientId: string;
+    redirectUrl: string;
+}

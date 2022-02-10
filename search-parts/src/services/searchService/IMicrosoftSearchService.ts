@@ -1,5 +1,5 @@
 import { IMicrosoftSearchDataSourceData } from "../../models/search/IMicrosoftSearchDataSourceData";
-import { IMicrosoftSearchQuery } from "../../models/search/IMicrosoftSearchRequest";
+import { ICustomAadApplicationOptions, IMicrosoftSearchQuery } from "../../models/search/IMicrosoftSearchRequest";
 
 export interface IMicrosoftSearchService {
 
@@ -8,7 +8,7 @@ export interface IMicrosoftSearchService {
      * @param searchQuery The search query in KQL format
      * @return The search results
      */
-     search(microsoftSearchUrl: string, searchQuery: IMicrosoftSearchQuery): Promise<IMicrosoftSearchDataSourceData>;
+     search(microsoftSearchUrl: string, searchQuery: IMicrosoftSearchQuery, useCustomAadApplication: boolean, customAadApplicationOptions: ICustomAadApplicationOptions): Promise<IMicrosoftSearchDataSourceData>;
 
      itemsCount: number;
 }

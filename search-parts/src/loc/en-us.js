@@ -144,7 +144,15 @@ define([], function () {
                 QueryTemplatePlaceHolderText: "ex: {searchTerms} IsDocument:true",
                 QueryTemplateFieldDescription: "The search query template. You can also use {<tokens>} and KQL to build a dynamic query.",
                 ApplyQueryTemplateBtnText: "Apply",
-                UseBetaEndpoint: "Use beta endpoint"
+                UseBetaEndpoint: "Use beta endpoint",
+                UseCustomAadApplication: "Use custom azure ad application",
+                TenantIdFieldLabel: string = "Aad tenant id or domain",
+                TenantIdPlaceholder: string = "Aad tenant domain or id",
+                TenantIdFieldDescription: "ex: M365xxxxxxx.onmicrosoft.com or xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                ClientIdFieldLabel: string = "Aad application client id",
+                ClientIdPlaceholder: string = "Aad application client id",
+                RedirectUrlFieldLabel: string = "Aad application redirect url",
+                RedirectUrlPlaceholder: string = "Aad application redirect url"
             },
             SearchCommon: {
                 Sort: {
