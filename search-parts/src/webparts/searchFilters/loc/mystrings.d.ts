@@ -45,6 +45,7 @@ declare interface ISearchFiltersWebPartStrings {
                 DateRangeTemplate: string;
                 ComboBoxTemplate: string;
                 DateIntervalTemplate: string;
+                DateTimeTemplate: string;
                 TaxonomyPickerTemplate: string;
             },
             SortBy: string;

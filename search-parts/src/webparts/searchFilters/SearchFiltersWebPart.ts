@@ -682,6 +682,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                             {
                                 key: BuiltinFilterTemplates.TaxonomyPicker,
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.TaxonomyPickerTemplate
+                            },
+                            {
+                                key: BuiltinFilterTemplates.DateTime,
+                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.DateTimeTemplate
                             }
                         ]
                     },

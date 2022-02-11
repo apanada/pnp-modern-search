@@ -9,6 +9,7 @@ import SearchBoxAutoComplete from './SearchBoxAutoComplete/SearchBoxAutoComplete
 import styles from './SearchBoxContainer.module.scss';
 import { BuiltinTokenNames } from '../../../services/tokenService/TokenService';
 import NlpSpellCheckPanel from './NlpSpellCheckPanel/NlpSpellCheckPanel';
+import * as strings from 'CommonStrings';
 
 export default class SearchBoxContainer extends React.Component<ISearchBoxContainerProps, ISearchBoxContainerState> {
 
@@ -91,14 +92,16 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
 
                 try {
                     let enhancedQuery = await this.props.nlpService.enhanceSearchQuery(queryText, this.props.isStaging);
-                    this.setState({
-                        enhancedQuery: enhancedQuery
-                    });
-
-                    if (this.state.enhancedQuery) {
+                    if (enhancedQuery && enhancedQuery.enhancedQuery !== queryText) {
                         this.setState({
-                            showSpellCheckPanel: true
+                            enhancedQuery: enhancedQuery
                         });
+
+                        if (this.state.enhancedQuery) {
+                            this.setState({
+                                showSpellCheckPanel: true
+                            });
+                        }
                     }
                 } catch (error) {
 

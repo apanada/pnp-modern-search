@@ -107,7 +107,6 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                 this.setState({
                     selectedTerms: data
                 }, () => {
-                    console.log(this.state);
                     if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
                         this._updateFilter(this.state.selectedTerms, true);
                     }

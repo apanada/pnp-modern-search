@@ -73,8 +73,8 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
     public initializeMsalClient = async (useCustomAadApplication: boolean, customAadApplicationOptions: ICustomAadApplicationOptions) => {
         if (useCustomAadApplication && isEmpty(this.msalClient)) {
             const { MsalClient } = await import(
-                /* webpackChunkName: '@pnp/msaljsclient' */
-                '@pnp/msaljsclient'
+                /* webpackChunkName: 'msaljsclient' */
+                '@pnp/msaljsclient/index'
             );
 
             // note we do not provide scopes here as the second parameter. We certainly could and will get a token

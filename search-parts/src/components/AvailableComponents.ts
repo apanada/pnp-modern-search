@@ -24,6 +24,7 @@ import { ImageWebComponent } from './ImageComponent';
 import { ItemSelectionWebComponent } from './ItemSelectionComponent';
 import { FilterSearchBoxWebComponent } from './filters/FilterSearchBoxComponent';
 import { FilterValueOperatorWebComponent } from './filters/FilterValueOperatorComponent';
+import { FilterDateTimeWebComponent } from "./filters/FilterDateTimeComponent";
 
 export class AvailableComponents {
 
@@ -98,6 +99,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-filterdateinterval',
             componentClass: FilterDateIntervalWebComponent
+        },
+        {
+            componentName: 'pnp-filterdatetime',
+            componentClass: FilterDateTimeWebComponent
         },
         {
             componentName: 'pnp-filtercombobox',
