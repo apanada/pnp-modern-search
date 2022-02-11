@@ -25,6 +25,7 @@ import { ItemSelectionWebComponent } from './ItemSelectionComponent';
 import { FilterSearchBoxWebComponent } from './filters/FilterSearchBoxComponent';
 import { FilterValueOperatorWebComponent } from './filters/FilterValueOperatorComponent';
 import { FilterDateTimeWebComponent } from "./filters/FilterDateTimeComponent";
+import { FilterFileTypeWebComponent } from "./filters/FilterFileTypeComponent";
 
 export class AvailableComponents {
 
@@ -111,6 +112,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-filtertaxonomy',
             componentClass: FilterTaxonomyWebComponent
+        },
+        {
+            componentName: 'pnp-filterfiletype',
+            componentClass: FilterFileTypeWebComponent
         },
         {
             componentName: 'pnp-persona',

@@ -139,9 +139,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
         const pageContext = this.context.serviceScope.consume<PageContext>(PageContext.serviceKey);
         sp.setup({
-          sp: {
-            baseUrl: pageContext.web.absoluteUrl
-          }
+            sp: {
+                baseUrl: pageContext.web.absoluteUrl
+            }
         });
 
         return super.onInit();
@@ -676,6 +676,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.DateIntervalTemplate
                             },
                             {
+                                key: BuiltinFilterTemplates.DateTime,
+                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.DateTimeTemplate
+                            },
+                            {
                                 key: BuiltinFilterTemplates.ComboBox,
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.ComboBoxTemplate
                             },
@@ -684,8 +688,8 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.TaxonomyPickerTemplate
                             },
                             {
-                                key: BuiltinFilterTemplates.DateTime,
-                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.DateTimeTemplate
+                                key: BuiltinFilterTemplates.FileTypePicker,
+                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.FileTypePickerTemplate
                             }
                         ]
                     },

@@ -344,6 +344,7 @@ declare interface ICommonStrings {
   Filters: {
     ApplyAllFiltersButtonLabel: string;
     ClearAllFiltersButtonLabel: string;
+    DeselectAllFiltersButtonLabel: string;
     FilterNoValuesMessage: string;
     OrOperator: string;
     AndOperator: string;

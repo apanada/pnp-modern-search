@@ -9,7 +9,7 @@ import * as strings from 'CommonStrings';
 import { TestConstants } from "../../common/Constants";
 
 
-type FilterMultiEventCallback = () => void;
+export type FilterMultiEventCallback = () => void;
 
 export interface IFilterMultiProps {
 

@@ -1,0 +1,43 @@
+.filterFileType {
+
+    display: flex;
+    align-items: center;
+    padding: 0px;
+    margin: 0px;
+
+    i {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+
+    i:hover {
+        color: "[theme: themePrimary, default: #005a9e]";
+        cursor: pointer;
+    }   
+ }   
+ 
+.filterOption {
+    overflow: hidden;
+    max-width: 300px;
+}    
+
+.filterMultiSelct {
+    margin: 0px 12px 12px 12px;
+
+    button.applyBtn {
+        border: none;
+    }
+}
+
+.filterValuesList {
+    overflow: auto;
+    max-height: 400px;
+
+    .filterValue {
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+        width: 148px;
+        height: 35px;
+    }
+}

@@ -345,6 +345,7 @@ define([], function () {
         Filters: {
             ApplyAllFiltersButtonLabel: "Apply",
             ClearAllFiltersButtonLabel: "Clear",
+            DeselectAllFiltersButtonLabel: "Deselect all",
             FilterNoValuesMessage: "No values for this filter",
             OrOperator: "OR",
             AndOperator: "AND",

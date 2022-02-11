@@ -99,7 +99,7 @@ export class FilterDateTimeComponent extends React.Component<IFilterDateTimeComp
                             ],
                             onRenderMenuList: this._renderMenuList.bind(this),
                         }}
-                        styles={{ root: { border: "0px" } }} />
+                        styles={{ root: { border: "0px" }, label: { fontSize: "13px" } }} />
                 </div>
             </>
         );
@@ -522,7 +522,7 @@ export class FilterDateTimeComponent extends React.Component<IFilterDateTimeComp
                     <DatePicker {...fromProps} />
                     <DatePicker {...toProps} />
                     <div style={{ margin: "5px 0" }} >
-                        <PrimaryButton text="Apply dates" allowDisabledFocus width={100} style={{ width: "100%" }} disabled={!this.state.enableApplyDate} onClick={this._onApplyDate} />
+                        <PrimaryButton text="Apply dates" allowDisabledFocus width={100} style={{ width: "100%" }} theme={this.props.themeVariant as ITheme} disabled={!this.state.enableApplyDate} onClick={this._onApplyDate} />
                     </div>
                 </div >
             </div >

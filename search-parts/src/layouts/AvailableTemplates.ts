@@ -6,7 +6,8 @@ export enum BuiltinFilterTemplates {
     ComboBox = 'ComboBoxFilterTemplate',
     DateInterval = 'DateIntervalFilterTemplate',
     DateTime = 'DateTimeFilterTemplate',
-    TaxonomyPicker = 'TaxonomyPickerFilterTemplate'
+    TaxonomyPicker = 'TaxonomyPickerFilterTemplate',
+    FileTypePicker = "FileTypePickerFilterTemplate"
 }
 
 /**
@@ -18,5 +19,6 @@ export const BuiltinFilterTypes = {
     [BuiltinFilterTemplates.ComboBox]: FilterType.Refiner,
     [BuiltinFilterTemplates.DateRange]: FilterType.StaticFilter,
     [BuiltinFilterTemplates.DateTime]: FilterType.StaticFilter,
-    [BuiltinFilterTemplates.TaxonomyPicker]: FilterType.StaticFilter
+    [BuiltinFilterTemplates.TaxonomyPicker]: FilterType.StaticFilter,
+    [BuiltinFilterTemplates.FileTypePicker]: FilterType.Refiner    
 };
