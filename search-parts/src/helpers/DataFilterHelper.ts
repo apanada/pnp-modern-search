@@ -14,9 +14,9 @@ export class DataFilterHelper {
     // Get the configuration for this filter
     let filterConfiguration: IDataFilterConfiguration = undefined;
     const filterConfigIdx = filtersConfiguration.map(configuration => { return configuration.filterName; }).indexOf(filter.filterName);
-    
+
     if (filterConfigIdx !== -1) {
-        filterConfiguration = filtersConfiguration[filterConfigIdx];
+      filterConfiguration = filtersConfiguration[filterConfigIdx];
     }
 
     return filterConfiguration;
@@ -57,21 +57,21 @@ export class DataFilterHelper {
 
       tokens.forEach(token => {
 
-          // Take the expression inside curly brackets
-          const tokenName = token.substr(1).slice(0, -1);
-          const tokenParts = tokenName.split('.');
+        // Take the expression inside curly brackets
+        const tokenName = token.substr(1).slice(0, -1);
+        const tokenParts = tokenName.split('.');
 
-          // If contains 'filters.XXX'
-          if (tokenName.indexOf(BuiltinTokenNames.filters) !== -1 && tokenParts.length > 1) {                    
-            
-            // See if the filter name is selected. 'tokenParts[1]' should be the filter name
-            const selectedFiltersByName = selectedFilters.filter(selectedFilter => selectedFilter.filterName === tokenParts[1]);
-            const alreadyAddedFitlers = selectedFiltersInTokens.filter(selectedFiltersInToken => selectedFiltersInToken.filterName === tokenParts[1]);
+        // If contains 'filters.XXX'
+        if (tokenName.indexOf(BuiltinTokenNames.filters) !== -1 && tokenParts.length > 1) {
 
-            if (selectedFiltersByName.length > 0 && alreadyAddedFitlers.length === 0) {
-              selectedFiltersInTokens.push(selectedFilters[0]);
-            }
+          // See if the filter name is selected. 'tokenParts[1]' should be the filter name
+          const selectedFiltersByName = selectedFilters.filter(selectedFilter => selectedFilter.filterName === tokenParts[1]);
+          const alreadyAddedFitlers = selectedFiltersInTokens.filter(selectedFiltersInToken => selectedFiltersInToken.filterName === tokenParts[1]);
+
+          if (selectedFiltersByName.length > 0 && alreadyAddedFitlers.length === 0) {
+            selectedFiltersInTokens.push(selectedFilters[0]);
           }
+        }
       });
     }
 
@@ -86,96 +86,110 @@ export class DataFilterHelper {
    * @param encodeTokens If true, encodes the taxonomy refinement tokens in UTF-8 to work with GET requests. Javascript encodes natively in UTF-16 by default.
    */
   public static buildFqlRefinementString(selectedFilters: IDataFilter[], filtersConfiguration: IDataFilterConfiguration[], moment: any, encodeTokens?: boolean): string[] {
-    
+
     let refinementQueryConditions: string[] = [];
 
     selectedFilters.forEach(filter => {
 
-        let operator: any = filter.operator;
+      let operator: any = filter.operator;
 
-        // Mutli values
-        if (filter.values.length > 1) {
+      // Get filter config for taxonomy filter
+      const taxonomyPickerFilterConfig = filtersConfiguration.filter(filterConfig => filterConfig.selectedTemplate === "TaxonomyPickerFilterTemplate");
 
-            let startDate = null;
-            let endDate = null;
+      // Mutli values
+      if (filter.values.length > 1) {
 
-            // A refiner can have multiple values selected in a multi or mon multi selection scenario
-            // The correct operator is determined by the refiner display template according to its behavior
-            const conditions = filter.values.map(filterValue => {
+        let startDate = null;
+        let endDate = null;
 
-                    let value = filterValue.value;
-            
-                    if (moment(value, moment.ISO_8601, true).isValid()) {
+        // A refiner can have multiple values selected in a multi or mon multi selection scenario
+        // The correct operator is determined by the refiner display template according to its behavior
+        const conditions = filter.values.map(filterValue => {
 
-                        if (!startDate && (filterValue.operator === FilterComparisonOperator.Geq || filterValue.operator === FilterComparisonOperator.Gt)) {
-                            startDate = value;
-                        }
+          let value = filterValue.value;
 
-                        if (!endDate && (filterValue.operator === FilterComparisonOperator.Lt || filterValue.operator === FilterComparisonOperator.Leq)) {
-                            endDate = value;
-                        }
-                    }
+          if (taxonomyPickerFilterConfig && taxonomyPickerFilterConfig.length === 1) {
+            value = filterValue.name
+          }
 
-                    // If the value is null or undefined, we replace it by the FQL expression string('')
-                    // Otherwise the query syntax won't be vaild resuting of to an HTTP 500 
-                    if (isEmpty(value)) {
-                      value = "string('')";
-                    }
+          if (moment(value, moment.ISO_8601, true).isValid()) {
 
-                    // Enclose the expression with quotes if the value contains spaces
-                    if (/\s/.test(value)) {
-                      value = `"${value}"`;
-                    }
-
-                    return /ǂǂ/.test(value) && encodeTokens ? encodeURIComponent(value) : value;
-                
-            }).filter(c => c);
-
-            if (startDate && endDate) {
-                refinementQueryConditions.push(`${filter.filterName}:range(${startDate},${endDate})`);
-            } else {
-                refinementQueryConditions.push(`${filter.filterName}:${operator}(${conditions.join(',')})`);
+            if (!startDate && (filterValue.operator === FilterComparisonOperator.Geq || filterValue.operator === FilterComparisonOperator.Gt)) {
+              startDate = value;
             }
 
+            if (!endDate && (filterValue.operator === FilterComparisonOperator.Lt || filterValue.operator === FilterComparisonOperator.Leq)) {
+              endDate = value;
+            }
+          }
+
+          // If the value is null or undefined, we replace it by the FQL expression string('')
+          // Otherwise the query syntax won't be vaild resuting of to an HTTP 500 
+          if (isEmpty(value)) {
+            value = "string('')";
+          }
+
+          // Enclose the expression with quotes if the value contains spaces
+          if (/\s/.test(value)) {
+            value = `"${value}"`;
+          }
+
+          return /ǂǂ/.test(value) && encodeTokens ? encodeURIComponent(value) : value;
+
+        }).filter(c => c);
+
+        if (startDate && endDate) {
+          refinementQueryConditions.push(`${filter.filterName}:range(${startDate},${endDate})`);
         } else {
-
-            // Single value
-            if (filter.values.length === 1) {
-
-                const filterValue = filter.values[0];
-
-                // See https://sharepoint.stackexchange.com/questions/258081/how-to-hex-encode-refiners/258161
-                let refinementToken = /ǂǂ/.test(filterValue.value) && encodeTokens ? encodeURIComponent(filterValue.value) : filterValue.value;
-
-                // https://docs.microsoft.com/en-us/sharepoint/dev/general-development/fast-query-language-fql-syntax-reference#fql_range_operator
-                if (moment(refinementToken, moment.ISO_8601, true).isValid()) {
-
-                    if (filterValue.operator === FilterComparisonOperator.Gt || filterValue.operator === FilterComparisonOperator.Geq) {
-                        refinementToken = `range(${refinementToken},max)`;
-                    }
-
-                    // Ex: scenario ('older than a year')
-                    if (filterValue.operator === FilterComparisonOperator.Leq || filterValue.operator === FilterComparisonOperator.Lt) {
-                        refinementToken = `range(min,${refinementToken})`;
-                    }
-                }
-
-                // If the value is null or undefined, we replace it by the FQL expression string('')
-                // Otherwise the query syntax won't be vaild resuting of to an HTTP 500 
-                if (isEmpty(refinementToken)) {
-                  refinementToken = "string('')";
-                }
-
-                // Enclose the expression with quotes if the value contains spaces
-                if (/\s/.test(refinementToken)) {
-                  refinementToken = `"${refinementToken}"`;
-                }
-                
-                refinementQueryConditions.push(`${filter.filterName}:${refinementToken}`);
-            }
+          refinementQueryConditions.push(`${filter.filterName}:${operator}(${conditions.join(',')})`);
         }
+
+      } else {
+
+        // Single value
+        if (filter.values.length === 1) {
+
+          const filterValue = filter.values[0];
+
+          let refinementToken = "";
+
+          if (taxonomyPickerFilterConfig && taxonomyPickerFilterConfig.length === 1) {
+            // See https://sharepoint.stackexchange.com/questions/258081/how-to-hex-encode-refiners/258161
+            refinementToken = /ǂǂ/.test(filterValue.name) && encodeTokens ? encodeURIComponent(filterValue.name) : filterValue.name;
+          } else {
+            // See https://sharepoint.stackexchange.com/questions/258081/how-to-hex-encode-refiners/258161
+            refinementToken = /ǂǂ/.test(filterValue.value) && encodeTokens ? encodeURIComponent(filterValue.value) : filterValue.value;
+          }
+
+          // https://docs.microsoft.com/en-us/sharepoint/dev/general-development/fast-query-language-fql-syntax-reference#fql_range_operator
+          if (moment(refinementToken, moment.ISO_8601, true).isValid()) {
+
+            if (filterValue.operator === FilterComparisonOperator.Gt || filterValue.operator === FilterComparisonOperator.Geq) {
+              refinementToken = `range(${refinementToken},max)`;
+            }
+
+            // Ex: scenario ('older than a year')
+            if (filterValue.operator === FilterComparisonOperator.Leq || filterValue.operator === FilterComparisonOperator.Lt) {
+              refinementToken = `range(min,${refinementToken})`;
+            }
+          }
+
+          // If the value is null or undefined, we replace it by the FQL expression string('')
+          // Otherwise the query syntax won't be vaild resuting of to an HTTP 500 
+          if (isEmpty(refinementToken)) {
+            refinementToken = "string('')";
+          }
+
+          // Enclose the expression with quotes if the value contains spaces
+          if (/\s/.test(refinementToken)) {
+            refinementToken = `"${refinementToken}"`;
+          }
+
+          refinementQueryConditions.push(`${filter.filterName}:${refinementToken}`);
+        }
+      }
     });
 
     return refinementQueryConditions;
-  } 
+  }
 }
