@@ -220,7 +220,10 @@ export class FilterDateTimeComponent extends React.Component<IFilterDateTimeComp
     }
 
     private _onToggleSelect(ev?: React.MouseEvent<HTMLButtonElement>, item?: IContextualMenuItem) {
-        ev && ev.preventDefault();
+        if (ev) {
+            ev.preventDefault();
+        }
+
         if (item) {
             let options: IContextualMenuItem[] = this.state.options.map(option => {
                 if (option.key === item.key) {

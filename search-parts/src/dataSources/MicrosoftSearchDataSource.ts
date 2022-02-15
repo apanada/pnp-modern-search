@@ -525,6 +525,10 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 slotField: 'AutoPreviewUrl' // Field added automatically
             },
             {
+                slotName: BuiltinTemplateSlots.PreviewViewUrl,
+                slotField: 'AutoPreviewViewUrl' // Field added automatically
+            },
+            {
                 slotName: BuiltinTemplateSlots.LegacyPreviewUrl,
                 slotField: 'resource.fields.serverRedirectedEmbedURL' // Field added automatically
             },

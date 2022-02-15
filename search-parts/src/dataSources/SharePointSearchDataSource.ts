@@ -501,6 +501,10 @@ export class SharePointSearchDataSource extends BaseDataSource<ISharePointSearch
                 slotField: 'AutoPreviewUrl' // Field added automatically
             },
             {
+                slotName: BuiltinTemplateSlots.PreviewViewUrl,
+                slotField: 'AutoPreviewViewUrl' // Field added automatically
+            },
+            {
                 slotName: BuiltinTemplateSlots.LegacyPreviewUrl,
                 slotField: 'ServerRedirectedEmbedURL' // Field added automatically
             },

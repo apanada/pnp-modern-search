@@ -109,7 +109,7 @@ export class DataFilterHelper {
           let value = filterValue.value;
 
           if (taxonomyPickerFilterConfig && taxonomyPickerFilterConfig.length === 1) {
-            value = filterValue.name
+            value = filterValue.name;
           }
 
           if (moment(value, moment.ISO_8601, true).isValid()) {

@@ -25,6 +25,7 @@ import { ItemSelectionWebComponent } from './ItemSelectionComponent';
 import { FilterSearchBoxWebComponent } from './filters/FilterSearchBoxComponent';
 import { FilterValueOperatorWebComponent } from './filters/FilterValueOperatorComponent';
 import { FilterDateTimeWebComponent } from "./filters/FilterDateTimeComponent";
+import { FileMenuWebComponent } from "./FileMenuComponent";
 
 export class AvailableComponents {
 
@@ -63,6 +64,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-icon',
             componentClass: IconWebComponent
+        },
+        {
+            componentName: "pnp-filemenu",
+            componentClass: FileMenuWebComponent
         },
         {
             componentName: 'pnp-pagination',

@@ -25,6 +25,7 @@ export class Constants {
 export enum AutoCalculatedDataSourceFields {
     AutoPreviewUrl = 'AutoPreviewUrl',
     AutoPreviewImageUrl = 'AutoPreviewImageUrl',
+    AutoPreviewViewUrl = 'AutoPreviewViewUrl',
     AutoSiteId = 'AutoSiteId',
     AutoListId = 'AutoListId'
 }

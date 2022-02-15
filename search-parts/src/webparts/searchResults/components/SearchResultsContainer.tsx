@@ -66,15 +66,15 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
         };
 
         this.templateService = this.props.serviceScope.consume<ITemplateService>(TemplateService.ServiceKey);
-    
+
         this._onSelectionChanged = this._onSelectionChanged.bind(this);
 
         this._selection = new Selection({
             onSelectionChanged: this._onSelectionChanged,
             getKey: (item, index) => {
-              // Not suitable as keys
-              // - Stringified object as we can't rely on field values. Ex they can diverge from calls with SharePoint (ex: piSearchResultId with SharePoint)
-              return item.key = `${this.props.dataContext.pageNumber}${index}`;
+                // Not suitable as keys
+                // - Stringified object as we can't rely on field values. Ex they can diverge from calls with SharePoint (ex: piSearchResultId with SharePoint)
+                return item.key = `${this.props.dataContext.pageNumber}${index}`;
             },
         });
     }
@@ -105,9 +105,9 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
 
         let selectionMode = SelectionMode.none;
         if (this.props.properties.itemSelectionProps && this.props.properties.itemSelectionProps.allowItemSelection) {
-          selectionMode = this.props.properties.itemSelectionProps.allowMulti ? SelectionMode.multiple : SelectionMode.single;
+            selectionMode = this.props.properties.itemSelectionProps.allowMulti ? SelectionMode.multiple : SelectionMode.single;
         }
-    
+
         renderTemplate =    <SelectionZone 
                             selection={this._selection} 
                             selectionMode={selectionMode}>
@@ -202,7 +202,7 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
 
             if (!isEqual(prevProps.dataContext.pageNumber, this.props.dataContext.pageNumber)) {
                 // Save the last selected keys for the current selection to be able to track items across pages
-                this._lastPageSelectedKeys =  this._selection.getSelection().map(item => item.key as string);
+                this._lastPageSelectedKeys = this._selection.getSelection().map(item => item.key as string);
             }
 
             await this.getDataFromDataSource(this.props.dataContext.pageNumber);
@@ -212,7 +212,7 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
             // Reset already selected items
             this._selection.setItems(this.state.data.items, true);
         }
-        
+
     }
 
     /**
@@ -310,6 +310,34 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
 
         const validPreviewExt = ["SVG", "MOVIE", "PAGES", "PICT", "SKETCH", "AI", "PDF", "PSB", "PSD", "3G2", "3GP", "ASF", "BMP", "HEVC", "M2TS", "M4V", "MOV", "MP3", "MP4", "MP4V", "MTS", "TS", "WMV", "DWG", "FBX", "ERF", "ZIP", "ZIP", "DCM", "DCM30", "DICM", "DICOM", "PLY", "HCP", "GIF", "HEIC", "HEIF", "JPEG", "JPG", "JPE", "MEF", "MRW", "NEF", "NRW", "ORF", "PANO", "PEF", "PNG", "SPM", "TIF", "TIFF", "XBM", "XCF", "KEY", "LOG", "CSV", "DIC", "DOC", "DOCM", "DOCX", "DOTM", "DOTX", "POT", "POTM", "POTX", "PPS", "PPSM", "PPSX", "PPT", "PPTM", "PPTX", "XD", "XLS", "XLSB", "XLSX", "SLTX", "EML", "MSG", "VSD", "VSDX", "CUR", "ICO", "ICON", "EPUB", "ODP", "ODS", "ODT", "ARW", "CR2", "CRW", "DNG", "RTF", "ABAP", "ADA", "ADP", "AHK", "AS", "AS3", "ASC", "ASCX", "ASM", "ASP", "ASPX", "AWK", "BAS", "BASH", "BASH_LOGIN", "BASH_LOGOUT", "BASH_PROFILE", "BASHRC", "BAT", "BIB", "BSH", "BUILD", "BUILDER", "C", "CAPFILE", "CBK", "CC", "CFC", "CFM", "CFML", "CL", "CLJ", "CMAKE", "CMD", "COFFEE", "CPP", "CPT", "CPY", "CS", "CSHTML", "CSON", "CSPROJ", "CSS", "CTP", "CXX", "D", "DDL", "DI.DIF", "DIFF", "DISCO", "DML", "DTD", "DTML", "EL", "EMAKE", "ERB", "ERL", "F90", "F95", "FS", "FSI", "FSSCRIPT", "FSX", "GEMFILE", "GEMSPEC", "GITCONFIG", "GO", "GROOVY", "GVY", "H", "HAML", "HANDLEBARS", "HBS", "HRL", "HS", "HTC", "HTML", "HXX", "IDL", "IIM", "INC", "INF", "INI", "INL", "IPP", "IRBRC", "JADE", "JAV", "JAVA", "JS", "JSON", "JSP", "JSX", "L", "LESS", "LHS", "LISP", "LOG", "LST", "LTX", "LUA", "M", "MAKE", "MARKDN", "MARKDOWN", "MD", "MDOWN", "MKDN", "ML", "MLI", "MLL", "MLY", "MM", "MUD", "NFO", "OPML", "OSASCRIPT", "OUT", "P", "PAS", "PATCH", "PHP", "PHP2", "PHP3", "PHP4", "PHP5", "PL", "PLIST", "PM", "POD", "PP", "PROFILE", "PROPERTIES", "PS", "PS1", "PT", "PY", "PYW", "R", "RAKE", "RB", "RBX", "RC", "RE", "README", "REG", "REST", "RESW", "RESX", "RHTML", "RJS", "RPROFILE", "RPY", "RSS", "RST", "RXML", "S", "SASS", "SCALA", "SCM", "SCONSCRIPT", "SCONSTRUCT", "SCRIPT", "SCSS", "SGML", "SH", "SHTML", "SML", "SQL", "STY", "TCL", "TEX", "TEXT", "TEXTILE", "TLD", "TLI", "TMPL", "TPL", "TXT", "VB", "VI", "VIM", "WSDL", "XAML", "XHTML", "XOML", "XML", "XSD", "XSL", "XSLT", "YAML", "YAWS", "YML", "ZSH", "HTM", "HTML", "Markdown", "MD", "URL"];
 
+        // Auto determined preview view URL 
+        // We do not make these call if layouts does not allow preview ('enablePreview' property, specific to 'CardsLayout' and 'SimpleListLayout')
+        if (slots[BuiltinTemplateSlots.PreviewViewUrl] === AutoCalculatedDataSourceFields.AutoPreviewViewUrl) {
+
+            // TODO: I'd like to move this logic over to each provider
+            data.items = data.items.map(item => {
+                let contentClass = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.ContentClass]);
+                const hasContentClass = !isEmpty(contentClass);
+                const isLibItem = hasContentClass && contentClass.indexOf("Library") !== -1;
+
+                let contentTypeId = this.props.dataSource.getTemplateSlots()[BuiltinTemplateSlots.IsFolder];
+                const isContainer = contentTypeId ? contentTypeId.indexOf('0x0120') !== -1 : false;
+
+                let pathProperty = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.Path]);
+                if (!pathProperty || (hasContentClass && !isLibItem)) {
+                    pathProperty = ObjectHelper.byPath(item, BuiltinTemplateSlots.Path); // Fallback to using Path for if DefaultEncodingURL is missing
+                }
+                if (pathProperty && pathProperty.indexOf("?") === -1 && !isContainer) {
+                    const itemId = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.ItemId]); // Could be UniqueId or item ID
+                    const spSiteURL = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.SiteUrl]);
+                    item.AutoPreviewViewUrl = `${spSiteURL}/_layouts/15/viewer.aspx?sourcedoc=${encodeURIComponent(`{${itemId}}`)}`;
+                } else {
+                    item.AutoPreviewViewUrl = pathProperty;
+                }
+                return item;
+            });
+        }
+
         // Auto determined preview URL 
         // We do not make these call if layouts does not allow preview ('enablePreview' property, specific to 'CardsLayout' and 'SimpleListLayout')
         if (slots[BuiltinTemplateSlots.PreviewUrl] === AutoCalculatedDataSourceFields.AutoPreviewUrl) {
@@ -328,9 +356,7 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
                     pathProperty = ObjectHelper.byPath(item, BuiltinTemplateSlots.Path); // Fallback to using Path for if DefaultEncodingURL is missing
                 }
                 if (pathProperty && pathProperty.indexOf("?") === -1 && !isContainer) {
-                    const itemId = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.ItemId]); // Could be UniqueId or item ID
-                    const spSiteURL = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.SiteUrl]);
-                    item.AutoPreviewUrl = `${spSiteURL}/_layouts/15/viewer.aspx?sourcedoc=${encodeURIComponent(`{${itemId}}`)}`;
+                    item.AutoPreviewUrl = pathProperty + "?web=1";
                 } else {
                     item.AutoPreviewUrl = pathProperty;
                 }
@@ -345,9 +371,9 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
             data.items = data.items.map(item => {
 
                 let contentClass = ObjectHelper.byPath(item, BuiltinTemplateSlots.ContentClass);
-                
+
                 if (!isEmpty(contentClass) && (contentClass.toLocaleLowerCase() == "sts_site" || contentClass.toLocaleLowerCase() == "sts_web")) {
-                    item[AutoCalculatedDataSourceFields.AutoPreviewImageUrl] =  ObjectHelper.byPath(item, "SiteLogo");
+                    item[AutoCalculatedDataSourceFields.AutoPreviewImageUrl] = ObjectHelper.byPath(item, "SiteLogo");
                 }
                 else {
                     let siteId = ObjectHelper.byPath(item, slots[BuiltinTemplateSlots.SiteId]);
@@ -569,20 +595,20 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
         // When page is updated, the selection changed is fired clearing all previous selection
         // We need to ensure the state is not updated during this phase 
         if (this.props.dataContext.pageNumber === this._lastPageNumber) {
-    
-          const currentSelectedItems = this._selection.getSelection();
-    
-          const currentPageSelectionKeys =  currentSelectedItems.map(item => item.key as string);
-    
-          this.props.onItemSelected(currentSelectedItems);
-    
-          // Update curent selected keys and values
-          this.setState({
-            selectedItemKeys: [...this._lastPageSelectedKeys,...currentPageSelectionKeys]
-          }, () => {
-            this.forceUpdate();
-          });
+
+            const currentSelectedItems = this._selection.getSelection();
+
+            const currentPageSelectionKeys = currentSelectedItems.map(item => item.key as string);
+
+            this.props.onItemSelected(currentSelectedItems);
+
+            // Update curent selected keys and values
+            this.setState({
+                selectedItemKeys: [...this._lastPageSelectedKeys, ...currentPageSelectionKeys]
+            }, () => {
+                this.forceUpdate();
+            });
         }
-        
-      }
+
+    }
 }
