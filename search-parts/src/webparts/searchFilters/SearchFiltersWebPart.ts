@@ -43,6 +43,7 @@ import { IDataVerticalSourceData } from '../../models/dynamicData/IDataVerticalS
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
 import { PageContext } from '@microsoft/sp-page-context';
 import { sp } from "shell-search-extensibility/lib/index";
+import { ITermSetPickerResult, TermSetPicker } from '../../components/TermSetPickerComponent';
 
 export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebPartProps> implements IDynamicDataCallables {
 
@@ -688,6 +689,29 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.TaxonomyPickerTemplate
                             }
                         ]
+                    },
+                    {
+                        id: 'termSetId',
+                        title: "Select Termset",
+                        type: this._customCollectionFieldType.custom,
+                        defaultValue: "",
+                        onCustomRender: (field, value, onUpdate, item: IDataFilterConfiguration, itemId) => {
+
+                            const selectedTemplate: string = item.selectedTemplate;
+                            if (selectedTemplate && selectedTemplate === "TaxonomyPickerFilterTemplate") {
+
+                                return React.createElement(TermSetPicker, {
+                                    key: `${field.id}-${itemId}-setTermset`,
+                                    dialogLabel: "Select Termset linked to filter",
+                                    serviceScope: this.context.serviceScope,
+                                    onSave: (termSetPickerResult: ITermSetPickerResult) => {
+                                        onUpdate(field.id, termSetPickerResult.termSetId);
+                                    }
+                                });
+                            } else {
+                                return null;
+                            }
+                        }
                     },
                     {
                         id: 'type',

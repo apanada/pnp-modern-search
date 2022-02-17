@@ -98,4 +98,9 @@ export interface IDataFilterConfiguration {
     * Range definition
     */
     rangeDefinition: number;
+
+    /**
+     * The termset id for the selected taxonomy filter
+     */
+    termSetId?: string;
 }

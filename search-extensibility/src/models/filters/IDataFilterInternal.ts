@@ -4,7 +4,7 @@ import { IDataFilter, IDataFilterValue } from "./IDataFilter";
  * This interface is used to display filter information in the Handlebars template
  */
 export interface IDataFilterInternal extends IDataFilter {
-    
+
     /**
      * The filter values
      */
@@ -64,6 +64,11 @@ export interface IDataFilterInternal extends IDataFilter {
      * The index of this filter in the configuration
      */
     sortIdx: number;
+
+    /**
+     * The termset id for the selected taxonomy filter
+     */
+    termSetId?: string;
 }
 
 export interface IDataFilterValueInternal extends IDataFilterValue {

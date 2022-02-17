@@ -268,7 +268,8 @@ export default class SearchFiltersContainer extends React.Component<ISearchFilte
           operator: filterOperator,
           sortIdx: filterConfiguration.sortIdx,
           canApply: canApply,
-          canClear: canClear
+          canClear: canClear,
+          termSetId: filterConfiguration.termSetId
         };
         
         return filterResultInternal;
@@ -351,7 +352,8 @@ export default class SearchFiltersContainer extends React.Component<ISearchFilte
             values: filterValuesInternal,
             operator: filterInfo.operator ? filterInfo.operator : currentUiFilters[filterIdx].operator,
             selectedTemplate: filterConfiguration.selectedTemplate,
-            sortIdx: filterConfiguration.sortIdx
+            sortIdx: filterConfiguration.sortIdx,
+            termSetId: filterConfiguration.termSetId
           };
 
           // If does not exist, add to selected filters collection
@@ -609,7 +611,8 @@ export default class SearchFiltersContainer extends React.Component<ISearchFilte
                 return value;
               }),
               canApply: false,
-              canClear: true
+              canClear: true,
+              termSetId: filterConfiguration.termSetId
             } as IDataFilterInternal;
           });
 
