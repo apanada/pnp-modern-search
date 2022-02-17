@@ -1,3 +1,5 @@
+import { Guid } from '@microsoft/sp-core-library';
+import { ITermGroupInfo, ITermSetInfo, ITermStoreInfo, ITermInfo } from '@pnp/sp/taxonomy';
 import { ITerm } from './ITaxonomyItems';
 
 export interface ITaxonomyService {
@@ -9,4 +11,12 @@ export interface ITaxonomyService {
      * @return {Promise<ITerm[]>} A promise containing the terms.
      */
     getTermsById(siteUrl: string, termIds: string[]): Promise<ITerm[]>;
+
+    getTermGroups(): Promise<ITermGroupInfo[]>;
+
+    getTermSets(groupId: string): Promise<ITermSetInfo[]>;
+
+    getTermStoreInfo(): Promise<ITermStoreInfo | undefined>;
+
+    getTermById(termSetId: Guid, termId: Guid): Promise<ITermInfo>;
 }

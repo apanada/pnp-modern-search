@@ -138,10 +138,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         // We need to register components here in the case where the Search Results WP is not present on the page
         await this.templateService.registerWebComponents(this.availableWebComponentDefinitions, this.instanceId);
 
-        const pageContext = this.context.serviceScope.consume<PageContext>(PageContext.serviceKey);
         sp.setup({
             sp: {
-                baseUrl: pageContext.web.absoluteUrl
+                baseUrl: this.context.pageContext.web.absoluteUrl
             }
         });
 

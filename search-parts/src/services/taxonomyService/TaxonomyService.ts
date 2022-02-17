@@ -1,10 +1,12 @@
-import { Text, Log } from '@microsoft/sp-core-library';
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
-import { isEmpty, findIndex } from '@microsoft/sp-lodash-subset';
+import { Text, Log, Guid } from '@microsoft/sp-core-library';
+import { SPHttpClient } from '@microsoft/sp-http';
 import { ServiceKey, ServiceScope } from "@microsoft/sp-core-library";
 import { ITaxonomyService } from './ITaxonomyService';
 import { Constants } from '../../common/Constants';
-import { ITermSet, ITerms, ITerm, TaxonomyItemType, ITaxonomyItem, ITermStore, IGroup } from './ITaxonomyItems';
+import { ITerms, ITerm } from './ITaxonomyItems';
+import { ITermGroupInfo, ITermSetInfo, ITermStoreInfo, ITermInfo } from '@pnp/sp/taxonomy';
+import { sp } from "shell-search-extensibility/lib/index";
+import "@pnp/sp/taxonomy";
 
 const TaxonomyService_ServiceKey = 'PnPModernSearchTaxonomyService';
 
@@ -70,5 +72,35 @@ export class TaxonomyService implements ITaxonomyService {
 		}
 
 		return terms;
+	}
+
+	public async getTermGroups(): Promise<ITermGroupInfo[]> {
+		const termGroups: ITermGroupInfo[] = await sp.termStore.groups();
+		return termGroups;
+	}
+
+	public async getTermSets(groupId: string): Promise<ITermSetInfo[]> {
+		const termSets: ITermSetInfo[] = await sp.termStore.groups.getById(groupId).sets();
+		return termSets;
+	}
+
+	public async getTermStoreInfo(): Promise<ITermStoreInfo | undefined> {
+		const termStoreInfo = await sp.termStore();
+		return termStoreInfo;
+	}
+
+	public async getTermById(termSetId: Guid, termId: Guid): Promise<ITermInfo> {
+		if (termId === Guid.empty) {
+			return undefined;
+		}
+		try {
+			const termInfo = await sp.termStore.sets.getById(termSetId.toString())
+				.terms
+				.getById(termId.toString())
+				.select('id', 'labels', 'descriptions', 'properties', 'localProperties', 'ShortName', 'createdDateTime', 'lastModifiedDateTime', 'childrenCount', 'isAvailableForTagging', 'customSortOrder', 'isDeprecated', 'topicRequested')();
+			return termInfo;
+		} catch (error) {
+			return undefined;
+		}
 	}
 }

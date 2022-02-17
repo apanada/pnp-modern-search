@@ -64,6 +64,7 @@ import { ObjectHelper } from '../../helpers/ObjectHelper';
 import { ItemSelectionMode } from '../../models/common/IItemSelectionProps';
 import { PropertyPaneAsyncCombo } from '../../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
+import { sp } from "shell-search-extensibility/lib/index";
 
 const LogSource = "SearchResultsWebPart";
 
@@ -517,6 +518,13 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
         // Initializes dynamic data connections. This could trigger a render if a connection is made with an other component resulting to a render race condition.
         this.ensureDynamicDataSourcesConnection();
+
+        sp.setup({
+            sp: {
+                baseUrl: this.context.pageContext.web.absoluteUrl
+            }
+        });
+
         return super.onInit();
     }
 

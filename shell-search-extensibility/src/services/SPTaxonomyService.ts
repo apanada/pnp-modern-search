@@ -50,11 +50,7 @@ export class SPTaxonomyService {
       return undefined;
     }
     try {
-      const termInfo = await sp.termStore.sets.getById(termSetId.toString())
-        .terms
-        .getById(termId.toString())
-        .select('id', 'labels', 'descriptions', 'properties', 'localProperties', 'ShortName', 'createdDateTime', 'lastModifiedDateTime', 'childrenCount', 'isAvailableForTagging', 'customSortOrder', 'isDeprecated', 'parent', 'topicRequested')
-        .expand("parent")();
+      const termInfo = await sp.termStore.sets.getById(termSetId.toString()).terms.getById(termId.toString()).expand("parent")();
       return termInfo;
     } catch (error) {
       return undefined;

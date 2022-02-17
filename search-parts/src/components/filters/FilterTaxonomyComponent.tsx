@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { BaseWebComponent, FilterComparisonOperator, IDataFilterInfo, IDataFilterValueInfo, IDataFilterInternal, ExtensibilityConstants, IDataFilterValueInternal } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import { Link, MessageBar, MessageBarType } from "office-ui-fabric-react";
-import * as strings from 'CommonStrings';
+import { MessageBar, MessageBarType } from "office-ui-fabric-react";
 import { ModernTaxonomyPicker } from 'shell-search-extensibility/lib/controls/modernTaxonomyPicker';
 import { Guid, ServiceScope } from '@microsoft/sp-core-library';
 import { ITermInfo, ITermStoreInfo } from '@pnp/sp/taxonomy';
@@ -52,8 +50,6 @@ export interface ITermDetails {
     selected: boolean;
 }
 
-const TERM_SET_ID: string = "8ed8c9ea-7052-4c1d-a4d7-b9c10bffea6f";
-
 export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComponentProps, IFilterTaxonomyComponentState> {
 
     public constructor(props: IFilterTaxonomyComponentProps) {
@@ -70,7 +66,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
             return <div>
                 <ModernTaxonomyPicker allowMultipleSelections={true}
-                    termSetId={TERM_SET_ID}
+                    termSetId={this.props.filter.termSetId}
                     panelTitle="Departments"
                     label="Departments"
                     placeHolder="Search a value..."
@@ -83,7 +79,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         } else {
             return <div>
                 <ModernTaxonomyPicker allowMultipleSelections={true}
-                    termSetId={TERM_SET_ID}
+                    termSetId={this.props.filter.termSetId}
                     panelTitle="Departments"
                     label="Departments"
                     placeHolder="Search a value..."
@@ -115,7 +111,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         });
     }
 
-    private _onModernPickerChange(terms: ITermInfo[]) {
+    private _onModernPickerChange(terms: ITermInfo[], changeDetected: boolean) {
 
         if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
             this.setState({
@@ -124,12 +120,13 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                 if (terms && terms.length === 0) {
                     localStorage.setItem("emptyPicker", JSON.stringify(false));
                 }
+
                 this._updateFilter(this.state.selectedTerms, true);
             });
         }
     }
 
-    private _onPickerChange(terms: ITermInfo[]) {
+    private _onPickerChange(terms: ITermInfo[], changeDetected: boolean) {
 
         if (this.state.selectedTerms === null || (this.state.selectedTerms && this.state.selectedTerms.length === 0)) {
             this.setState({
@@ -184,7 +181,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
     private _setInitialTerms = async (initialValues: ITermDetails[]): Promise<ITermInfo[]> => {
         if (Array.isArray(initialValues) && initialValues.length > 0) {
             var promises: Promise<ITermInfo>[] = initialValues.map(async (termDetails: ITermDetails) => {
-                const term = await this.getTermById(Guid.parse(TERM_SET_ID), Guid.parse(termDetails.id));
+                const term = await this.getTermById(Guid.parse(this.props.filter.termSetId), Guid.parse(termDetails.id));
                 return new Promise<ITermInfo>((resolve, reject) => resolve(term));
             });
 

@@ -48,19 +48,9 @@
 		pnp-filtercheckbox {
 			max-width: 100%;
 		}
-
-		.filters-title {
-		    display: inline-flex;
-            align-items: center;
-            font-size: 14px;
-			font-weight: 500;
-			margin-top: -1px;
-			padding-right: 15px;
-		}
     </style>
 
     <div class="template horizontal">  
-		<span class="filters-title">Filters</span>
 		{{#each @root.filters as |filter|}}
 			<div class="filter">
 				{{#eq filter.selectedTemplate 'ComboBoxFilterTemplate'}}

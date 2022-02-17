@@ -57,7 +57,7 @@ export interface IModernTaxonomyPickerProps {
   termStoreInfo?: ITermStoreInfo;
   disabled?: boolean;
   required?: boolean;
-  onChange?: (newValue?: ITermInfo[]) => void;
+  onChange?: (newValue?: ITermInfo[], changeDetected?: boolean) => void;
   onRenderItem?: (itemProps: ITermItemProps) => JSX.Element;
   onRenderSuggestionsItem?: (term: ITermInfo, itemProps: ISuggestionItemProps<ITermInfo>) => JSX.Element;
   placeHolder?: string;
@@ -93,16 +93,11 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
         if (Array.isArray(props.initialValues)) {
           const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
           setSelectedOptions(values);
-          if (props.onChange) {
-            props.onChange(values);
-          }
         } else {
           setSelectedOptions([]);
-          if (props.onChange) {
-            props.onChange([]);
-          }
         }
       });
+
     taxonomyService.getTermSetInfo(Guid.parse(props.termSetId))
       .then((termSetInfo) => {
         setCurrentTermSetInfo(termSetInfo);
@@ -132,7 +127,7 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   function onApply(): void {
     setSelectedOptions([...selectedPanelOptions]);
     if (props.onChange) {
-      props.onChange([...selectedPanelOptions]);
+      props.onChange([...selectedPanelOptions], true);
     }
     onClosePanel();
   }
@@ -223,7 +218,7 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
             onChange={(itms?: ITermInfo[]) => {
               setSelectedOptions(itms || []);
               if (props.onChange) {
-                props.onChange(itms || []);
+                props.onChange(itms || [], true);
               }
               setSelectedPanelOptions(itms || []);
             }}

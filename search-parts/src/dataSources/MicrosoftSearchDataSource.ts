@@ -2,7 +2,7 @@ import { BaseDataSource, FilterSortType, FilterSortDirection, ITemplateSlot, Bui
 import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule, PropertyPaneTextField } from "@microsoft/sp-property-pane";
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
 import { TokenService } from "../services/tokenService/TokenService";
-import { ServiceScope } from '@microsoft/sp-core-library';
+import { Guid, ServiceScope } from '@microsoft/sp-core-library';
 import { IComboBoxOption } from 'office-ui-fabric-react';
 import { PropertyPaneAsyncCombo } from "../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo";
 import * as commonStrings from 'CommonStrings';
@@ -23,6 +23,9 @@ import { IMicrosoftSearchService } from "../services/searchService/IMicrosoftSea
 import { MicrosoftSearchService } from "../services/searchService/MicrosoftSearchService";
 import { UrlHelper } from "../helpers/UrlHelper";
 import { ISite } from "../models/common/ISIte";
+import { ITaxonomyService } from "../services/taxonomyService/ITaxonomyService";
+import { TaxonomyService } from "../services/taxonomyService/TaxonomyService";
+import { ITermInfo } from "@pnp/sp/taxonomy";
 
 export enum EntityType {
     Message = 'message',
@@ -89,6 +92,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
     private _tokenService: ITokenService;
     private _sharePointSearchService: ISharePointSearchService;
     private _microsoftSearchService: IMicrosoftSearchService;
+    private _taxonomyService: ITaxonomyService;
 
     private _propertyPaneWebPartInformation: any = null;
     private _availableFields: IComboBoxOption[] = [];
@@ -159,6 +163,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             this._tokenService = serviceScope.consume<ITokenService>(TokenService.ServiceKey);
             this._sharePointSearchService = serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
             this._microsoftSearchService = serviceScope.consume<IMicrosoftSearchService>(MicrosoftSearchService.ServiceKey);
+            this._taxonomyService = serviceScope.consume<ITaxonomyService>(TaxonomyService.ServiceKey);
         });
     }
 
@@ -612,14 +617,56 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         let contentSources: string[] = [];
         let queryText = '*'; // Default query string if not specified, the API does not support empty value
         let from = 0;
+        let queryTemplate: string = this.properties.queryTemplate;
 
         // Query text
         if (dataContext.inputQueryText) {
             queryText = await this._tokenService.resolveTokens(dataContext.inputQueryText);
         }
 
+        if (dataContext.filters.selectedFilters.length > 0) {
+            if (dataContext.filters.selectedFilters.filter(selectedFilter => selectedFilter.values.length > 0 && selectedFilter.filterName === "relatedHubSites").length > 0) {
+
+                let termSetId: string = null;
+
+                // Get filter config for hub sites filter
+                const hubSitesFilterConfig = dataContext.filters.filtersConfiguration.filter(filterConfig => filterConfig.selectedTemplate === "TaxonomyPickerFilterTemplate" && filterConfig.filterName === "relatedHubSites");
+
+                if (hubSitesFilterConfig && hubSitesFilterConfig.length === 1) {
+                    termSetId = hubSitesFilterConfig[0].termSetId;
+                }
+
+                if (!isEmpty(termSetId)) {
+                    const hubSiteFilter = dataContext.filters.selectedFilters[0];
+
+                    var promises: Promise<ITermInfo>[] = hubSiteFilter.values.map(async (filterValue) => {
+                        let termId = filterValue.value;
+                        const termInfo = await this._taxonomyService.getTermById(Guid.parse(termSetId), Guid.parse(termId));
+                        return new Promise<ITermInfo>((resolve, reject) => resolve(termInfo));
+                    });
+
+                    var results: Promise<ITermInfo[]> = Promise.all(promises);
+                    const terms: ITermInfo[] = await results as ITermInfo[];
+
+                    const hubSiteQueryTemplates = terms.map((term) => {
+                        if (term && term.properties && term.properties.length > 0) {
+                            const hubSiteIdProperty = term.properties.filter(o => o.key === "SiteId");
+                            if (hubSiteIdProperty && hubSiteIdProperty.length === 1) {
+                                const hubSiteId = hubSiteIdProperty[0].value;
+                                return `(DepartmentId:{${hubSiteId}} OR DepartmentId:${hubSiteId} OR RelatedHubSites:${hubSiteId})`;
+                            }
+                        }
+                    }).filter(c => c);
+
+                    if (!isEmpty(queryTemplate.trim()) && hubSiteQueryTemplates && hubSiteQueryTemplates.length > 0) {
+                        queryTemplate += hubSiteQueryTemplates.join(' OR ');
+                    }
+                }
+            }
+        }
+
         // Query modification
-        const queryTemplate = await this._tokenService.resolveTokens(this.properties.queryTemplate);
+        queryTemplate = await this._tokenService.resolveTokens(queryTemplate);
         if (!isEmpty(queryTemplate.trim())) {
 
             // Use {searchTerms} or {inputQueryText} to use orginal value
