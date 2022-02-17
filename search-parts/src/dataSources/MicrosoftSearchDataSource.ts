@@ -21,6 +21,8 @@ import * as React from "react";
 import { BuiltinDataSourceProviderKeys } from "./AvailableDataSources";
 import { IMicrosoftSearchService } from "../services/searchService/IMicrosoftSearchService";
 import { MicrosoftSearchService } from "../services/searchService/MicrosoftSearchService";
+import { UrlHelper } from "../helpers/UrlHelper";
+import { ISite } from "../models/common/ISIte";
 
 export enum EntityType {
     Message = 'message',
@@ -182,7 +184,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             this._customCollectionFieldType = CustomCollectionFieldType;
         }
 
-        this.initProperties();
+        await this.initProperties();
     }
 
     public getItemCount(): number {
@@ -567,7 +569,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         ];
     }
 
-    private initProperties(): void {
+    private async initProperties(): Promise<void> {
         this.properties.entityTypes = this.properties.entityTypes !== undefined ? this.properties.entityTypes : [EntityType.DriveItem];
 
         const CommonFields = ["name", "title", "webUrl", "filetype", "createdBy", "createdDateTime", "lastModifiedDateTime", "parentReference", "size", "description", "file", "folder", "subject", "bodyPreview", "replyTo", "from", "sender", "start", "end", "displayName", "givenName", "surname", "userPrincipalName", "phones", "department", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "owstaxIdDepartments", "normSiteID", "normWebID", "normListID", "normUniqueID", "contentTypeId"];
@@ -580,6 +582,13 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         this.properties.queryTemplate = this.properties.queryTemplate ? this.properties.queryTemplate : "{searchTerms}";
         this.properties.useBetaEndpoint = this.properties.useBetaEndpoint !== undefined ? this.properties.useBetaEndpoint : false;
         this.properties.useCustomAadApplication = this.properties.useCustomAadApplication !== undefined ? this.properties.useCustomAadApplication : false;
+
+        const queryStringParameters: { [parameter: string]: string } = UrlHelper.getQueryStringParams();
+        if (queryStringParameters && !isEmpty(queryStringParameters["scope"]) && !isEmpty(queryStringParameters["sid"])) {
+            const siteId = queryStringParameters["sid"];
+            const site: ISite = await this._microsoftSearchService.getSiteBySiteId(siteId);
+            this.properties.queryTemplate += ` Path:${site.webUrl} `;
+        }
 
         if (this.properties.useBetaEndpoint) {
             this._microsoftSearchUrl = "https://graph.microsoft.com/beta/search/query";

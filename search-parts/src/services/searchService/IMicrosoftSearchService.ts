@@ -1,3 +1,4 @@
+import { ISite } from "../../models/common/ISIte";
 import { IMicrosoftSearchDataSourceData } from "../../models/search/IMicrosoftSearchDataSourceData";
 import { ICustomAadApplicationOptions, IMicrosoftSearchQuery } from "../../models/search/IMicrosoftSearchRequest";
 
@@ -11,4 +12,6 @@ export interface IMicrosoftSearchService {
      search(microsoftSearchUrl: string, searchQuery: IMicrosoftSearchQuery, useCustomAadApplication: boolean, customAadApplicationOptions: ICustomAadApplicationOptions): Promise<IMicrosoftSearchDataSourceData>;
 
      itemsCount: number;
+
+     getSiteBySiteId(siteId: string): Promise<ISite>;
 }

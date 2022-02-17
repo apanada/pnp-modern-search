@@ -8,6 +8,7 @@ import { IMicrosoftSearchDataSourceData } from "../../models/search/IMicrosoftSe
 import { FilterComparisonOperator, IDataFilterResult, IDataFilterResultValue } from "@pnp/modern-search-extensibility";
 import { IMicrosoftSearchResponse, IMicrosoftSearchResultSet } from "../../models/search/IMicrosoftSearchResponse";
 import { isEmpty } from "@microsoft/sp-lodash-subset";
+import { ISite } from "../../models/common/ISIte";
 
 const SearchService_ServiceKey = 'pnpSearchResults:MicrosoftSearchService';
 
@@ -137,7 +138,7 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
             // Get an instance to the MSGraphClient
             const msGraphClientFactory = this.serviceScope.consume<MSGraphClientFactory>(MSGraphClientFactory.serviceKey);
             const msGraphClient = await msGraphClientFactory.getClient();
-            const request = await msGraphClient.api(microsoftSearchUrl);
+            const request = msGraphClient.api(microsoftSearchUrl);
 
             jsonResponse = await request.post(searchQuery);
         }
@@ -200,6 +201,32 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
         }
 
         this._itemsCount = itemsCount;
+
+        return response;
+    }
+
+    /**
+     * Retrieves SharePoint Site from Microsoft Graph API
+     * @param siteId the SharePoint Site Collection Id
+     */
+    public async getSiteBySiteId(siteId: string): Promise<ISite> {
+
+        let response: ISite = null;
+
+        if (!isEmpty(siteId)) {
+            const apiPath: string = `https://graph.microsoft.com/v1.0/sites/${siteId}`;
+
+            // Get an instance to the MSGraphClient
+            const msGraphClientFactory = this.serviceScope.consume<MSGraphClientFactory>(MSGraphClientFactory.serviceKey);
+            const msGraphClient = await msGraphClientFactory.getClient();
+            const request = msGraphClient.api(apiPath);
+
+            let jsonResponse: IMicrosoftSearchResponse = await request.get();
+
+            if (!isEmpty(jsonResponse)) {
+                response = jsonResponse as ISite;
+            }
+        }
 
         return response;
     }

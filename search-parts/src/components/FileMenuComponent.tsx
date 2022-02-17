@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { Icon, ITheme, IIconStyles, ImageFit, CommandBarButton, IButtonStyles, IButton, IContextualMenuItem, ContextualMenu, RefObject, IContextualMenuItemProps, IImageProps, Image } from 'office-ui-fabric-react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
+import { UrlHelper } from '../helpers/UrlHelper';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
     "doc", "docx", "docm", "dot", "dotm", "dotx",
@@ -37,6 +38,8 @@ export interface IFileMenuProps {
 
     originalPath?: string;
 
+    siteId?: string;
+
     siteUrl?: string;
 
     uniqueId?: string;
@@ -62,6 +65,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this._openDocumentInApp = this._openDocumentInApp.bind(this);
         this._downloadDocument = this._downloadDocument.bind(this);
         this._openDocumentParentFolder = this._openDocumentParentFolder.bind(this);
+        this._searchThisSite = this._searchThisSite.bind(this);
     }
 
     private _getOfficeBrandIcons = (extension: string): string | undefined => {
@@ -232,7 +236,12 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 text: 'Download',
                 onClick: this._downloadDocument
             },
-            { key: 'searchThisSite', iconProps: { iconName: 'Search' }, text: 'Search this site' }
+            {
+                key: 'searchThisSite',
+                iconProps: { iconName: 'Search' },
+                text: 'Search this site',
+                onClick: this._searchThisSite
+            }
         );
 
         return <div>
@@ -307,6 +316,22 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             if (this.props.parentLink) {
                 let parentFolderURl: string = this.props.parentLink;
                 newTabObject = window.open(parentFolderURl);
+            }
+        }
+        catch (ex) {
+            //optionaly, we can notify the user;
+            // cuurently - do nothing
+        }
+    }
+
+    private _searchThisSite(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
+        let newTabObject: any = null;
+        try {
+            if (this.props.siteId) {
+                let searchThisSiteUrl: string = UrlHelper.addOrReplaceQueryStringParam(window.location.href, "scope", "site");
+                searchThisSiteUrl = UrlHelper.addOrReplaceQueryStringParam(searchThisSiteUrl, "sid", this.props.siteId.toString());
+
+                newTabObject = window.open(searchThisSiteUrl, "_blank");
             }
         }
         catch (ex) {
