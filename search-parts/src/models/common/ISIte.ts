@@ -5,3 +5,11 @@ export interface ISite {
 
     webUrl?: string;
 }
+
+export interface IHubSite {
+    isHubSite?: boolean;
+
+    hubSiteId?: string;
+
+    hubSiteUrl?: string;
+}

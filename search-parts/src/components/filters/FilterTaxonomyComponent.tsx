@@ -63,32 +63,18 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
 
     public render() {
 
-        if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
-            return <div>
-                <ModernTaxonomyPicker allowMultipleSelections={true}
-                    termSetId={this.props.filter.termSetId}
-                    panelTitle="Departments"
-                    label="Departments"
-                    placeHolder="Search a value..."
-                    initialValues={this.state.selectedTerms}
-                    termStoreInfo={this.props.termStoreInfo}
-                    labelRequired={false}
-                    serviceScope={this.props.serviceScope}
-                    onChange={this._onModernPickerChange.bind(this)} />
-            </div>;
-        } else {
-            return <div>
-                <ModernTaxonomyPicker allowMultipleSelections={true}
-                    termSetId={this.props.filter.termSetId}
-                    panelTitle="Departments"
-                    label="Departments"
-                    placeHolder="Search a value..."
-                    termStoreInfo={this.props.termStoreInfo}
-                    labelRequired={false}
-                    serviceScope={this.props.serviceScope}
-                    onChange={this._onPickerChange.bind(this)} />
-            </div>;
-        }
+        return <div>
+            <ModernTaxonomyPicker allowMultipleSelections={true}
+                termSetId={this.props.filter.termSetId}
+                panelTitle="Departments"
+                label="Departments"
+                placeHolder="Search a value..."
+                initialValues={this.state.selectedTerms}
+                termStoreInfo={this.props.termStoreInfo}
+                labelRequired={false}
+                serviceScope={this.props.serviceScope}
+                onChange={this._onModernPickerChange.bind(this)} />
+        </div>;
     }
 
     public componentDidMount() {
@@ -113,34 +99,11 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
 
     private _onModernPickerChange(terms: ITermInfo[], changeDetected: boolean) {
 
-        if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
-            this.setState({
-                selectedTerms: terms
-            }, () => {
-                if (terms && terms.length === 0) {
-                    localStorage.setItem("emptyPicker", JSON.stringify(false));
-                }
-
-                this._updateFilter(this.state.selectedTerms, true);
-            });
-        }
-    }
-
-    private _onPickerChange(terms: ITermInfo[], changeDetected: boolean) {
-
-        if (this.state.selectedTerms === null || (this.state.selectedTerms && this.state.selectedTerms.length === 0)) {
-            this.setState({
-                selectedTerms: terms
-            }, () => {
-                const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
-                if (terms && terms.length > 0 && initialValues && initialValues.length === 0) {
-                    if (!localStorage.getItem("emptyPicker") || (localStorage.getItem("emptyPicker") && JSON.parse(localStorage.getItem("emptyPicker")) === false)) {
-                        localStorage.setItem("emptyPicker", JSON.stringify(true));
-                        this._updateFilter(this.state.selectedTerms, true);
-                    }
-                }
-            });
-        }
+        this.setState({
+            selectedTerms: terms
+        }, () => {
+            this._updateFilter(this.state.selectedTerms, true);
+        });
     }
 
     private _updateFilter(terms: ITermInfo[], selected: boolean) {

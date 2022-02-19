@@ -520,9 +520,7 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
         this.ensureDynamicDataSourcesConnection();
 
         sp.setup({
-            sp: {
-                baseUrl: this.context.pageContext.web.absoluteUrl
-            }
+            spfxContext: this.context
         });
 
         return super.onInit();

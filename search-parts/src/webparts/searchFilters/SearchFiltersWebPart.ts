@@ -139,9 +139,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         await this.templateService.registerWebComponents(this.availableWebComponentDefinitions, this.instanceId);
 
         sp.setup({
-            sp: {
-                baseUrl: this.context.pageContext.web.absoluteUrl
-            }
+            spfxContext: this.context
         });
 
         return super.onInit();

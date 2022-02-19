@@ -2,6 +2,7 @@ import ISharePointManagedProperty from "../../models/search/ISharePointManagedPr
 import { ISharePointSearchResults } from "../../models/search/ISharePointSearchResults";
 import { ISharePointSearchQuery } from "../../models/search/ISharePointSearchQuery";
 import { ISynonymTable } from "../../models/search/ISynonym";
+import { IHubSite } from "../../models/common/ISIte";
 
 export interface ISharePointSearchService {
 
@@ -12,12 +13,12 @@ export interface ISharePointSearchService {
      */
      search(searchQuery: ISharePointSearchQuery): Promise<ISharePointSearchResults>;
 
-	/**
+     /**
      * Get available SharePoint search managed properties from the search schema
      */
-	getAvailableManagedProperties(): Promise<ISharePointManagedProperty[]>;
-	
-	/**
+     getAvailableManagedProperties(): Promise<ISharePointManagedProperty[]>;
+
+     /**
      * Get all available languages for the search query
      */
      getAvailableQueryLanguages(): Promise<any>;
@@ -35,4 +36,6 @@ export interface ISharePointSearchService {
      suggest(query: string): Promise<string[]>;
 
      setSynonymTable(value: ISynonymTable): void;
+
+     getHubSiteInfo(siteUrl: string, siteId: string): Promise<IHubSite>;
 }

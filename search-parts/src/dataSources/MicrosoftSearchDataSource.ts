@@ -22,7 +22,7 @@ import { BuiltinDataSourceProviderKeys } from "./AvailableDataSources";
 import { IMicrosoftSearchService } from "../services/searchService/IMicrosoftSearchService";
 import { MicrosoftSearchService } from "../services/searchService/MicrosoftSearchService";
 import { UrlHelper } from "../helpers/UrlHelper";
-import { ISite } from "../models/common/ISIte";
+import { IHubSite, ISite } from "../models/common/ISIte";
 import { ITaxonomyService } from "../services/taxonomyService/ITaxonomyService";
 import { TaxonomyService } from "../services/taxonomyService/TaxonomyService";
 import { ITermInfo } from "@pnp/sp/taxonomy";
@@ -639,21 +639,32 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 if (!isEmpty(termSetId)) {
                     const hubSiteFilter = dataContext.filters.selectedFilters[0];
 
-                    var promises: Promise<ITermInfo>[] = hubSiteFilter.values.map(async (filterValue) => {
+                    const promises: Promise<IHubSite>[] = hubSiteFilter.values.map(async (filterValue) => {
                         let termId = filterValue.value;
                         const termInfo = await this._taxonomyService.getTermById(Guid.parse(termSetId), Guid.parse(termId));
-                        return new Promise<ITermInfo>((resolve, reject) => resolve(termInfo));
+
+                        if (termInfo && termInfo.properties && termInfo.properties.length > 0) {
+                            const hubSiteIdProperty = termInfo.properties.filter(o => o.key === "SiteId");
+                            const hubSiteUrlProperty = termInfo.properties.filter(o => o.key === "SiteUrl");
+                            if (hubSiteIdProperty && hubSiteIdProperty.length === 1 && hubSiteUrlProperty && hubSiteUrlProperty.length === 1) {
+                                const hubSiteId = hubSiteIdProperty[0].value;
+                                const hubSiteUrl = hubSiteUrlProperty[0].value;
+                                const hubSiteInfo: IHubSite = await this._sharePointSearchService.getHubSiteInfo(hubSiteUrl, hubSiteId);
+                                hubSiteInfo.hubSiteUrl = hubSiteUrl;
+                                return new Promise<IHubSite>((resolve, reject) => resolve(hubSiteInfo));
+                            }
+                        }
                     });
 
-                    var results: Promise<ITermInfo[]> = Promise.all(promises);
-                    const terms: ITermInfo[] = await results as ITermInfo[];
+                    const results: Promise<IHubSite[]> = Promise.all(promises);
+                    const husSites: IHubSite[] = await results as IHubSite[];
 
-                    const hubSiteQueryTemplates = terms.map((term) => {
-                        if (term && term.properties && term.properties.length > 0) {
-                            const hubSiteIdProperty = term.properties.filter(o => o.key === "SiteId");
-                            if (hubSiteIdProperty && hubSiteIdProperty.length === 1) {
-                                const hubSiteId = hubSiteIdProperty[0].value;
-                                return `(DepartmentId:{${hubSiteId}} OR DepartmentId:${hubSiteId} OR RelatedHubSites:${hubSiteId})`;
+                    const hubSiteQueryTemplates = husSites.map((husSite) => {
+                        if (husSite) {
+                            if (husSite.isHubSite && husSite.hubSiteId !== "00000000-0000-0000-0000-000000000000") {
+                                return `(DepartmentId:{${husSite.hubSiteId}} OR DepartmentId:${husSite.hubSiteId} OR RelatedHubSites:${husSite.hubSiteId})`;
+                            } else {
+                                return `(Path:${husSite.hubSiteUrl})`;
                             }
                         }
                     }).filter(c => c);

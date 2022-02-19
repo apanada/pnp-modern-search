@@ -16,6 +16,7 @@ import { ISharePointSearchQuery, SortDirection } from '../../models/search/IShar
 import { cloneDeep } from "@microsoft/sp-lodash-subset";
 import { Constants } from '../../common/Constants';
 import { ISynonymTable } from '../../models/search/ISynonym';
+import { IHubSite } from '../../models/common/ISIte';
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -204,6 +205,39 @@ export class SharePointSearchService implements ISharePointSearchService {
             Log.error("[SharePointSearchService.search()]", error, this.serviceScope);
             throw error;
         }
+    }
+
+    public async getHubSiteInfo(siteUrl: string, siteId: string): Promise<IHubSite> {
+        let hubSiteInfo: IHubSite = {};
+
+        try {
+            if (!isEmpty(siteUrl) && !isEmpty(siteId)) {
+                siteUrl = siteUrl.trim().endsWith('/') ? siteUrl.trim().substring(0, siteUrl.trim().length - 1) : siteUrl.trim();
+            }
+
+            const hubSiteSearchEncpointUrl: string = `${siteUrl}/_api/site/?$select=IsHubSite,HubSiteId`;
+            const response = await this.spHttpClient.get(hubSiteSearchEncpointUrl, SPHttpClient.configurations.v1);
+
+            if (response.ok) {
+
+                const searchResponse: any = await response.json();
+                if (searchResponse) {
+                    hubSiteInfo = {
+                        hubSiteId: searchResponse.HubSiteId,
+                        isHubSite: searchResponse.IsHubSite
+                    };
+                }
+
+            } else {
+                throw new Error(`${response['statusMessage']}`);
+            }
+
+        } catch (error) {
+            Log.error("[SharePointSearchService.getHubSiteInfo()]", error, this.serviceScope);
+            throw error;
+        }
+
+        return hubSiteInfo;
     }
 
     /**
