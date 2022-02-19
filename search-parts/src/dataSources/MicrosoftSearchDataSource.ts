@@ -625,7 +625,8 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         }
 
         if (dataContext.filters.selectedFilters.length > 0) {
-            if (dataContext.filters.selectedFilters.filter(selectedFilter => selectedFilter.values.length > 0 && selectedFilter.filterName === "relatedHubSites").length > 0) {
+            const relatedHubSitesFilter = dataContext.filters.selectedFilters.filter(selectedFilter => selectedFilter.values.length > 0 && selectedFilter.filterName === "relatedHubSites");
+            if (relatedHubSitesFilter && relatedHubSitesFilter.length > 0) {
 
                 let termSetId: string = null;
 
@@ -637,7 +638,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 }
 
                 if (!isEmpty(termSetId)) {
-                    const hubSiteFilter = dataContext.filters.selectedFilters[0];
+                    const hubSiteFilter = relatedHubSitesFilter[0];
 
                     const promises: Promise<IHubSite>[] = hubSiteFilter.values.map(async (filterValue) => {
                         let termId = filterValue.value;
@@ -650,7 +651,6 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                                 const hubSiteId = hubSiteIdProperty[0].value;
                                 const hubSiteUrl = hubSiteUrlProperty[0].value;
                                 const hubSiteInfo: IHubSite = await this._sharePointSearchService.getHubSiteInfo(hubSiteUrl, hubSiteId);
-                                hubSiteInfo.hubSiteUrl = hubSiteUrl;
                                 return new Promise<IHubSite>((resolve, reject) => resolve(hubSiteInfo));
                             }
                         }
@@ -664,7 +664,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                             if (husSite.isHubSite && husSite.hubSiteId !== "00000000-0000-0000-0000-000000000000") {
                                 return `(DepartmentId:{${husSite.hubSiteId}} OR DepartmentId:${husSite.hubSiteId} OR RelatedHubSites:${husSite.hubSiteId})`;
                             } else {
-                                return `(Path:${husSite.hubSiteUrl})`;
+                                return `(Path:${husSite.siteUrl})`;
                             }
                         }
                     }).filter(c => c);

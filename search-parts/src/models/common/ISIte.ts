@@ -11,5 +11,7 @@ export interface IHubSite {
 
     hubSiteId?: string;
 
-    hubSiteUrl?: string;
+    siteUrl?: string;
+
+    id?: string;
 }

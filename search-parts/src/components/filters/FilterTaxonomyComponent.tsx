@@ -5,7 +5,7 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { MessageBar, MessageBarType } from "office-ui-fabric-react";
 import { ModernTaxonomyPicker } from 'shell-search-extensibility/lib/controls/modernTaxonomyPicker';
 import { Guid, ServiceScope } from '@microsoft/sp-core-library';
-import { ITermInfo, ITermStoreInfo } from '@pnp/sp/taxonomy';
+import { ITermInfo, ITermStoreInfo, ITermSetInfo } from '@pnp/sp/taxonomy';
 import { sp } from "shell-search-extensibility/lib/index";
 import "@pnp/sp/taxonomy";
 
@@ -32,6 +32,8 @@ export interface IFilterTaxonomyComponentProps {
     serviceScope: ServiceScope;
 
     termStoreInfo?: ITermStoreInfo;
+
+    termSetInfo?: ITermSetInfo;
 }
 
 export interface IFilterTaxonomyComponentState {
@@ -40,8 +42,6 @@ export interface IFilterTaxonomyComponentState {
      * The current selected terms
      */
     selectedTerms: ITermInfo[];
-
-    initialFilterValues: IDataFilterValueInternal[];
 }
 
 export interface ITermDetails {
@@ -56,45 +56,52 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         super(props);
 
         this.state = {
-            selectedTerms: null,
-            initialFilterValues: null
+            selectedTerms: []
         };
     }
 
     public render() {
 
+        let selectedTerms = this.state.selectedTerms;
+
+        if (localStorage.getItem(`${this.props.filter.filterName}-terms`)) {
+            selectedTerms = JSON.parse(localStorage.getItem(`${this.props.filter.filterName}-terms`));
+        }
+
         return <div>
-            <ModernTaxonomyPicker allowMultipleSelections={true}
+            <ModernTaxonomyPicker
+                key={`${this.props.filter.filterName}-taxonomy-filter`}
+                allowMultipleSelections={true}
                 termSetId={this.props.filter.termSetId}
-                panelTitle="Departments"
-                label="Departments"
+                panelTitle={this.props.filter.displayName}
+                label={this.props.filter.filterName}
                 placeHolder="Search a value..."
-                initialValues={this.state.selectedTerms}
+                initialValues={selectedTerms}
                 termStoreInfo={this.props.termStoreInfo}
+                termSetInfo={this.props.termSetInfo}
                 labelRequired={false}
                 serviceScope={this.props.serviceScope}
                 onChange={this._onModernPickerChange.bind(this)} />
         </div>;
     }
 
-    public componentDidMount() {
-        this.setState({
-            initialFilterValues: this.props.filter.values
-        }, async () => {
-            if (this.state.initialFilterValues && this.state.initialFilterValues.length > 0) {
-                const initialValues = this._getInitialActiveFilterValues(this.state.initialFilterValues);
+    public async componentDidMount() {
+        if (this.props.filter.values && this.props.filter.values.length > 0) {
+            const initialValues = this._getInitialActiveFilterValues(this.props.filter.values);
 
-                let data = await this._setInitialTerms(initialValues);
+            let data = await this._setInitialTerms(initialValues);
 
-                this.setState({
-                    selectedTerms: data
-                }, () => {
-                    if (this.state.selectedTerms && this.state.selectedTerms.length > 0) {
-                        this._updateFilter(this.state.selectedTerms, true);
-                    }
-                });
-            }
-        });
+            this.setState({
+                selectedTerms: data
+            }, () => {
+                if (this.state.selectedTerms && this.state.selectedTerms.length === 0) {
+                    localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify([]));
+                    this._updateFilter(this.state.selectedTerms, true);
+                } else {
+                    localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify(this.state.selectedTerms));
+                }
+            });
+        }
     }
 
     private _onModernPickerChange(terms: ITermInfo[], changeDetected: boolean) {
@@ -102,6 +109,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         this.setState({
             selectedTerms: terms
         }, () => {
+            localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify(this.state.selectedTerms));
             this._updateFilter(this.state.selectedTerms, true);
         });
     }
@@ -213,34 +221,47 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
                 localStorage.setItem("termStoreInfo", JSON.stringify(termStoreInfo));
             }
 
+            let termSetInfo = null;
+            if (localStorage.getItem("termSetInfo")) {
+                termSetInfo = JSON.parse(localStorage.getItem("termSetInfo"));
+            } else {
+                termSetInfo = await this.getTermSetInfo(props.filter.termSetId);
+                localStorage.setItem("termSetInfo", JSON.stringify(termSetInfo));
+            }
+
             const filter = props.filter as IDataFilterInternal;
-            renderTaxonomyPicker = <FilterTaxonomyComponent {...props} serviceScope={this._serviceScope} termStoreInfo={termStoreInfo} filter={filter} onUpdate={((filterValues: IDataFilterValueInfo[]) => {
+            renderTaxonomyPicker = <FilterTaxonomyComponent
+                {...props}
+                serviceScope={this._serviceScope}
+                termStoreInfo={termStoreInfo}
+                termSetInfo={termSetInfo}
+                filter={filter} onUpdate={((filterValues: IDataFilterValueInfo[]) => {
 
-                // Unselect all previous values
-                const updatedValues = filter.values.map(value => {
+                    // Unselect all previous values
+                    const updatedValues = filter.values.map(value => {
 
-                    // Exclude current selected values
-                    if (filterValues.filter(filterValue => { return filterValue.value === value.value; }).length === 0) {
-                        return {
-                            name: value.name,
-                            selected: false,
-                            value: value.value,
-                            operator: value.operator
-                        } as IDataFilterValueInfo;
-                    }
-                });
+                        // Exclude current selected values
+                        if (filterValues.filter(filterValue => { return filterValue.value === value.value; }).length === 0) {
+                            return {
+                                name: value.name,
+                                selected: false,
+                                value: value.value,
+                                operator: value.operator
+                            } as IDataFilterValueInfo;
+                        }
+                    });
 
-                // Bubble event through the DOM
-                this.dispatchEvent(new CustomEvent(ExtensibilityConstants.EVENT_FILTER_UPDATED, {
-                    detail: {
-                        filterName: filter.filterName,
-                        filterValues: filterValues.concat(updatedValues.filter(v => v)),
-                        instanceId: props.instanceId
-                    } as IDataFilterInfo,
-                    bubbles: true,
-                    cancelable: true
-                }));
-            }).bind(this)}
+                    // Bubble event through the DOM
+                    this.dispatchEvent(new CustomEvent(ExtensibilityConstants.EVENT_FILTER_UPDATED, {
+                        detail: {
+                            filterName: filter.filterName,
+                            filterValues: filterValues.concat(updatedValues.filter(v => v)),
+                            instanceId: props.instanceId
+                        } as IDataFilterInfo,
+                        bubbles: true,
+                        cancelable: true
+                    }));
+                }).bind(this)}
             />;
         } else {
             renderTaxonomyPicker = <MessageBar
@@ -256,5 +277,10 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
     public async getTermStoreInfo(): Promise<ITermStoreInfo | undefined> {
         const termStoreInfo = await sp.termStore();
         return termStoreInfo;
+    }
+
+    public async getTermSetInfo(termSetId: Guid): Promise<ITermSetInfo | undefined> {
+        const tsInfo = await sp.termStore.sets.getById(termSetId.toString()).get();
+        return tsInfo;
     }
 }

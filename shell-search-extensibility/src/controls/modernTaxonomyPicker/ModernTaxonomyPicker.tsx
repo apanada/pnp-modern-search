@@ -40,6 +40,7 @@ import { IModernTermPickerProps, ITermItemProps } from './modernTermPicker/Moder
 import { TermItem } from './termItem/TermItem';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { PageContext } from "@microsoft/sp-page-context";
+import { isEmpty } from 'lodash';
 
 export const TERMSET_IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACaSURBVDhPrZLRCcAgDERdpZMIjuQA7uWH4CqdxMY0EQtNjKWB0A/77sxF55SKMTalk8a61lqCFqsLiwKac84ZRUUBi7MoYHVmAfjfjzE6vJqZQfie0AcwBQVW8ATi7AR7zGGGNSE6Q2cyLSPIjRswjO7qKhcPDN2hK46w05wZMcEUIG+HrzzcrRsQBIJ5hS8C9fGAPmRwu/9RFxW6L8CM4Ry8AAAAAElFTkSuQmCC'; // /_layouts/15/Images/EMMTermSet.png
 
@@ -55,6 +56,7 @@ export interface IModernTaxonomyPickerProps {
   serviceScope: ServiceScope;
   initialValues?: ITermInfo[];
   termStoreInfo?: ITermStoreInfo;
+  termSetInfo?: ITermSetInfo;
   disabled?: boolean;
   required?: boolean;
   onChange?: (newValue?: ITermInfo[], changeDetected?: boolean) => void;
@@ -71,8 +73,8 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   const [panelIsOpen, setPanelIsOpen] = React.useState(false);
   const [selectedOptions, setSelectedOptions] = React.useState<ITermInfo[]>([]);
   const [selectedPanelOptions, setSelectedPanelOptions] = React.useState<ITermInfo[]>([]);
-  const [currentTermStoreInfo, setCurrentTermStoreInfo] = React.useState<ITermStoreInfo>();
-  const [currentTermSetInfo, setCurrentTermSetInfo] = React.useState<ITermSetInfo>();
+  const [currentTermStoreInfo, setCurrentTermStoreInfo] = React.useState<ITermStoreInfo>(props.termStoreInfo);
+  const [currentTermSetInfo, setCurrentTermSetInfo] = React.useState<ITermSetInfo>(props.termSetInfo);
   const [currentAnchorTermInfo, setCurrentAnchorTermInfo] = React.useState<ITermInfo>();
   const [currentLanguageTag, setCurrentLanguageTag] = React.useState<string>("");
 
@@ -84,24 +86,39 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
       }
     });
 
-    taxonomyService.getTermStoreInfo()
-      .then((termStoreInfo) => {
-        setCurrentTermStoreInfo(termStoreInfo);
-        setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
-          pageContext.cultureInfo.currentUICultureName :
-          currentTermStoreInfo.defaultLanguageTag);
-        if (Array.isArray(props.initialValues)) {
-          const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
-          setSelectedOptions(values);
-        } else {
-          setSelectedOptions([]);
-        }
-      });
+    if (!isEmpty(currentTermStoreInfo)) {
+      setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
+        pageContext.cultureInfo.currentUICultureName :
+        currentTermStoreInfo.defaultLanguageTag);
+      if (Array.isArray(props.initialValues)) {
+        const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
+        setSelectedOptions(values);
+      } else {
+        setSelectedOptions([]);
+      }
+    } else {
+      taxonomyService.getTermStoreInfo()
+        .then((termStoreInfo) => {
+          setCurrentTermStoreInfo(termStoreInfo);
+          setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
+            pageContext.cultureInfo.currentUICultureName :
+            currentTermStoreInfo.defaultLanguageTag);
+          if (Array.isArray(props.initialValues)) {
+            const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
+            setSelectedOptions(values);
+          } else {
+            setSelectedOptions([]);
+          }
+        });
+    }
 
-    taxonomyService.getTermSetInfo(Guid.parse(props.termSetId))
-      .then((termSetInfo) => {
-        setCurrentTermSetInfo(termSetInfo);
-      });
+    if (isEmpty(currentTermSetInfo)) {
+      taxonomyService.getTermSetInfo(Guid.parse(props.termSetId))
+        .then((termSetInfo) => {
+          setCurrentTermSetInfo(termSetInfo);
+        });
+    }
+
     if (props.anchorTermId && props.anchorTermId !== Guid.empty.toString()) {
       taxonomyService.getTermById(Guid.parse(props.termSetId), props.anchorTermId ? Guid.parse(props.anchorTermId) : Guid.empty)
         .then((anchorTermInfo) => {
@@ -109,7 +126,6 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
         });
     }
   }, [props.initialValues]);
-
 
   function onOpenPanel(): void {
     if (props.disabled === true) {

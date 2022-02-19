@@ -215,29 +215,33 @@ export class SharePointSearchService implements ISharePointSearchService {
                 siteUrl = siteUrl.trim().endsWith('/') ? siteUrl.trim().substring(0, siteUrl.trim().length - 1) : siteUrl.trim();
             }
 
-            const hubSiteSearchEncpointUrl: string = `${siteUrl}/_api/site/?$select=IsHubSite,HubSiteId`;
-            const response = await this.spHttpClient.get(hubSiteSearchEncpointUrl, SPHttpClient.configurations.v1);
+            const hubSiteRestUrl: string = `${siteUrl}/_api/site/?$select=IsHubSite,HubSiteId,Id,Url`;
+            const data = await this.spHttpClient.get(hubSiteRestUrl, SPHttpClient.configurations.v1, {
+                headers: {
+                    'X-ClientService-ClientTag': Constants.X_CLIENTSERVICE_CLIENTTAG,
+                    'UserAgent': Constants.X_CLIENTSERVICE_CLIENTTAG
+                }
+            });
 
-            if (response.ok) {
+            if (data && data.ok) {
 
-                const searchResponse: any = await response.json();
+                const searchResponse: any = await data.json();
                 if (searchResponse) {
                     hubSiteInfo = {
                         hubSiteId: searchResponse.HubSiteId,
-                        isHubSite: searchResponse.IsHubSite
+                        isHubSite: searchResponse.IsHubSite,
+                        id: searchResponse.Id,
+                        siteUrl: searchResponse.Url
                     };
+
+                    return hubSiteInfo;
                 }
-
-            } else {
-                throw new Error(`${response['statusMessage']}`);
             }
-
+            return null;
         } catch (error) {
-            Log.error("[SharePointSearchService.getHubSiteInfo()]", error, this.serviceScope);
-            throw error;
+            Log.error("[SharePointSearchService.getHubSiteInfo()]", new Error(`Error while fetching Hub site data. Details: ${error}`), this.serviceScope);
+            return null;
         }
-
-        return hubSiteInfo;
     }
 
     /**
