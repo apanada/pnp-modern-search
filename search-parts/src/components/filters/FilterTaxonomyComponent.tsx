@@ -8,6 +8,7 @@ import { Guid, ServiceScope } from '@microsoft/sp-core-library';
 import { ITermInfo, ITermStoreInfo, ITermSetInfo } from '@pnp/sp/taxonomy';
 import { sp } from "shell-search-extensibility/lib/index";
 import "@pnp/sp/taxonomy";
+import { dateAdd, PnPClientStorage } from '@pnp/common';
 
 export interface IFilterTaxonomyComponentProps {
 
@@ -34,6 +35,11 @@ export interface IFilterTaxonomyComponentProps {
     termStoreInfo?: ITermStoreInfo;
 
     termSetInfo?: ITermSetInfo;
+
+    /**
+     * The client storage instance
+     */
+    clientStorage: PnPClientStorage;
 }
 
 export interface IFilterTaxonomyComponentState {
@@ -64,8 +70,8 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
 
         let selectedTerms = this.state.selectedTerms;
 
-        if (localStorage.getItem(`${this.props.filter.filterName}-terms`)) {
-            selectedTerms = JSON.parse(localStorage.getItem(`${this.props.filter.filterName}-terms`));
+        if (this.props.clientStorage.local.get(`${this.props.filter.filterName}-terms`)) {
+            selectedTerms = this.props.clientStorage.local.get(`${this.props.filter.filterName}-terms`);
         }
 
         return <div>
@@ -86,6 +92,8 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
     }
 
     public async componentDidMount() {
+        this.props.clientStorage.local.deleteExpired();
+
         if (this.props.filter.values && this.props.filter.values.length > 0) {
             const initialValues = this._getInitialActiveFilterValues(this.props.filter.values);
 
@@ -95,10 +103,12 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                 selectedTerms: data
             }, () => {
                 if (this.state.selectedTerms && this.state.selectedTerms.length === 0) {
-                    localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify([]));
-                    this._updateFilter(this.state.selectedTerms, true);
+                    this.props.clientStorage.local.delete(`${this.props.filter.filterName}-terms`);
+                    setTimeout(() => {
+                        this._updateFilter(this.state.selectedTerms, true);
+                    }, 1500);
                 } else {
-                    localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify(this.state.selectedTerms));
+                    this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, this.state.selectedTerms, dateAdd(new Date(), 'day', 1));
                 }
             });
         }
@@ -109,7 +119,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         this.setState({
             selectedTerms: terms
         }, () => {
-            localStorage.setItem(`${this.props.filter.filterName}-terms`, JSON.stringify(this.state.selectedTerms));
+            this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, this.state.selectedTerms, dateAdd(new Date(), 'day', 1));
             this._updateFilter(this.state.selectedTerms, true);
         });
     }
@@ -202,8 +212,15 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
 
 export class FilterTaxonomyWebComponent extends BaseWebComponent {
 
+    /**
+     * The client storage instance
+     */
+    private clientStorage: PnPClientStorage;
+
     public constructor() {
         super();
+
+        this.clientStorage = new PnPClientStorage();
     }
 
     public async connectedCallback() {
@@ -214,24 +231,25 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
         if (props.filter) {
 
             let termStoreInfo = null;
-            if (localStorage.getItem("termStoreInfo")) {
-                termStoreInfo = JSON.parse(localStorage.getItem("termStoreInfo"));
+            if (this.clientStorage.local.get("termStoreInfo")) {
+                termStoreInfo = this.clientStorage.local.get("termStoreInfo");
             } else {
                 termStoreInfo = await this.getTermStoreInfo();
-                localStorage.setItem("termStoreInfo", JSON.stringify(termStoreInfo));
+                this.clientStorage.local.put("termStoreInfo", termStoreInfo, dateAdd(new Date(), 'day', 1));
             }
 
             let termSetInfo = null;
-            if (localStorage.getItem("termSetInfo")) {
-                termSetInfo = JSON.parse(localStorage.getItem("termSetInfo"));
+            if (this.clientStorage.local.get("termSetInfo")) {
+                termSetInfo = this.clientStorage.local.get("termSetInfo");
             } else {
                 termSetInfo = await this.getTermSetInfo(props.filter.termSetId);
-                localStorage.setItem("termSetInfo", JSON.stringify(termSetInfo));
+                this.clientStorage.local.put("termSetInfo", termSetInfo, dateAdd(new Date(), 'day', 1));
             }
 
             const filter = props.filter as IDataFilterInternal;
             renderTaxonomyPicker = <FilterTaxonomyComponent
                 {...props}
+                clientStorage={this.clientStorage}
                 serviceScope={this._serviceScope}
                 termStoreInfo={termStoreInfo}
                 termSetInfo={termSetInfo}
