@@ -38,4 +38,6 @@ export interface ISharePointSearchService {
      setSynonymTable(value: ISynonymTable): void;
 
      getHubSiteInfo(siteUrl: string, siteId: string): Promise<IHubSite>;
+
+     checkUserAccessToReports(reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }>;
 }

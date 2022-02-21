@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image } from 'office-ui-fabric-react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { UrlHelper } from '../helpers/UrlHelper';
+import { ServiceScope } from '@microsoft/sp-core-library';
+import { ISharePointSearchService } from '../services/searchService/ISharePointSearchService';
+import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
     "doc", "docx", "docm", "dot", "dotm", "dotx",
@@ -50,107 +53,54 @@ export interface IFileMenuProps {
      * The current theme settings
      */
     themeVariant?: IReadonlyTheme;
+
+    /**
+     * The current service scope reference
+     */
+    serviceScope: ServiceScope;
 }
 
 export interface IFileMenuState {
+    checkAccessCalloutVisible?: boolean;
 
+    userHasAccessToReport?: boolean;
+
+    reportsDocumentSetItemCount?: number;
 }
+
+const checkAccessStyles = mergeStyleSets({
+    callout: {
+        width: 320,
+        padding: '0px 24px',
+    },
+    title: {
+        marginBottom: 12,
+        fontWeight: FontWeights.semilight,
+    },
+    buttons: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginTop: 20,
+    }
+});
 
 export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     constructor(props: IFileMenuProps) {
         super(props);
 
+        this.state = {
+            checkAccessCalloutVisible: false,
+            userHasAccessToReport: false,
+            reportsDocumentSetItemCount: 0
+        };
+
         this._openDocumentInBrowser = this._openDocumentInBrowser.bind(this);
         this._openDocumentInApp = this._openDocumentInApp.bind(this);
         this._downloadDocument = this._downloadDocument.bind(this);
         this._openDocumentParentFolder = this._openDocumentParentFolder.bind(this);
         this._searchThisSite = this._searchThisSite.bind(this);
-    }
-
-    private _getOfficeBrandIcons = (extension: string): string | undefined => {
-        let brandIcon: string = undefined;
-
-        switch (extension) {
-            case "doc":
-            case "docx":
-            case "docm":
-            case "dot":
-            case "dotx":
-                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/word_32x1.svg";
-                break;
-            case "xls":
-            case "xlsx":
-            case "xlsm":
-                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/excel_32x1.svg";
-                break;
-            case "ppt":
-            case "pptx":
-            case "pptm":
-            case "pot":
-            case "potm":
-            case "pps":
-            case "ppsx":
-                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/powerpoint_32x1.svg";
-                break;
-            case "vsd":
-            case "vsdx":
-            case "vss":
-            case "vdx":
-            case "vsdm":
-            case "vsdx":
-                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/visio_32x1.svg";
-                break;
-            default:
-                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/word_32x1.svg";
-                break;
-        }
-
-        return brandIcon;
-    }
-
-    private _getOfficeClientAppScheme = (extension: string): string | undefined => {
-        let clientAppScheme: string = undefined;
-
-        switch (extension) {
-            case "doc":
-            case "docx":
-            case "docm":
-            case "dot":
-            case "dotx":
-                clientAppScheme = "ms-word";
-                break;
-            case "xls":
-            case "xlsx":
-            case "xlsm":
-                clientAppScheme = "ms-excel";
-                break;
-            case "ppt":
-            case "pptx":
-            case "pptm":
-            case "pot":
-            case "potm":
-            case "potm":
-            case "potm":
-            case "potm":
-            case "potm":
-            case "ppsx":
-                clientAppScheme = "ms-powerpoint";
-                break;
-            case "vsd":
-            case "vsdx":
-            case "vss":
-            case "vdx":
-            case "vsdm":
-            case "vsdx":
-                clientAppScheme = "ms-visio";
-                break;
-            default:
-                clientAppScheme = "ms-word";
-                break;
-        }
-
-        return clientAppScheme;
+        this._checkReportAccess = this._checkReportAccess.bind(this);
     }
 
     public render() {
@@ -244,8 +194,17 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             }
         );
 
+        // Todo: If Content Type === <Report_DocSet_CT>
+        menuItems.push({
+            key: 'checkReportAccess',
+            iconProps: { iconName: 'Signin' },
+            text: 'Check access',
+            onClick: this._checkReportAccess
+        });
+
         return <div>
             <CommandBarButton
+                id='results-menu-item'
                 text="..."
                 styles={styles}
                 theme={this.props.themeVariant as ITheme}
@@ -253,7 +212,126 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                     shouldFocusOnMount: true,
                     items: [...menuItems],
                 }} />
+            <div>
+                {this.state.checkAccessCalloutVisible && (
+                    <FocusTrapCallout
+                        role="checkaccesscallout"
+                        ariaLabelledBy="check-access-callout-label"
+                        className={checkAccessStyles.callout}
+                        gapSpace={0}
+                        onDismiss={() => this.setState({ checkAccessCalloutVisible: false })}
+                        target={`#${'results-menu-item'}`}
+                        isBeakVisible={false}
+                        setInitialFocus
+                        styles={{
+                            calloutMain: {
+                                paddingTop: "20px",
+                                paddingBottom: "20px"
+                            }
+                        }}
+                    >
+                        <Text block variant="xLarge" className={checkAccessStyles.title}>
+                            Reports: Check Permissions
+                        </Text>
+                        <Text block variant="small">
+                            Content is wrapped in a FocusTrapZone so the user cannot accidentally tab or focus out of this callout. Use
+                            the buttons to close.
+                        </Text>
+                        <FocusZone handleTabKey={FocusZoneTabbableElements.all} isCircularNavigation>
+                            <Stack className={checkAccessStyles.buttons} gap={8} horizontal>
+                                <PrimaryButton onClick={() => this.setState({ checkAccessCalloutVisible: false })}>Done</PrimaryButton>
+                                <DefaultButton onClick={() => this.setState({ checkAccessCalloutVisible: false })}>Cancel</DefaultButton>
+                            </Stack>
+                        </FocusZone>
+                    </FocusTrapCallout>
+                )}
+            </div>
         </div>;
+    }
+
+    private _getOfficeBrandIcons = (extension: string): string | undefined => {
+        let brandIcon: string = undefined;
+
+        switch (extension) {
+            case "doc":
+            case "docx":
+            case "docm":
+            case "dot":
+            case "dotx":
+                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/word_32x1.svg";
+                break;
+            case "xls":
+            case "xlsx":
+            case "xlsm":
+                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/excel_32x1.svg";
+                break;
+            case "ppt":
+            case "pptx":
+            case "pptm":
+            case "pot":
+            case "potm":
+            case "pps":
+            case "ppsx":
+                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/powerpoint_32x1.svg";
+                break;
+            case "vsd":
+            case "vsdx":
+            case "vss":
+            case "vdx":
+            case "vsdm":
+            case "vsdx":
+                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/visio_32x1.svg";
+                break;
+            default:
+                brandIcon = "https://static2.sharepointonline.com/files/fabric/assets/brand-icons/product/svg/word_32x1.svg";
+                break;
+        }
+
+        return brandIcon;
+    }
+
+    private _getOfficeClientAppScheme = (extension: string): string | undefined => {
+        let clientAppScheme: string = undefined;
+
+        switch (extension) {
+            case "doc":
+            case "docx":
+            case "docm":
+            case "dot":
+            case "dotx":
+                clientAppScheme = "ms-word";
+                break;
+            case "xls":
+            case "xlsx":
+            case "xlsm":
+                clientAppScheme = "ms-excel";
+                break;
+            case "ppt":
+            case "pptx":
+            case "pptm":
+            case "pot":
+            case "potm":
+            case "potm":
+            case "potm":
+            case "potm":
+            case "potm":
+            case "ppsx":
+                clientAppScheme = "ms-powerpoint";
+                break;
+            case "vsd":
+            case "vsdx":
+            case "vss":
+            case "vdx":
+            case "vsdm":
+            case "vsdx":
+                clientAppScheme = "ms-visio";
+                break;
+            default:
+                clientAppScheme = "ms-word";
+                break;
+        }
+
+        return clientAppScheme;
     }
 
     /**
@@ -339,6 +417,19 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             // cuurently - do nothing
         }
     }
+
+    private _checkReportAccess() {
+        this.setState({ checkAccessCalloutVisible: true });
+
+        const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
+        const userHasAccess = sharePointSearchService.checkUserAccessToReports("https://m365x083241.sharepoint.com/sites/FlySafeConference/Shell Documents/Shell DocSet");
+        userHasAccess.then(hasAccess => {
+            this.setState({
+                reportsDocumentSetItemCount: hasAccess.ItemCount,
+                userHasAccessToReport: hasAccess.hasAccess
+            });
+        })
+    }
 }
 
 export class FileMenuWebComponent extends BaseWebComponent {
@@ -350,7 +441,7 @@ export class FileMenuWebComponent extends BaseWebComponent {
     public async connectedCallback() {
 
         let props = this.resolveAttributes();
-        const fileMenu = <FileMenu {...props} />;
+        const fileMenu = <FileMenu {...props} serviceScope={this._serviceScope} />;
         ReactDOM.render(fileMenu, this);
     }
 }

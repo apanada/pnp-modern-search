@@ -16,7 +16,7 @@
     "@microsoft/sp-property-pane": "1.12.1",
     "@microsoft/sp-webpart-base": "1.12.1",
     "@pnp/modern-search-extensibility": "1.0.9",
-    "@pnp/sp": "^2.11.0",
+    "@pnp/sp": "^2.12.0",
     "@pnp/telemetry-js": "^2.0.0",
     "@webcomponents/custom-elements": "^1.5.0",
     "@webcomponents/webcomponentsjs": "2.6.0",

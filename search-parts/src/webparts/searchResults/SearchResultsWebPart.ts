@@ -64,7 +64,7 @@ import { ObjectHelper } from '../../helpers/ObjectHelper';
 import { ItemSelectionMode } from '../../models/common/IItemSelectionProps';
 import { PropertyPaneAsyncCombo } from '../../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
-import { sp } from "shell-search-extensibility/lib/index";
+import { sp } from "@pnp/sp";
 
 const LogSource = "SearchResultsWebPart";
 
@@ -442,6 +442,10 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
     protected async onInit(): Promise<void> {
 
+        sp.setup({
+            spfxContext: this.context
+        });
+
         // Initializes Web Part properties
         this.initializeProperties();
 
@@ -518,10 +522,6 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
 
         // Initializes dynamic data connections. This could trigger a render if a connection is made with an other component resulting to a render race condition.
         this.ensureDynamicDataSourcesConnection();
-
-        sp.setup({
-            spfxContext: this.context
-        });
 
         return super.onInit();
     }

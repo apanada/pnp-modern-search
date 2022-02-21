@@ -17,6 +17,7 @@ import { cloneDeep } from "@microsoft/sp-lodash-subset";
 import { Constants } from '../../common/Constants';
 import { ISynonymTable } from '../../models/search/ISynonym';
 import { IHubSite } from '../../models/common/ISIte';
+import { sp, PermissionKind, Webs, Web } from "@pnp/sp/presets/all";
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -432,6 +433,41 @@ export class SharePointSearchService implements ISharePointSearchService {
 
     public setSynonymTable(value: ISynonymTable): void {
         this._synonymTable = value;
+    }
+
+    public async checkUserAccessToReports(reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }> {
+
+        try {
+            var reportServerRelativeUrl = reportUrl.replace(window.location.origin, '');
+            reportServerRelativeUrl = `${reportServerRelativeUrl}/Contents`;
+            const web = Web(this.pageContext.web.absoluteUrl);
+            const folder: any = await web.getFolderByServerRelativeUrl(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions').get();
+
+            if (folder) {
+                const hasAccess: boolean = sp.web.hasPermissions(
+                    folder.ListItemAllFields.EffectiveBasePermissions,
+                    PermissionKind.ViewListItems
+                );
+
+                if (hasAccess) {
+                    return {
+                        hasAccess: hasAccess,
+                        ItemCount: folder.ItemCount
+                    };
+                }
+            }
+
+            return {
+                hasAccess: false,
+                ItemCount: 0
+            };
+        } catch (error) {
+            Log.error("[SharePointSearchService.checkUserAccessToReports()]", error, this.serviceScope);
+            return {
+                hasAccess: false,
+                ItemCount: 0
+            };
+        }
     }
 
     /**

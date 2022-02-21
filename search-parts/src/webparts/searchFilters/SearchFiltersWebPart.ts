@@ -111,6 +111,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
     protected async onInit() {
 
+        sp.setup({
+            spfxContext: this.context
+        });
+
         this.initializeProperties();
 
         // Initializes shared services
@@ -137,10 +141,6 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         // Web components are only defined once.
         // We need to register components here in the case where the Search Results WP is not present on the page
         await this.templateService.registerWebComponents(this.availableWebComponentDefinitions, this.instanceId);
-
-        sp.setup({
-            spfxContext: this.context
-        });
 
         return super.onInit();
     }
