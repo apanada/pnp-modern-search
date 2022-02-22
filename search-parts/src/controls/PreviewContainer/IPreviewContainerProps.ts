@@ -1,3 +1,5 @@
+import { ISharePointSearchService } from "../../services/searchService/ISharePointSearchService";
+
 export interface IPreviewContainerProps {
 
    /**
@@ -29,6 +31,11 @@ export interface IPreviewContainerProps {
     * The search result item
     */
    resultItem?: any;
+
+   /**
+    * A sharepoint search service instance
+    */
+   sharePointSearchService: ISharePointSearchService;
 }
 
 export enum PreviewType {

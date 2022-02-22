@@ -64,7 +64,7 @@ import { ObjectHelper } from '../../helpers/ObjectHelper';
 import { ItemSelectionMode } from '../../models/common/IItemSelectionProps';
 import { PropertyPaneAsyncCombo } from '../../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
-import { sp } from "@pnp/sp";
+import { sp } from '@pnp/sp';
 
 const LogSource = "SearchResultsWebPart";
 

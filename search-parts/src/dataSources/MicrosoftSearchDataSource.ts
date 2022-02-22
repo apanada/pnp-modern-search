@@ -577,7 +577,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
     private async initProperties(): Promise<void> {
         this.properties.entityTypes = this.properties.entityTypes !== undefined ? this.properties.entityTypes : [EntityType.DriveItem];
 
-        const CommonFields = ["name", "title", "webUrl", "filetype", "createdBy", "createdDateTime", "lastModifiedDateTime", "parentReference", "size", "description", "file", "folder", "subject", "bodyPreview", "replyTo", "from", "sender", "start", "end", "displayName", "givenName", "surname", "userPrincipalName", "phones", "department", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "owstaxIdDepartments", "normSiteID", "normWebID", "normListID", "normUniqueID", "contentTypeId"];
+        const CommonFields = ["name", "title", "webUrl", "filetype", "createdBy", "createdDateTime", "lastModifiedDateTime", "parentReference", "size", "description", "file", "folder", "subject", "bodyPreview", "replyTo", "from", "sender", "start", "end", "displayName", "givenName", "surname", "userPrincipalName", "phones", "department", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "NormSiteID", "NormWebID", "NormListID", "NormUniqueID", "ContentType", "ContentTypeId", "ViewsLifetime", "ViewsLifeTimeUniqueUsers"];
 
         this.properties.fields = this.properties.fields !== undefined ? this.properties.fields : CommonFields;
         this.properties.sortProperties = this.properties.sortProperties !== undefined ? this.properties.sortProperties : [];

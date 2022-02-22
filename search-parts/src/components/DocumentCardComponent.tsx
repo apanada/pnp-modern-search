@@ -21,6 +21,8 @@ import { IComponentFieldsConfiguration } from "../models/common/IComponentFields
 import { TestConstants } from "../common/Constants";
 import { ServiceScope, ServiceKey } from "@microsoft/sp-core-library";
 import { ISelectableComponentItem } from "../models/common/ISelectableComponentItem";
+import { ISharePointSearchService } from "../services/searchService/ISharePointSearchService";
+import { SharePointSearchService } from "../services/searchService/SharePointSearchService";
 /**
  * Document card props. These properties are retrieved from the web component attributes. They must be camel case.
  * (ex: a 'preview-image' HTML attribute becomes 'previewImage' prop, etc.)
@@ -28,7 +30,7 @@ import { ISelectableComponentItem } from "../models/common/ISelectableComponentI
 export interface IDocumentCardComponentProps extends ISelectableComponentItem {
 
     // Item context
-    item?: {[key:string]: any};
+    item?: { [key: string]: any };
 
     // Fields configuration object
     fieldsConfiguration?: IComponentFieldsConfiguration[];
@@ -64,7 +66,12 @@ export interface IDocumentCardComponentProps extends ISelectableComponentItem {
     /**
      * A template service instance
      */
-    templateService: ITemplateService;   
+    templateService: ITemplateService;
+
+    /**
+     * A sharepoint search service instance
+     */
+    sharePointSearchService: ISharePointSearchService;
 }
 
 export interface IDocumentCardComponentState {
@@ -92,7 +99,7 @@ export class DocumentCardComponent extends React.Component<IDocumentCardComponen
         });
 
         this._domPurify.addHook('uponSanitizeElement', DomPurifyHelper.allowCustomComponentsHook);
-        this._domPurify.addHook('uponSanitizeAttribute', DomPurifyHelper.allowCustomAttributesHook); 
+        this._domPurify.addHook('uponSanitizeAttribute', DomPurifyHelper.allowCustomAttributesHook);
     }
 
     private showPreviewOnClick() {
@@ -125,8 +132,9 @@ export class DocumentCardComponent extends React.Component<IDocumentCardComponen
                 previewType={PreviewType.Document}
                 targetElement={this.documentCardPreviewRef.current}
                 showPreview={this.state.showCallout}
+                sharePointSearchService={this.props.sharePointSearchService}
             />;
-        }        
+        }
 
         // Get the current loaded theme
         const theme = merge(getTheme(), this.props.themeVariant);
@@ -163,7 +171,7 @@ export class DocumentCardComponent extends React.Component<IDocumentCardComponen
                     previewImageSrc: processedProps.previewImage ? UrlHelper.decode(processedProps.previewImage) : '#',
                     imageFit: ImageFit.centerCover,
                     height: 126
-                }             
+                }
             ]
         };
 
@@ -187,21 +195,21 @@ export class DocumentCardComponent extends React.Component<IDocumentCardComponen
         // Handle item selection
         if (this.props.allowItemSelection && this.props.itemKey) {
             isSelected = this.props.selectedKeys ? this.props.selectedKeys.indexOf(this.props.itemKey.toString()) !== -1 : false;
-            renderItemCheck =   <div>
-                                    <div data-is-focusable data-selection-select>
-                                    <Check  checked={isSelected} 
-                                            styles={{
-                                                root: {
-                                                    position: 'absolute',
-                                                    top: 10,
-                                                    left: 10,
-                                                    zIndex: 1
-                                                }
-                                            }}
-                                    />
-                                    </div>
-                                </div>;
-            
+            renderItemCheck = <div>
+                <div data-is-focusable data-selection-select>
+                    <Check checked={isSelected}
+                        styles={{
+                            root: {
+                                position: 'absolute',
+                                top: 10,
+                                left: 10,
+                                zIndex: 1
+                            }
+                        }}
+                    />
+                </div>
+            </div>;
+
             if (isSelected) {
                 documentCardStyles.root = {
                     borderWidth: '2px',
@@ -209,81 +217,84 @@ export class DocumentCardComponent extends React.Component<IDocumentCardComponen
                 };
             }
         }
-       
-        return  <div data-is-focusable data-selection-index={this.props.index} data-selection-toggle>
-                    <DocumentCard
+
+        return <div data-is-focusable data-selection-index={this.props.index} data-selection-toggle>
+            <DocumentCard
+                theme={this.props.themeVariant as ITheme}
+                onClick={previewFunc}
+                styles={documentCardStyles}
+                type={this.props.isCompact ? DocumentCardType.compact : DocumentCardType.normal}
+            >
+                <div ref={this.documentCardPreviewRef} style={{ position: 'relative', height: '100%' }}>
+                    {renderItemCheck}
+                    <DocumentCardPreview {...previewProps} />
+                    {this.props.showFileIcon ?
+                        <div data-ui-test-id={TestConstants.DocumentCardFileIcon}><FileIcon styles={iconstyles} size="32" extension={fileExtension} isContainer={processedProps.isContainer} /></div> : null
+                    }
+                </div>
+                <DocumentCardDetails>
+                    {processedProps.location && !this.props.isCompact ?
+                        <div className={documentCardLocationClassNames.root} dangerouslySetInnerHTML={{ __html: this._domPurify.sanitize(processedProps.location) }}></div> : null
+                    }
+                    <Link
                         theme={this.props.themeVariant as ITheme}
-                        onClick={previewFunc}
-                        styles={documentCardStyles}
-                        type={this.props.isCompact ? DocumentCardType.compact : DocumentCardType.normal}
-                    >
-                        <div ref={this.documentCardPreviewRef} style={{ position: 'relative', height: '100%' }}>
-                            {renderItemCheck}
-                            <DocumentCardPreview {...previewProps} />
-                            {this.props.showFileIcon ?
-                                <div data-ui-test-id={TestConstants.DocumentCardFileIcon}><FileIcon styles={iconstyles} size="32" extension={fileExtension} isContainer={processedProps.isContainer} /></div> : null
-                            }
-                        </div>
-                        <DocumentCardDetails>
-                            {processedProps.location && !this.props.isCompact ?
-                                <div className={documentCardLocationClassNames.root} dangerouslySetInnerHTML={{ __html: this._domPurify.sanitize(processedProps.location) }}></div> : null
-                            }
-                            <Link
-                                theme={this.props.themeVariant as ITheme}
-                                href={processedProps.href} target='_blank' styles={{
-                                root: {
-                                    selectors: {
-                                        ':hover': {
-                                            textDecoration: 'underline'
-                                        }
+                        href={processedProps.href} target='_blank' styles={{
+                            root: {
+                                selectors: {
+                                    ':hover': {
+                                        textDecoration: 'underline'
                                     }
                                 }
-                            }}>
-                                <DocumentCardTitle
-                                    theme={this.props.themeVariant as ITheme}
-                                    title={processedProps.title}
-                                    shouldTruncate={true}
-                                />
-                            </Link>
-                            {processedProps.tags && !this.props.isCompact ?
-                                <div className={documentCardLocationClassNames.root} style={{whiteSpace: 'pre-line'}} dangerouslySetInnerHTML={{ __html: this._domPurify.sanitize(processedProps.tags) }}></div> : null
                             }
-                            {processedProps.author ?
-                                <DocumentCardActivity
-                                    theme={this.props.themeVariant as ITheme}
-                                    activity={processedProps.date}
-                                    people={[{ name: author, profileImageSrc: processedProps.profileImage }]}
-                                /> : null
-                            }
-                        </DocumentCardDetails>
-                    </DocumentCard>
-                    {renderPreviewCallout}
-                </div>;
+                        }}>
+                        <DocumentCardTitle
+                            theme={this.props.themeVariant as ITheme}
+                            title={processedProps.title}
+                            shouldTruncate={true}
+                        />
+                    </Link>
+                    {processedProps.tags && !this.props.isCompact ?
+                        <div className={documentCardLocationClassNames.root} style={{ whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{ __html: this._domPurify.sanitize(processedProps.tags) }}></div> : null
+                    }
+                    {processedProps.author ?
+                        <DocumentCardActivity
+                            theme={this.props.themeVariant as ITheme}
+                            activity={processedProps.date}
+                            people={[{ name: author, profileImageSrc: processedProps.profileImage }]}
+                        /> : null
+                    }
+                </DocumentCardDetails>
+            </DocumentCard>
+            {renderPreviewCallout}
+        </div>;
     }
 }
 
 export class DocumentCardWebComponent extends BaseWebComponent {
-   
+
     public constructor() {
-        super(); 
+        super();
     }
- 
+
     public connectedCallback() {
- 
+
         let props = this.resolveAttributes();
         let serviceScope: ServiceScope = this._serviceScope; // Default is the root shared service scope regardless the current Web Part 
         let templateServiceKey: ServiceKey<any> = TemplateService.ServiceKey; // Defaut service key for TemplateService
+        let sharePointSearchServiceKey: ServiceKey<any> = SharePointSearchService.ServiceKey; // Defaut service key for SharePointSearchService
 
         if (props.instanceId) {
 
-          // Get the service scope and keys associated to the current Web Part displaying the component
-          serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
-          templateServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : templateServiceKey;
+            // Get the service scope and keys associated to the current Web Part displaying the component
+            serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
+            templateServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : templateServiceKey;
+            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : sharePointSearchServiceKey;
         }
 
         const templateService = serviceScope.consume<ITemplateService>(templateServiceKey);
+        const sharePointSearchService = serviceScope.consume<ISharePointSearchService>(sharePointSearchServiceKey);
 
-        const documentCarditem = <DocumentCardComponent {...props} templateService={templateService}/>;
+        const documentCarditem = <DocumentCardComponent {...props} templateService={templateService} sharePointSearchService={sharePointSearchService} />;
         ReactDOM.render(documentCarditem, this);
-    }    
+    }
 }

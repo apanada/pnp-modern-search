@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { IPreviewContainerProps, PreviewType } from './IPreviewContainerProps';
 import IPreviewContainerState from './IPreviewContainerState';
-import { ChoiceGroup, ContextualMenu, DefaultButton, DefaultPalette, Dialog, DialogFooter, DialogType, Icon, IconButton, ILabelStyles, IModalProps, IStackItemStyles, IStackStyles, IStackTokens, IStyleSet, Label, Link, Pivot, PivotItem, PrimaryButton, Stack } from 'office-ui-fabric-react';
+import { CommandBarButton, DefaultButton, Dialog, DialogType, IButtonStyles, Icon, IconButton, IIconProps, ILabelStyles, IModalProps, IOverflowSetItemProps, IStackTokens, IStyleSet, Label, Link, OverflowSet, Pivot, PivotItem, PivotLinkFormat, Stack } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react';
 import previewContainerStyles from './PreviewContainer.module.scss';
 import { Overlay } from 'office-ui-fabric-react';
@@ -19,10 +19,49 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         super(props);
         this.state = {
             showDialog: false,
-            isLoading: true
+            isLoading: true,
+            isFollowed: false
         };
 
         this._onCloseCallout = this._onCloseCallout.bind(this);
+        this._userActions = this._userActions.bind(this);
+        this._followOrUnfollowDocument = this._followOrUnfollowDocument.bind(this);
+    }
+
+    private _userActions(): JSX.Element {
+
+        const followedIcon: IIconProps = { iconName: 'FavoriteStarFill' };
+        const unfollowedIcon: IIconProps = { iconName: 'FavoriteStar' };
+
+        return (
+            <OverflowSet
+                aria-label="userActions"
+                role="menubar"
+                items={[
+                    {
+                        key: 'follow',
+                        onRender: () => {
+                            return (
+                                <div>
+                                    <span>
+                                        <DefaultButton
+                                            toggle
+                                            text={this.state.isFollowed ? 'Unfollow' : 'Follow'}
+                                            iconProps={this.state.isFollowed ? followedIcon : unfollowedIcon}
+                                            onClick={this._followOrUnfollowDocument}
+                                            allowDisabledFocus
+                                            style={{ border: "none" }}
+                                        />
+                                    </span>
+                                </div>
+                            );
+                        },
+                    }
+                ]}
+                onRenderOverflowButton={onRenderOverflowButton}
+                onRenderItem={onRenderItem}
+            />
+        );
     }
 
     public render(): React.ReactElement<IPreviewContainerProps> {
@@ -88,8 +127,14 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                 modalProps={modalProps}
                 minWidth="1300px"
             >
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    {this._userActions()}
+                </div>
                 <div>
-                    <Pivot aria-label="Select an option">
+                    <Pivot
+                        aria-label="Select an option"
+                        linkFormat={PivotLinkFormat.links}
+                    >
                         <PivotItem headerText="Document Preview" itemIcon="RedEye">
                             <div className={previewContainerStyles.calloutContentContainer} style={{ backgroundImage: backgroundImage }}>
                                 {renderLoading}
@@ -266,11 +311,19 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         );
     }
 
-    public componentDidMount() {
+    public async componentDidMount() {
         this.setState({
             showDialog: this.props.showPreview,
             isLoading: true
         });
+
+        const originalPath = this.props.resultItem["resource"]["fields"]["originalPath"];
+        if (originalPath) {
+            const isFollowed = await this.props.sharePointSearchService.isDocumentFollowed(originalPath);
+            this.setState({
+                isFollowed: isFollowed
+            });
+        }
     }
 
     public componentWillReceiveProps(nextProps: IPreviewContainerProps) {
@@ -310,4 +363,53 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
+
+    private _followOrUnfollowDocument = () => {
+        this.setState({
+            isFollowed: !this.state.isFollowed,
+        }, async () => {
+            const originalPath = this.props.resultItem["resource"]["fields"]["originalPath"];
+            if (originalPath) {
+                if (this.state.isFollowed) {
+                    const isFollowed = await this.props.sharePointSearchService.followDocument(originalPath);
+                } else {
+                    const isFollowed = await this.props.sharePointSearchService.stopFollowingDocument(originalPath);
+                }
+            }
+        });
+    }
 }
+
+const onRenderItem = (item: IOverflowSetItemProps): JSX.Element => {
+    if (item.onRender) {
+        return item.onRender(item);
+    }
+    return (
+        <CommandBarButton
+            role="menuitem"
+            iconProps={{ iconName: item.icon }}
+            menuProps={item.subMenuProps}
+            text={item.name}
+        />
+    );
+};
+
+const onRenderOverflowButton = (overflowItems: any[] | undefined): JSX.Element => {
+    const buttonStyles: Partial<IButtonStyles> = {
+        root: {
+            minWidth: 0,
+            padding: '0 4px',
+            alignSelf: 'stretch',
+            height: 'auto',
+        },
+    };
+    return (
+        <CommandBarButton
+            ariaLabel="More items"
+            role="menuitem"
+            styles={buttonStyles}
+            menuIconProps={{ iconName: 'More' }}
+            menuProps={{ items: overflowItems! }}
+        />
+    );
+};

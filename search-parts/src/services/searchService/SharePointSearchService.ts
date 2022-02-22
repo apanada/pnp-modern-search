@@ -17,7 +17,9 @@ import { cloneDeep } from "@microsoft/sp-lodash-subset";
 import { Constants } from '../../common/Constants';
 import { ISynonymTable } from '../../models/search/ISynonym';
 import { IHubSite } from '../../models/common/ISIte';
-import { sp, PermissionKind, Webs, Web } from "@pnp/sp/presets/all";
+import { sp, PermissionKind, Web } from "@pnp/sp/presets/all";
+import { Social, SocialActorType, SocialFollowResult } from "@pnp/sp/social";
+import { SharingLinkKind, IShareLinkResponse } from "@pnp/sp/sharing";
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -438,35 +440,91 @@ export class SharePointSearchService implements ISharePointSearchService {
     public async checkUserAccessToReports(reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }> {
 
         try {
-            var reportServerRelativeUrl = reportUrl.replace(window.location.origin, '');
-            reportServerRelativeUrl = `${reportServerRelativeUrl}/Contents`;
-            const web = Web(this.pageContext.web.absoluteUrl);
-            const folder: any = await web.getFolderByServerRelativeUrl(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions').get();
+            if (!isEmpty(reportUrl)) {
+                let reportServerRelativeUrl = reportUrl.replace(window.location.origin, '');
+                reportServerRelativeUrl = `${reportServerRelativeUrl}/Contents`;
+                const web = Web(this.pageContext.web.absoluteUrl);
+                const folder: any = await web.getFolderByServerRelativeUrl(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions').get();
 
-            if (folder) {
-                const hasAccess: boolean = sp.web.hasPermissions(
-                    folder.ListItemAllFields.EffectiveBasePermissions,
-                    PermissionKind.ViewListItems
-                );
+                if (folder) {
+                    const hasAccess: boolean = sp.web.hasPermissions(
+                        folder.ListItemAllFields.EffectiveBasePermissions,
+                        PermissionKind.ViewListItems
+                    );
 
-                if (hasAccess) {
-                    return {
-                        hasAccess: hasAccess,
-                        ItemCount: folder.ItemCount
-                    };
+                    if (hasAccess) {
+                        return {
+                            hasAccess: hasAccess,
+                            ItemCount: folder.ItemCount
+                        };
+                    }
                 }
-            }
 
-            return {
-                hasAccess: false,
-                ItemCount: 0
-            };
+                return {
+                    hasAccess: false,
+                    ItemCount: 0
+                };
+            }
         } catch (error) {
             Log.error("[SharePointSearchService.checkUserAccessToReports()]", error, this.serviceScope);
             return {
                 hasAccess: false,
                 ItemCount: 0
             };
+        }
+    }
+
+    public async followDocument(documentUrl: string): Promise<boolean> {
+        try {
+            if (!isEmpty(documentUrl)) {
+                // follow a doc
+                const social = Social(this.pageContext.web.absoluteUrl)
+                const socialFollowResult: SocialFollowResult = await social.follow({
+                    ActorType: SocialActorType.Document,
+                    ContentUri: documentUrl,
+                });
+
+                return (socialFollowResult.valueOf() === SocialFollowResult.Ok || socialFollowResult.valueOf() === SocialFollowResult.AlreadyFollowing);
+            }
+        } catch (error) {
+            Log.error("[SharePointSearchService.followDocument()]", error, this.serviceScope);
+            return false;
+        }
+    }
+
+    public async isDocumentFollowed(documentUrl: string): Promise<boolean> {
+        try {
+            if (!isEmpty(documentUrl)) {
+                // check whether the current user is following a specified document                
+                const social = Social(this.pageContext.web.absoluteUrl)
+                const isFollowed: boolean = await social.isFollowed({
+                    ActorType: SocialActorType.Document,
+                    ContentUri: documentUrl,
+                });
+
+                return isFollowed;
+            }
+        } catch (error) {
+            Log.error("[SharePointSearchService.isDocumentFollowed()]", error, this.serviceScope);
+            return false;
+        }
+    }
+
+    public async stopFollowingDocument(documentUrl: string): Promise<boolean> {
+        try {
+            if (!isEmpty(documentUrl)) {
+                // makes the current user stop following a document
+                const social = Social(this.pageContext.web.absoluteUrl)
+                await social.stopFollowing({
+                    ActorType: SocialActorType.Document,
+                    ContentUri: documentUrl,
+                });
+
+                return true;
+            }
+        } catch (error) {
+            Log.error("[SharePointSearchService.stopFollowingDocument()]", error, this.serviceScope);
+            return false;
         }
     }
 

@@ -5,6 +5,9 @@ import PreviewContainer from '../controls/PreviewContainer/PreviewContainer';
 import { PreviewType } from '../controls/PreviewContainer/IPreviewContainerProps';
 import { UrlHelper } from '../helpers/UrlHelper';
 import * as DOMPurify from 'dompurify';
+import { ServiceKey, ServiceScope } from '@microsoft/sp-core-library';
+import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
+import { ISharePointSearchService } from '../services/searchService/ISharePointSearchService';
 
 export interface IFilePreviewProps {
 
@@ -29,6 +32,11 @@ export interface IFilePreviewProps {
     template?: string;
 
     resultItem?: any;
+
+    /**
+     * A sharepoint search service instance
+     */
+    sharePointSearchService: ISharePointSearchService;
 }
 
 export interface IFileIconState {
@@ -54,7 +62,7 @@ export class FilePreview extends React.Component<IFilePreviewProps, IFileIconSta
         let previewUrl = this.props.previewUrl;
 
         // Fallback to thumbnail in iframe if different domain as auth won't work cross domains
-        if(previewUrl && this.props.previewImageUrl && !this.isCurrentDomain(previewUrl)) {
+        if (previewUrl && this.props.previewImageUrl && !this.isCurrentDomain(previewUrl)) {
             previewUrl = this.props.previewImageUrl;
         }
 
@@ -70,6 +78,7 @@ export class FilePreview extends React.Component<IFilePreviewProps, IFileIconSta
                 previewType={PreviewType.Document}
                 showPreview={this.state.isCalloutVisible}
                 resultItem={this.props.resultItem}
+                sharePointSearchService={this.props.sharePointSearchService}
             />;
         }
 
@@ -104,7 +113,19 @@ export class FilePreviewWebComponent extends BaseWebComponent {
     public async connectedCallback() {
 
         let props = this.resolveAttributes();
-        const filePreview = <FilePreview {...props} template={this.innerHTML} />;
+        let serviceScope: ServiceScope = this._serviceScope; // Default is the root shared service scope regardless the current Web Part 
+        let sharePointSearchServiceKey: ServiceKey<any> = SharePointSearchService.ServiceKey; // Defaut service key for SharePointSearchService
+
+        if (props.instanceId) {
+
+            // Get the service scope and keys associated to the current Web Part displaying the component
+            serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
+            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : sharePointSearchServiceKey;
+        }
+
+        const sharePointSearchService = serviceScope.consume<ISharePointSearchService>(sharePointSearchServiceKey);
+
+        const filePreview = <FilePreview {...props} template={this.innerHTML} sharePointSearchService={sharePointSearchService} />;
         ReactDOM.render(filePreview, this);
     }
 }

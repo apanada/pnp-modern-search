@@ -40,4 +40,10 @@ export interface ISharePointSearchService {
      getHubSiteInfo(siteUrl: string, siteId: string): Promise<IHubSite>;
 
      checkUserAccessToReports(reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }>;
+
+     followDocument(documentUrl: string): Promise<boolean>;
+
+     isDocumentFollowed(documentUrl: string): Promise<boolean>;
+
+     stopFollowingDocument(documentUrl: string): Promise<boolean>;
 }
