@@ -153,7 +153,7 @@
                                 </div>
                             </div>
                             <div>
-                                <pnp-filemenu data-extension="{{slot item @root.slots.FileType}}" data-is-container="{{slot item @root.slots.IsFolder}}" data-image-url="{{item.siteLogo}}" data-size="32" data-redirect-url="{{item.serverRedirectedURL}}" data-original-path="{{item.originalPath}}" data-site-url="{{item.spSiteURL}}" data-unique-id="{{item.normUniqueID}}" data-parent-link="{{item.parentLink}}" data-site-id="{{item.normSiteID}}" data-theme-variant="{{JSONstringify @root.theme}}"></pnp-filemenu>
+                                <pnp-filemenu data-extension="{{slot item @root.slots.FileType}}" data-is-container="{{slot item @root.slots.IsFolder}}" data-size="32" data-result-item="{{JSONstringify item}}" data-theme-variant="{{JSONstringify @root.theme}}"></pnp-filemenu>
                             </div>
                             {{/if}} {{/resultTypes}}
                         </li>

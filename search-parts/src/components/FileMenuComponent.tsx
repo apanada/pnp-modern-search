@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements } from 'office-ui-fabric-react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { UrlHelper } from '../helpers/UrlHelper';
 import { ServiceScope } from '@microsoft/sp-core-library';
 import { ISharePointSearchService } from '../services/searchService/ISharePointSearchService';
 import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
+import { isEmpty } from '@microsoft/sp-lodash-subset';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
     "doc", "docx", "docm", "dot", "dotm", "dotx",
@@ -33,21 +34,9 @@ export interface IFileMenuProps {
     size?: string;
 
     /**
-     * Image url to use as the icon
+     * The search result item
      */
-    imageUrl?: string;
-
-    redirectUrl?: string;
-
-    originalPath?: string;
-
-    siteId?: string;
-
-    siteUrl?: string;
-
-    uniqueId?: string;
-
-    parentLink?: string;
+    resultItem?: any;
 
     /**
      * The current theme settings
@@ -66,12 +55,16 @@ export interface IFileMenuState {
     userHasAccessToReport?: boolean;
 
     reportsDocumentSetItemCount?: number;
+
+    isLoading?: boolean;
+
+    requestForAccess?: boolean;
 }
 
 const checkAccessStyles = mergeStyleSets({
     callout: {
         width: 320,
-        padding: '0px 24px',
+        padding: '0px 0px',
     },
     title: {
         marginBottom: 12,
@@ -80,19 +73,42 @@ const checkAccessStyles = mergeStyleSets({
     buttons: {
         display: 'flex',
         justifyContent: 'flex-end',
-        marginTop: 20,
+        marginTop: 10,
+    },
+    link: {
+        display: 'inline-flex',
+        marginTop: 5,
     }
 });
 
 export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
+    /**
+     * Image url to use as the icon
+     */
+    private imageUrl?: string;
+
+    private redirectUrl?: string;
+
+    private originalPath?: string;
+
+    private siteId?: string;
+
+    private siteUrl?: string;
+
+    private uniqueId?: string;
+
+    private parentLink?: string;
+
     constructor(props: IFileMenuProps) {
         super(props);
 
         this.state = {
+            isLoading: false,
             checkAccessCalloutVisible: false,
             userHasAccessToReport: false,
-            reportsDocumentSetItemCount: 0
+            reportsDocumentSetItemCount: 0,
+            requestForAccess: false
         };
 
         this._openDocumentInBrowser = this._openDocumentInBrowser.bind(this);
@@ -101,6 +117,20 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this._openDocumentParentFolder = this._openDocumentParentFolder.bind(this);
         this._searchThisSite = this._searchThisSite.bind(this);
         this._checkReportAccess = this._checkReportAccess.bind(this);
+        this._requestForAccess = this._requestForAccess.bind(this);
+        this._toggleCheckAccessCallout = this._toggleCheckAccessCallout.bind(this);
+    }
+
+    public componentDidMount(): void {
+        if (this.props.resultItem) {
+            this.imageUrl = this.props.resultItem["siteLogo"];
+            this.redirectUrl = this.props.resultItem["serverRedirectedURL"];
+            this.originalPath = this.props.resultItem["originalPath"];
+            this.siteUrl = this.props.resultItem["spSiteURL"];
+            this.siteId = this.props.resultItem["normSiteID"];
+            this.uniqueId = this.props.resultItem["normUniqueID"];
+            this.parentLink = this.props.resultItem["parentLink"];
+        }
     }
 
     public render() {
@@ -133,6 +163,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         };
 
         const menuItems: IContextualMenuItem[] = [];
+
         const openInBrowserMenuItem: IContextualMenuItem = {
             key: 'openInBrowser',
             text: 'Open in browser',
@@ -150,6 +181,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             },
             onClick: this._openDocumentInBrowser
         };
+
         const openInAppMenuItem: IContextualMenuItem = {
             key: 'openInApp',
             text: 'Open in app',
@@ -173,6 +205,18 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             menuItems.push(openInAppMenuItem);
         }
 
+        //If Content Type === <Shell Document Set> OR Content Type === <Shell Report>
+        if (this.props.resultItem &&
+            !isEmpty(this.props.resultItem["contentType"]) &&
+            (this.props.resultItem["contentType"] === "Document Set" || this.props.resultItem["contentType"] === "Shell Report")) {
+            menuItems.push({
+                key: 'checkReportAccess',
+                iconProps: { iconName: 'Signin' },
+                text: 'Check access',
+                onClick: this._checkReportAccess
+            });
+        }
+
         menuItems.push(
             {
                 key: 'openFolder',
@@ -194,56 +238,85 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             }
         );
 
-        // Todo: If Content Type === <Report_DocSet_CT>
-        menuItems.push({
-            key: 'checkReportAccess',
-            iconProps: { iconName: 'Signin' },
-            text: 'Check access',
-            onClick: this._checkReportAccess
-        });
+        const uniqueId = Math.floor(Math.random() * 1000) + 1;
 
         return <div>
-            <CommandBarButton
-                id='results-menu-item'
-                text="..."
-                styles={styles}
-                theme={this.props.themeVariant as ITheme}
-                menuProps={{
-                    shouldFocusOnMount: true,
-                    items: [...menuItems],
-                }} />
+            <div>
+                <CommandBarButton
+                    id={`results-menu-item-${uniqueId}`}
+                    text="..."
+                    styles={styles}
+                    theme={this.props.themeVariant as ITheme}
+                    menuProps={{
+                        shouldFocusOnMount: true,
+                        items: [...menuItems],
+                    }} />
+            </div>
             <div>
                 {this.state.checkAccessCalloutVisible && (
-                    <FocusTrapCallout
+                    <Callout
                         role="checkaccesscallout"
                         ariaLabelledBy="check-access-callout-label"
                         className={checkAccessStyles.callout}
                         gapSpace={0}
-                        onDismiss={() => this.setState({ checkAccessCalloutVisible: false })}
-                        target={`#${'results-menu-item'}`}
-                        isBeakVisible={false}
+                        target={`#results-menu-item-${uniqueId}`}
+                        isBeakVisible={true}
                         setInitialFocus
+                        onDismiss={this._toggleCheckAccessCallout}
                         styles={{
                             calloutMain: {
-                                paddingTop: "20px",
-                                paddingBottom: "20px"
+                                padding: "20px 24px"
                             }
                         }}
                     >
                         <Text block variant="xLarge" className={checkAccessStyles.title}>
                             Reports: Check Permissions
                         </Text>
-                        <Text block variant="small">
-                            Content is wrapped in a FocusTrapZone so the user cannot accidentally tab or focus out of this callout. Use
-                            the buttons to close.
-                        </Text>
+                        {
+                            this.state.isLoading ?
+                                this.state.userHasAccessToReport ?
+                                    <div>
+                                        <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
+                                            You have access to this report, please click the below link to view the report.
+                                        </Text>
+                                        <Link target="_blank" onClick={this._openLinkInNewTab.bind(this, `${this.originalPath}/Contents`)} className={checkAccessStyles.link}>
+                                            Shell Report
+                                        </Link>
+                                        <div>
+                                            {
+                                                <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
+                                                    <Label styles={{ root: { color: this.props.themeVariant.palette.themePrimary } }}>Report Type | {this.state.reportsDocumentSetItemCount > 0 ? "Electronic" : "Physical"}</Label>
+                                                </Text>
+                                            }
+                                        </div>
+                                    </div>
+                                    :
+                                    <div>
+                                        <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
+                                            You don't have access to this report.
+                                        </Text>
+                                        <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._requestForAccess} />
+                                        {
+                                            this.state.requestForAccess &&
+                                            <TextField label="Request comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
+                                        }
+                                    </div>
+                                :
+                                <div>
+                                    <Spinner size={SpinnerSize.large} />
+                                </div>
+                        }
+
                         <FocusZone handleTabKey={FocusZoneTabbableElements.all} isCircularNavigation>
                             <Stack className={checkAccessStyles.buttons} gap={8} horizontal>
-                                <PrimaryButton onClick={() => this.setState({ checkAccessCalloutVisible: false })}>Done</PrimaryButton>
-                                <DefaultButton onClick={() => this.setState({ checkAccessCalloutVisible: false })}>Cancel</DefaultButton>
+                                {
+                                    this.state.requestForAccess &&
+                                    <PrimaryButton onClick={this._toggleCheckAccessCallout}>Request Access</PrimaryButton>
+                                }
+                                <DefaultButton onClick={this._toggleCheckAccessCallout}>Cancel</DefaultButton>
                             </Stack>
                         </FocusZone>
-                    </FocusTrapCallout>
+                    </Callout>
                 )}
             </div>
         </div>;
@@ -340,8 +413,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     private _openDocumentInBrowser(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
         let newTabObject: any = null;
         try {
-            if (this.props.redirectUrl) {
-                let documentWebUrl: string = this.props.redirectUrl;
+            if (this.redirectUrl) {
+                let documentWebUrl: string = this.redirectUrl;
                 newTabObject = window.open(documentWebUrl);
             }
         }
@@ -357,8 +430,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     private _openDocumentInApp(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
         let newTabObject: any = null;
         try {
-            if (this.props.extension && this.props.originalPath) {
-                let clientAppUrl: string = `${this._getOfficeClientAppScheme(this.props.extension)}:ofe|u|${this.props.originalPath}`;
+            if (this.props.extension && this.originalPath) {
+                let clientAppUrl: string = `${this._getOfficeClientAppScheme(this.props.extension)}:ofe|u|${this.originalPath}`;
                 newTabObject = window.open(clientAppUrl, "_self");
             }
         }
@@ -374,8 +447,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     public _downloadDocument(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
         let newTabObject: any = null;
         try {
-            if (this.props.siteUrl && this.props.uniqueId) {
-                let documentDownloadUrl: string = `${this.props.siteUrl}/_layouts/15/download.aspx?UniqueId=${this.props.uniqueId}`;
+            if (this.siteUrl && this.uniqueId) {
+                let documentDownloadUrl: string = `${this.siteUrl}/_layouts/15/download.aspx?UniqueId=${this.uniqueId}`;
                 newTabObject = window.open(documentDownloadUrl, "_self");
             }
         }
@@ -391,8 +464,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     private _openDocumentParentFolder(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
         let newTabObject: any = null;
         try {
-            if (this.props.parentLink) {
-                let parentFolderURl: string = this.props.parentLink;
+            if (this.parentLink) {
+                let parentFolderURl: string = this.parentLink;
                 newTabObject = window.open(parentFolderURl);
             }
         }
@@ -405,9 +478,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
     private _searchThisSite(ev?: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>, item?: IContextualMenuItem): void {
         let newTabObject: any = null;
         try {
-            if (this.props.siteId) {
+            if (this.siteId) {
                 let searchThisSiteUrl: string = UrlHelper.addOrReplaceQueryStringParam(window.location.href, "scope", "site");
-                searchThisSiteUrl = UrlHelper.addOrReplaceQueryStringParam(searchThisSiteUrl, "sid", this.props.siteId.toString());
+                searchThisSiteUrl = UrlHelper.addOrReplaceQueryStringParam(searchThisSiteUrl, "sid", this.props.toString());
 
                 newTabObject = window.open(searchThisSiteUrl, "_blank");
             }
@@ -418,17 +491,50 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         }
     }
 
-    private _checkReportAccess() {
-        this.setState({ checkAccessCalloutVisible: true });
+    private _toggleCheckAccessCallout() {
+        this.setState({
+            isLoading: false,
+            checkAccessCalloutVisible: false,
+            reportsDocumentSetItemCount: 0,
+            requestForAccess: false,
+            userHasAccessToReport: false
+        });
+    }
 
-        const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
-        const userHasAccess = sharePointSearchService.checkUserAccessToReports("https://m365x083241.sharepoint.com/sites/FlySafeConference/Shell Documents/Shell DocSet");
-        userHasAccess.then(hasAccess => {
-            this.setState({
-                reportsDocumentSetItemCount: hasAccess.ItemCount,
-                userHasAccessToReport: hasAccess.hasAccess
+    private _checkReportAccess() {
+
+        if (this.originalPath) {
+            this.setState({ checkAccessCalloutVisible: true });
+
+            const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
+            const userHasAccess = sharePointSearchService.checkUserAccessToReports(this.originalPath);
+            userHasAccess.then(hasAccess => {
+                this.setState({
+                    isLoading: true,
+                    reportsDocumentSetItemCount: hasAccess.ItemCount,
+                    userHasAccessToReport: hasAccess.hasAccess
+                });
             });
-        })
+        }
+    }
+
+    private _openLinkInNewTab(link: string) {
+        let newTabObject: any = null;
+        try {
+            if (link) {
+                newTabObject = window.open(link, "_blank");
+            }
+        }
+        catch (ex) {
+            //optionaly, we can notify the user;
+            // cuurently - do nothing
+        }
+    }
+
+    private _requestForAccess(ev: React.MouseEvent<HTMLElement>, checked?: boolean) {
+        this.setState({
+            requestForAccess: checked
+        });
     }
 }
 
