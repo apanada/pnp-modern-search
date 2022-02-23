@@ -303,7 +303,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                     </div>
                                 :
                                 <div>
-                                    <Spinner size={SpinnerSize.large} />
+                                    <Spinner size={SpinnerSize.large} label="Verifying your access on this report..." />
                                 </div>
                         }
 

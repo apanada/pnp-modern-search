@@ -27,7 +27,9 @@ export abstract class BaseWebPart<T extends IBaseWebPartProps> extends BaseClien
     /**
      * The Web Part properties
      */
-    protected properties: T;
+    protected get wbProperties(): T {
+      return this.properties as T;
+    }
 
     /**
      * The data source service instance

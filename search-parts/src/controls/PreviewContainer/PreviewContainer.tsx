@@ -157,7 +157,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
             closeMenuItemText: 'Close',
             menu: ContextualMenu,
             keepInBounds: true,
-        }
+        };
 
         const createdDate: string = this._getDate(this.props.resultItem["resource"]["createdDateTime"]);
         const lastModifiedDate: string = this._getDate(this.props.resultItem["resource"]["lastModifiedDateTime"]);
@@ -310,7 +310,6 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                                             <Label styles={labelStyles}>DocumentLink:</Label>
                                                         </div>
                                                         <div className="keyValueValue">
-                                                            <span>{this.props.resultItem["resource"]["fields"]["filename"] ?? ""}</span>
                                                             <Link href={this.props.resultItem["resource"]["fields"]["documentLink"]} target='_blank' style={{ marginLeft: "8px" }}>
                                                                 <Icon iconName="OpenInNewTab" title="Open in new tab" ariaLabel="Open in new tab" />
                                                             </Link>

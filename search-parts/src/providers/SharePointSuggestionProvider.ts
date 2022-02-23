@@ -16,10 +16,8 @@ export class SharePointSuggestionProvider extends BaseSuggestionProvider<IShareP
         this.serviceScope.whenFinished(() => {
           this._searchService = this.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
         });
-    }
-  
-    public get isZeroTermSuggestionsEnabled(): boolean {
-        return false;
+
+        this._isZeroTermSuggestionsEnabled = false;
     }
   
     public async getSuggestions(queryText: string): Promise<ISuggestion[]> {

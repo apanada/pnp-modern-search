@@ -42,8 +42,8 @@ import commonStyles from '../../styles/Common.module.scss';
 import { IDataVerticalSourceData } from '../../models/dynamicData/IDataVerticalSourceData';
 import { DynamicPropertyHelper } from '../../helpers/DynamicPropertyHelper';
 import { PageContext } from '@microsoft/sp-page-context';
-import { sp } from "shell-search-extensibility/lib/index";
 import { ITermSetPickerResult, TermSetPicker } from '../../components/TermSetPickerComponent';
+import { spfi, SPFx } from '@pnp/sp';
 
 export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebPartProps> implements IDynamicDataCallables {
 
@@ -111,10 +111,6 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
     protected async onInit() {
 
-        sp.setup({
-            spfxContext: this.context
-        });
-
         this.initializeProperties();
 
         // Initializes shared services
@@ -142,7 +138,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         // We need to register components here in the case where the Search Results WP is not present on the page
         await this.templateService.registerWebComponents(this.availableWebComponentDefinitions, this.instanceId);
 
-        return super.onInit();
+        await super.onInit();
+
+        const sp = spfi().using(SPFx(this.context));
     }
 
     public async render(): Promise<void> {
@@ -152,9 +150,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         await this.initTemplate();
 
         // Get and initialize layout instance if different (i.e avoid to create a new instance every time)
-        if (this.lastLayoutKey !== this.properties.selectedLayoutKey) {
-            this.layout = await LayoutHelper.getLayoutInstance(this.webPartInstanceServiceScope, this.context, this.properties, this.properties.selectedLayoutKey, this.availableLayoutDefinitions);
-            this.lastLayoutKey = this.properties.selectedLayoutKey;
+        if (this.lastLayoutKey !== this.wbProperties.selectedLayoutKey) {
+            this.layout = await LayoutHelper.getLayoutInstance(this.webPartInstanceServiceScope, this.context, this.wbProperties, this.wbProperties.selectedLayoutKey, this.availableLayoutDefinitions);
+            this.lastLayoutKey = this.wbProperties.selectedLayoutKey;
         }
 
         // Refresh the property pane to get layout and data source options
@@ -171,7 +169,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         let filterResults: IDataFilterResult[] = [];
 
         // Display the Web Part only if a valid configuration is set
-        if (this.templateContentToDisplay && this.properties.filtersConfiguration.length > 0) {
+        if (this.templateContentToDisplay && this.wbProperties.filtersConfiguration.length > 0) {
 
             // Get data from connected sources
             if (this._dataSourceDynamicProperties.length > 0) {
@@ -187,18 +185,18 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
             // OR the data results don't contain this filter name. 
             // We create fake entries for those filters to be able to render them in the template
             // We do this by convenience to avoid refactoring the Handlebars templates
-            filterResults = this._initStaticFilters(filterResults, this.properties.filtersConfiguration);
+            filterResults = this._initStaticFilters(filterResults, this.wbProperties.filtersConfiguration);
 
             renderRootElement = React.createElement(
                 SearchFilters,
                 {
                     templateContent: this.templateContentToDisplay,
                     availableFilters: filterResults,
-                    filtersConfiguration: this.properties.filtersConfiguration,
+                    filtersConfiguration: this.wbProperties.filtersConfiguration,
                     domElement: this.domElement,
                     instanceId: this.instanceId,
-                    selectedLayoutKey: this.properties.selectedLayoutKey,
-                    properties: JSON.parse(JSON.stringify(this.properties)),
+                    selectedLayoutKey: this.wbProperties.selectedLayoutKey,
+                    properties: JSON.parse(JSON.stringify(this.wbProperties)),
                     themeVariant: this._themeVariant,
                     onUpdateFilters: (updatedFilters: IDataFilter[]) => {
 
@@ -210,9 +208,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                     templateService: this.templateService,
                     webPartTitleProps: {
                         displayMode: this.displayMode,
-                        title: this.properties.title,
+                        title: this.wbProperties.title,
                         updateProperty: (value: string) => {
-                            this.properties.title = value;
+                            this.wbProperties.title = value;
                         },
                         className: commonStyles.wpTitle
                     }
@@ -239,7 +237,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         }
 
         // Check if the Web part is connected to a data vertical
-        if (this._verticalsSourceData && this.properties.selectedVerticalKeys.length > 0) {
+        if (this._verticalsSourceData && this.wbProperties.selectedVerticalKeys.length > 0) {
             const verticalData = DynamicPropertyHelper.tryGetValueSafe(this._verticalsSourceData);
 
             // Remove the blank space introduced by the control zone when the Web Part displays nothing
@@ -247,7 +245,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
             const parentControlZone = this.getParentControlZone();
 
             // If the current selected vertical is not the one configured for this Web Part, we show nothing
-            if (verticalData && verticalData.selectedVertical && this.properties.selectedVerticalKeys.indexOf(verticalData.selectedVertical.key) === -1) {
+            if (verticalData && verticalData.selectedVertical && this.wbProperties.selectedVerticalKeys.indexOf(verticalData.selectedVertical.key) === -1) {
 
                 if (this.displayMode === DisplayMode.Edit) {
 
@@ -257,7 +255,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
                     // Get tab name of selected verticals
                     const verticalNames = verticalData.verticalsConfiguration.filter(cfg => {
-                        return this.properties.selectedVerticalKeys.indexOf(cfg.key) !== -1;
+                        return this.wbProperties.selectedVerticalKeys.indexOf(cfg.key) !== -1;
                     }).map(v => v.tabName);
 
                     renderRootElement = React.createElement('div', {},
@@ -300,7 +298,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         return [
             {
                 id: ComponentType.SearchFilters,
-                title: this.properties.title ? `${this.properties.title} - ${this.instanceId}` : `${webPartStrings.General.WebPartDefaultTitle} - ${this.instanceId}`
+                title: this.wbProperties.title ? `${this.wbProperties.title} - ${this.instanceId}` : `${webPartStrings.General.WebPartDefaultTitle} - ${this.instanceId}`
             }
         ];
     }
@@ -311,9 +309,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
             case propertyId:
                 return {
-                    filterConfiguration: this.properties.filtersConfiguration,
+                    filterConfiguration: this.wbProperties.filtersConfiguration,
                     selectedFilters: this._selectedFilters,
-                    filterOperator: this.properties.filterOperator,
+                    filterOperator: this.wbProperties.filterOperator,
                     instanceId: this.instanceId
                 } as IDataFilterSourceData;
 
@@ -393,10 +391,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         if (propertyPath.localeCompare('filtersConfiguration') === 0 && !isEqual(oldValue, newValue)) {
 
             // Remove duplicate fields. We can't have multiple filters with the same field
-            this.properties.filtersConfiguration = uniqBy(this.properties.filtersConfiguration, 'filterName');
+            this.wbProperties.filtersConfiguration = uniqBy(this.wbProperties.filtersConfiguration, 'filterName');
 
             // Set correct default values according to the template
-            this.properties.filtersConfiguration = (newValue as IDataFilterConfiguration[]).map(configuration => {
+            this.wbProperties.filtersConfiguration = (newValue as IDataFilterConfiguration[]).map(configuration => {
                 if (configuration.selectedTemplate === BuiltinFilterTemplates.DateRange
                     || configuration.selectedTemplate === BuiltinFilterTemplates.DateInterval) {
                     configuration.isMulti = false;
@@ -420,11 +418,11 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
 
             // Automatically switch the option to 'Custom' if a default template has been edited
             // (meaning the user started from a default template)
-            if (this.properties.inlineTemplateContent && this.properties.selectedLayoutKey !== BuiltinLayoutsKeys.FiltersCustom) {
-                this.properties.selectedLayoutKey = BuiltinLayoutsKeys.FiltersCustom;
+            if (this.wbProperties.inlineTemplateContent && this.wbProperties.selectedLayoutKey !== BuiltinLayoutsKeys.FiltersCustom) {
+                this.wbProperties.selectedLayoutKey = BuiltinLayoutsKeys.FiltersCustom;
 
                 // Reset also the template URL
-                this.properties.externalTemplateUrl = '';
+                this.wbProperties.externalTemplateUrl = '';
 
                 // Reset the layout options (otherwise we stay with the previous layout options)
                 if (this.context.propertyPane.isPropertyPaneOpen()) {
@@ -439,19 +437,19 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         }
 
         // Reset layout properties
-        if (propertyPath.localeCompare('selectedLayoutKey') === 0 && !isEqual(oldValue, newValue) && this.properties.selectedLayoutKey !== BuiltinLayoutsKeys.ResultsDebug.toString()) {
-            this.properties.layoutProperties = {};
+        if (propertyPath.localeCompare('selectedLayoutKey') === 0 && !isEqual(oldValue, newValue) && this.wbProperties.selectedLayoutKey !== BuiltinLayoutsKeys.ResultsDebug.toString()) {
+            this.wbProperties.layoutProperties = {};
         }
 
-        if (propertyPath.localeCompare('verticalsDataSourceReference') === 0 && this.properties.verticalsDataSourceReference) {
+        if (propertyPath.localeCompare('verticalsDataSourceReference') === 0 && this.wbProperties.verticalsDataSourceReference) {
             this.ensureDynamicDataSourcesConnection();
             this.context.propertyPane.refresh();
         }
 
         if (propertyPath.localeCompare('useVerticals') === 0) {
-            if (!this.properties.useVerticals) {
-                this.properties.verticalsDataSourceReference = undefined;
-                this.properties.selectedVerticalKeys = [];
+            if (!this.wbProperties.useVerticals) {
+                this.wbProperties.verticalsDataSourceReference = undefined;
+                this.wbProperties.selectedVerticalKeys = [];
                 this._verticalsSourceData = undefined;
             }
         }
@@ -478,7 +476,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         // The text to display in the combo
         const textDisplayValues: string[] = [];
         sourceOptions.forEach(option => {
-            if (this.properties.dataResultsDataSourceReferences.indexOf(option.key as string) !== -1) {
+            if (this.wbProperties.dataResultsDataSourceReferences.indexOf(option.key as string) !== -1) {
                 textDisplayValues.push(option.text);
             }
         });
@@ -499,7 +497,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                     // Refresh the property pane for available fields
                     this.context.propertyPane.refresh();
                 },
-                defaultSelectedKeys: this.properties.dataResultsDataSourceReferences,
+                defaultSelectedKeys: this.wbProperties.dataResultsDataSourceReferences,
                 allowMultiSelect: true
             }),
         ];
@@ -538,7 +536,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                 initialValue: this.templateContentToDisplay,
                 deferredValidationTime: 500,
                 onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
-                properties: this.properties,
+                properties: this.wbProperties,
                 disabled: false,
                 key: 'inlineTemplateContentCodeEditor',
                 language: this._propertyFieldCodeEditorLanguages.Handlebars
@@ -546,7 +544,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         );
 
         // Only show the template external URL for 'Custom' option
-        if (this.properties.selectedLayoutKey === BuiltinLayoutsKeys.FiltersCustom) {
+        if (this.wbProperties.selectedLayoutKey === BuiltinLayoutsKeys.FiltersCustom) {
             stylingFields.push(
                 PropertyPaneTextField('externalTemplateUrl', {
                     label: webPartStrings.PropertyPane.LayoutPage.TemplateUrlFieldLabel,
@@ -640,7 +638,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                 panelHeader: webPartStrings.PropertyPane.DataFilterCollection.CustomizeFiltersHeader,
                 panelDescription: webPartStrings.PropertyPane.DataFilterCollection.CustomizeFiltersDescription,
                 label: webPartStrings.PropertyPane.DataFilterCollection.CustomizeFiltersFieldLabel,
-                value: this.properties.filtersConfiguration,
+                value: this.wbProperties.filtersConfiguration,
                 fields: [
                     {
                         id: 'displayValue',
@@ -894,11 +892,11 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         let verticalsConnectionFields: IPropertyPaneField<any>[] = [
             PropertyPaneToggle('useVerticals', {
                 label: commonStrings.PropertyPane.ConnectionsPage.UseDataVerticalsWebPartLabel,
-                checked: this.properties.useVerticals
+                checked: this.wbProperties.useVerticals
             })
         ];
 
-        if (this.properties.useVerticals) {
+        if (this.wbProperties.useVerticals) {
             verticalsConnectionFields.splice(1, 0,
                 PropertyPaneDropdown('verticalsDataSourceReference', {
                     options: await this.dynamicDataService.getAvailableDataSourcesByType(ComponentType.SearchVerticals),
@@ -906,7 +904,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                 })
             );
 
-            if (this.properties.verticalsDataSourceReference) {
+            if (this.wbProperties.verticalsDataSourceReference) {
 
                 // Get all available verticals
                 if (this._verticalsSourceData) {
@@ -918,7 +916,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                         let selectedKeysAsText: string[] = [];
 
                         availableVerticals.verticalsConfiguration.forEach(verticalConfiguration => {
-                            if (this.properties.selectedVerticalKeys.indexOf(verticalConfiguration.key) !== -1) {
+                            if (this.wbProperties.selectedVerticalKeys.indexOf(verticalConfiguration.key) !== -1) {
                                 selectedKeysAsText.push(verticalConfiguration.tabName);
                             }
                         });
@@ -936,7 +934,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                                 description: webPartStrings.PropertyPane.ConnectionsPage.LinkToVerticalLabelHoverMessage,
                                 label: webPartStrings.PropertyPane.ConnectionsPage.LinkToVerticalLabel,
                                 searchAsYouType: false,
-                                defaultSelectedKeys: this.properties.selectedVerticalKeys,
+                                defaultSelectedKeys: this.wbProperties.selectedVerticalKeys,
                                 textDisplayValue: selectedKeysAsText.join(','),
                                 onPropertyChange: this.onCustomPropertyUpdate.bind(this),
                             })
@@ -981,14 +979,14 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
     private async initTemplate(): Promise<void> {
 
         // Gets the template content according to the selected key
-        const selectedLayoutTemplateContent = this.availableLayoutDefinitions.filter(layout => { return layout.key === this.properties.selectedLayoutKey; })[0].templateContent;
+        const selectedLayoutTemplateContent = this.availableLayoutDefinitions.filter(layout => { return layout.key === this.wbProperties.selectedLayoutKey; })[0].templateContent;
 
-        if (this.properties.selectedLayoutKey === BuiltinLayoutsKeys.FiltersCustom) {
+        if (this.wbProperties.selectedLayoutKey === BuiltinLayoutsKeys.FiltersCustom) {
 
-            if (this.properties.externalTemplateUrl) {
-                this.templateContentToDisplay = await this.templateService.getFileContent(this.properties.externalTemplateUrl);
+            if (this.wbProperties.externalTemplateUrl) {
+                this.templateContentToDisplay = await this.templateService.getFileContent(this.wbProperties.externalTemplateUrl);
             } else {
-                this.templateContentToDisplay = this.properties.inlineTemplateContent ? this.properties.inlineTemplateContent : selectedLayoutTemplateContent;
+                this.templateContentToDisplay = this.wbProperties.inlineTemplateContent ? this.wbProperties.inlineTemplateContent : selectedLayoutTemplateContent;
             }
 
         } else {
@@ -1011,21 +1009,21 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
      */
     private initializeProperties() {
 
-        this.properties.selectedLayoutKey = this.properties.selectedLayoutKey ? this.properties.selectedLayoutKey : BuiltinLayoutsKeys.Vertical;
-        this.properties.inlineTemplateContent = this.properties.inlineTemplateContent ? this.properties.inlineTemplateContent : '';
-        this.properties.filterOperator = this.properties.filterOperator ? this.properties.filterOperator : FilterConditionOperator.OR;
-        this.properties.layoutProperties = this.properties.layoutProperties ? this.properties.layoutProperties : {};
-        this.properties.dataResultsDataSourceReferences = this.properties.dataResultsDataSourceReferences ? this.properties.dataResultsDataSourceReferences : [];
+        this.wbProperties.selectedLayoutKey = this.wbProperties.selectedLayoutKey ? this.wbProperties.selectedLayoutKey : BuiltinLayoutsKeys.Vertical;
+        this.wbProperties.inlineTemplateContent = this.wbProperties.inlineTemplateContent ? this.wbProperties.inlineTemplateContent : '';
+        this.wbProperties.filterOperator = this.wbProperties.filterOperator ? this.wbProperties.filterOperator : FilterConditionOperator.OR;
+        this.wbProperties.layoutProperties = this.wbProperties.layoutProperties ? this.wbProperties.layoutProperties : {};
+        this.wbProperties.dataResultsDataSourceReferences = this.wbProperties.dataResultsDataSourceReferences ? this.wbProperties.dataResultsDataSourceReferences : [];
 
-        if (!this.properties.filtersConfiguration) {
-            this.properties.filtersConfiguration = [];
+        if (!this.wbProperties.filtersConfiguration) {
+            this.wbProperties.filtersConfiguration = [];
         }
 
         /* Verticals */
-        this.properties.useVerticals = this.properties.useVerticals !== undefined ? this.properties.useVerticals : false;
+        this.wbProperties.useVerticals = this.wbProperties.useVerticals !== undefined ? this.wbProperties.useVerticals : false;
 
-        if (this.properties.selectedVerticalKeys === undefined) {
-            this.properties.selectedVerticalKeys = [];
+        if (this.wbProperties.selectedVerticalKeys === undefined) {
+            this.wbProperties.selectedVerticalKeys = [];
         }
     }
 
@@ -1043,9 +1041,9 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         this._dataSourceDynamicProperties = [];
 
         // Search Results Web Part data sources
-        if (this.properties.dataResultsDataSourceReferences.length > 0) {
+        if (this.wbProperties.dataResultsDataSourceReferences.length > 0) {
 
-            this.properties.dataResultsDataSourceReferences.forEach(reference => {
+            this.wbProperties.dataResultsDataSourceReferences.forEach(reference => {
 
                 const dataSourceDynamicProperty = new DynamicProperty<IDataResultSourceData>(this.context.dynamicDataProvider);
 
@@ -1058,13 +1056,13 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         }
 
         // Search Verticals Web Part data source
-        if (this.properties.verticalsDataSourceReference) {
+        if (this.wbProperties.verticalsDataSourceReference) {
 
             if (!this._verticalsSourceData) {
                 this._verticalsSourceData = new DynamicProperty<IDataVerticalSourceData>(this.context.dynamicDataProvider);
             }
 
-            this._verticalsSourceData.setReference(this.properties.verticalsDataSourceReference);
+            this._verticalsSourceData.setReference(this.wbProperties.verticalsDataSourceReference);
             this._verticalsSourceData.register(this.render);
 
         } else {
@@ -1210,10 +1208,10 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
             let sortByField = 'name';
             let sortDirection = FilterSortDirection.Ascending;
 
-            const filterConfigurationIdx = this.properties.filtersConfiguration.map(configuration => configuration.filterName).indexOf(filter.filterName);
+            const filterConfigurationIdx = this.wbProperties.filtersConfiguration.map(configuration => configuration.filterName).indexOf(filter.filterName);
             if (filterConfigurationIdx !== -1) {
 
-                const filterConfiguration = this.properties.filtersConfiguration[filterConfigurationIdx];
+                const filterConfiguration = this.wbProperties.filtersConfiguration[filterConfigurationIdx];
                 if (filterConfiguration.sortBy === FilterSortType.ByCount) {
                     sortByField = 'count';
                 }

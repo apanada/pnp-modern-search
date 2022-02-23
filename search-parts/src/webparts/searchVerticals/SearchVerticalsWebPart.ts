@@ -79,25 +79,25 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
     let defaultSelectedKey: string = undefined;
 
     // Check if we can find a default vertical to set
-    if (this.properties.defaultVerticalQueryStringParam) {
+    if (this.wbProperties.defaultVerticalQueryStringParam) {
         const queryParms: UrlQueryParameterCollection = new UrlQueryParameterCollection(window.location.href.toLowerCase());
-        const defaultQueryVal: string = queryParms.getValue(this.properties.defaultVerticalQueryStringParam.toLowerCase());
+        const defaultQueryVal: string = queryParms.getValue(this.wbProperties.defaultVerticalQueryStringParam.toLowerCase());
         
         if (defaultQueryVal) {
-            const defaultSelected: IDataVerticalConfiguration[] = this.properties.verticals.filter(v => v.tabName.toLowerCase() == decodeURIComponent(defaultQueryVal));
+            const defaultSelected: IDataVerticalConfiguration[] = this.wbProperties.verticals.filter(v => v.tabName.toLowerCase() == decodeURIComponent(defaultQueryVal));
             if (defaultSelected.length === 1) {
               defaultSelectedKey = defaultSelected[0].key;
             }
         }
     } else {
         const pagename = window.location.pathname.toLowerCase();
-        const defaultSelected: IDataVerticalConfiguration[] = this.properties.verticals.filter(v => v.isLink && v.linkUrl.toLowerCase().indexOf(pagename) > -1);
+        const defaultSelected: IDataVerticalConfiguration[] = this.wbProperties.verticals.filter(v => v.isLink && v.linkUrl.toLowerCase().indexOf(pagename) > -1);
         if (defaultSelected.length === 1) {
           defaultSelectedKey = defaultSelected[0].key;
         }
     }
 
-    if (this.displayMode === DisplayMode.Edit && this.properties.verticals.length === 0) {
+    if (this.displayMode === DisplayMode.Edit && this.wbProperties.verticals.length === 0) {
 
     const placeholder: React.ReactElement<any> = React.createElement(
         this._placeholderComponent,
@@ -116,12 +116,12 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
         renderRootElement = React.createElement(
             SearchVerticalsContainer,
             {
-                verticals: this.properties.verticals,
+                verticals: this.wbProperties.verticals,
                 webPartTitleProps: {
                 displayMode: this.displayMode,
-                title: this.properties.title,
+                title: this.wbProperties.title,
                 updateProperty: (value: string) => {
-                this.properties.title = value;
+                this.wbProperties.title = value;
                 },
                 className: commonStyles.wpTitle
             },
@@ -142,7 +142,7 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
     return [
        {
            id: ComponentType.SearchVerticals,
-           title: this.properties.title ? `${this.properties.title} - ${this.instanceId}` : `${webPartStrings.General.WebPartDefaultTitle} - ${this.instanceId}`
+           title: this.wbProperties.title ? `${this.wbProperties.title} - ${this.instanceId}` : `${webPartStrings.General.WebPartDefaultTitle} - ${this.instanceId}`
        }
     ];
   }  
@@ -153,7 +153,7 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
       case ComponentType.SearchVerticals:
             return { 
               selectedVertical: this._selectedVertical,
-              verticalsConfiguration: this.properties.verticals,
+              verticalsConfiguration: this.wbProperties.verticals,
             } as IDataVerticalSourceData;
 
       default:
@@ -166,7 +166,7 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
     if (propertyPath.localeCompare('verticals') === 0) {
 
       // Generate an unique key for verticals to be able to identify them precisely in sub components instead using the vertical display name (can be duplicated).
-      this.properties.verticals = this.properties.verticals.map(vertical => {
+      this.wbProperties.verticals = this.wbProperties.verticals.map(vertical => {
         vertical.key = vertical.key ? vertical.key : Guid.newGuid().toString();
         return vertical;
       });
@@ -254,7 +254,7 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
         panelDescription: webPartStrings.PropertyPane.Verticals.PanelDescription,
         enableSorting: true,
         label: webPartStrings.PropertyPane.Verticals.PropertyLabel,
-        value: this.properties.verticals,
+        value: this.wbProperties.verticals,
         fields: [
             {
               id: 'tabName',
@@ -378,10 +378,10 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
    */
   private initializeProperties() {
   
-    this.properties.verticals = this.properties.verticals ? this.properties.verticals : [];
+    this.wbProperties.verticals = this.wbProperties.verticals ? this.wbProperties.verticals : [];
 
-    if (this.properties.defaultVerticalQueryStringParam === undefined) {
-      this.properties.defaultVerticalQueryStringParam = 'v';
+    if (this.wbProperties.defaultVerticalQueryStringParam === undefined) {
+      this.wbProperties.defaultVerticalQueryStringParam = 'v';
     }
     
   }
@@ -389,7 +389,7 @@ export default class DataVerticalsWebPart extends BaseWebPart<ISearchVerticalsWe
   private async onVerticalSelected(itemKey: string): Promise<void> {
     
     // Retrieve the search vertical using this id
-    const verticals = this.properties.verticals.filter(vertical => {
+    const verticals = this.wbProperties.verticals.filter(vertical => {
       return vertical.key === itemKey;
     });
 

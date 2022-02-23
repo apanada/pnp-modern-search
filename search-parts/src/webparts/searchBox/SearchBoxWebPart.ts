@@ -113,7 +113,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         this.initializeWebPartServices();
 
         // Load extensibility libaries extensions
-        await this.loadExtensions(this.properties.extensibilityLibraryConfiguration);
+        await this.loadExtensions(this.wbProperties.extensibilityLibraryConfiguration);
 
         this._bindHashChange();
         this._handleQueryStringChange();
@@ -131,7 +131,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             this.errorMessage = undefined;
 
             // Initialize provider instances
-            this._selectedCustomProviders = await this.initializeSuggestionProviders(this.properties.suggestionProviderConfiguration);
+            this._selectedCustomProviders = await this.initializeSuggestionProviders(this.wbProperties.suggestionProviderConfiguration);
 
         } catch (error) {
             // Catch instanciation or wrong definition errors for extensibility scenarios
@@ -153,9 +153,9 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         let renderRootElement: JSX.Element = null;
 
         let inputValue = "";
-        if (this.properties.queryText) {
+        if (this.wbProperties.queryText) {
             try {
-                inputValue = DynamicPropertyHelper.tryGetValueSafe(this.properties.queryText);
+                inputValue = DynamicPropertyHelper.tryGetValueSafe(this.wbProperties.queryText);
                 if (inputValue !== undefined && typeof (inputValue) === 'string') {
                     inputValue = decodeURIComponent(inputValue);
                 }
@@ -178,23 +178,23 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
 
         renderRootElement = React.createElement(SearchBoxContainer, {
             domElement: this.domElement,
-            enableQuerySuggestions: this.properties.enableQuerySuggestions,
+            enableQuerySuggestions: this.wbProperties.enableQuerySuggestions,
             inputValue: this._searchQueryText,
-            openBehavior: this.properties.openBehavior,
-            pageUrl: this.properties.pageUrl,
-            placeholderText: this.properties.placeholderText,
-            queryPathBehavior: this.properties.queryPathBehavior,
-            queryStringParameter: this.properties.queryStringParameter,
-            inputTemplate: this.properties.inputTemplate,
-            searchInNewPage: this.properties.searchInNewPage,
+            openBehavior: this.wbProperties.openBehavior,
+            pageUrl: this.wbProperties.pageUrl,
+            placeholderText: this.wbProperties.placeholderText,
+            queryPathBehavior: this.wbProperties.queryPathBehavior,
+            queryStringParameter: this.wbProperties.queryStringParameter,
+            inputTemplate: this.wbProperties.inputTemplate,
+            searchInNewPage: this.wbProperties.searchInNewPage,
             themeVariant: this._themeVariant,
             onSearch: this._onSearch,
             suggestionProviders: this._selectedCustomProviders,
-            numberOfSuggestionsPerGroup: this.properties.numberOfSuggestionsPerGroup,
+            numberOfSuggestionsPerGroup: this.wbProperties.numberOfSuggestionsPerGroup,
             tokenService: this.tokenService,
-            enableNlpService: this.properties.enableNlpService,
+            enableNlpService: this.wbProperties.enableNlpService,
             nlpService: this.nlpService,
-            isStaging: this.properties.isStaging,
+            isStaging: this.wbProperties.isStaging,
             serviceScope: this.context.serviceScope
         } as ISearchBoxContainerProps);
 
@@ -204,7 +204,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                 messageBarType: MessageBarType.error,
             }, this.errorMessage, React.createElement(Link, {
                 target: '_blank',
-                href: this.properties.documentationLink
+                href: this.wbProperties.documentationLink
             }, commonStrings.General.Resources.PleaseReferToDocumentationMessage));
         }
 
@@ -333,14 +333,14 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
 
     protected async onPropertyPaneFieldChanged(propertyPath: string, oldValue: any, newValue: any): Promise<void> {
 
-        if (!this.properties.useDynamicDataSource) {
-            this.properties.queryText.setValue('');
+        if (!this.wbProperties.useDynamicDataSource) {
+            this.wbProperties.queryText.setValue('');
         }
 
         if (propertyPath.localeCompare('enableQuerySuggestions') === 0 && !newValue) {
 
             // Disable all providers
-            this.properties.suggestionProviderConfiguration.forEach(provider => {
+            this.wbProperties.suggestionProviderConfiguration.forEach(provider => {
                 provider.enabled = false;
             });
         }
@@ -348,7 +348,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         if (propertyPath.localeCompare('extensibilityLibraryConfiguration') === 0) {
 
             // Remove duplicates if any
-            const cleanConfiguration = uniqBy(this.properties.extensibilityLibraryConfiguration, 'id');
+            const cleanConfiguration = uniqBy(this.wbProperties.extensibilityLibraryConfiguration, 'id');
 
             // Reset existing definitions to default
             this.availableCustomProviders = AvailableSuggestionProviders.BuiltinSuggestionProviders;
@@ -386,10 +386,10 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
     private initNlpService() {
         this.serviceHelper = new ServiceHelper(this.context.httpClient);
 
-        if (this.properties.enableNlpService && this.properties.nlpServiceUrl) {
+        if (this.wbProperties.enableNlpService && this.wbProperties.nlpServiceUrl) {
             if (Environment.type === EnvironmentType.SharePoint) {
                 this.nlpService = this.context.serviceScope.consume<INlpService>(NlpService.ServiceKey);
-                this.nlpService.setServiceUrl(this.properties.nlpServiceUrl);
+                this.nlpService.setServiceUrl(this.wbProperties.nlpServiceUrl);
             }
         }
     }
@@ -406,7 +406,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             })
         ];
 
-        if (this.properties.useDynamicDataSource) {
+        if (this.wbProperties.useDynamicDataSource) {
             searchAvailabeConnectionsConfigFields.push(
                 PropertyPaneDynamicFieldSet({
                     label: webPartStrings.PropertyPane.AvailableConnectionsGroup.QueryKeywordsPropertyLabel,
@@ -433,7 +433,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             })
         ];
 
-        if (this.properties.enableQuerySuggestions) {
+        if (this.wbProperties.enableQuerySuggestions) {
 
             searchQuerySuggestionsFields.push(
                 this._propertyFieldCollectionData('suggestionProviderConfiguration', {
@@ -443,9 +443,9 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     panelDescription: webPartStrings.PropertyPane.QuerySuggestionsGroup.SuggestionProvidersDescription,
                     disableItemCreation: true,
                     disableItemDeletion: true,
-                    disabled: !this.properties.enableQuerySuggestions,
+                    disabled: !this.wbProperties.enableQuerySuggestions,
                     label: webPartStrings.PropertyPane.QuerySuggestionsGroup.SuggestionProvidersLabel,
-                    value: this.properties.suggestionProviderConfiguration,
+                    value: this.wbProperties.suggestionProviderConfiguration,
                     fields: [
                         {
                             id: 'enabled',
@@ -515,7 +515,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         ];
 
 
-        if (this.properties.searchInNewPage) {
+        if (this.wbProperties.searchInNewPage) {
             searchBehaviorOptionsFields = searchBehaviorOptionsFields.concat([
                 PropertyPaneTextField('inputTemplate', {
                     label: webPartStrings.PropertyPane.SearchBoxSettingsGroup.QueryInputTransformationLabel,
@@ -523,7 +523,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     placeholder: `{${BuiltinTokenNames.inputQueryText}}`
                 }),
                 PropertyPaneTextField('pageUrl', {
-                    disabled: !this.properties.searchInNewPage,
+                    disabled: !this.wbProperties.searchInNewPage,
                     label: webPartStrings.PropertyPane.SearchBoxSettingsGroup.PageUrlLabel,
                     onGetErrorMessage: this._validatePageUrl.bind(this),
                     validateOnFocusOut: true,
@@ -536,8 +536,8 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                         { key: PageOpenBehavior.Self, text: commonStrings.General.SameTabOpenBehavior },
                         { key: PageOpenBehavior.NewTab, text: commonStrings.General.NewTabOpenBehavior }
                     ],
-                    disabled: !this.properties.searchInNewPage,
-                    selectedKey: this.properties.openBehavior
+                    disabled: !this.wbProperties.searchInNewPage,
+                    selectedKey: this.wbProperties.openBehavior
                 }),
                 PropertyPaneDropdown('queryPathBehavior', {
                     label: webPartStrings.PropertyPane.SearchBoxSettingsGroup.QueryPathBehaviorLabel,
@@ -545,19 +545,19 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                         { key: QueryPathBehavior.URLFragment, text: webPartStrings.PropertyPane.SearchBoxSettingsGroup.UrlFragmentQueryPathBehavior },
                         { key: QueryPathBehavior.QueryParameter, text: webPartStrings.PropertyPane.SearchBoxSettingsGroup.QueryStringQueryPathBehavior }
                     ],
-                    disabled: !this.properties.searchInNewPage,
-                    selectedKey: this.properties.queryPathBehavior
+                    disabled: !this.wbProperties.searchInNewPage,
+                    selectedKey: this.wbProperties.queryPathBehavior
                 })
             ]);
         }
 
-        if (this.properties.searchInNewPage && this.properties.queryPathBehavior === QueryPathBehavior.QueryParameter) {
+        if (this.wbProperties.searchInNewPage && this.wbProperties.queryPathBehavior === QueryPathBehavior.QueryParameter) {
             searchBehaviorOptionsFields = searchBehaviorOptionsFields.concat([
                 PropertyPaneTextField('queryStringParameter', {
-                    disabled: !this.properties.searchInNewPage || this.properties.searchInNewPage && this.properties.queryPathBehavior !== QueryPathBehavior.QueryParameter,
+                    disabled: !this.wbProperties.searchInNewPage || this.wbProperties.searchInNewPage && this.wbProperties.queryPathBehavior !== QueryPathBehavior.QueryParameter,
                     label: webPartStrings.PropertyPane.SearchBoxSettingsGroup.QueryStringParameterName,
                     onGetErrorMessage: (value) => {
-                        if (this.properties.queryPathBehavior === QueryPathBehavior.QueryParameter) {
+                        if (this.wbProperties.queryPathBehavior === QueryPathBehavior.QueryParameter) {
                             if (value === null ||
                                 value.trim().length === 0) {
                                 return webPartStrings.PropertyPane.SearchBoxSettingsGroup.QueryParameterNotEmpty;
@@ -587,18 +587,18 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             })
         ];
 
-        if (this.properties.enableNlpService) {
+        if (this.wbProperties.enableNlpService) {
 
             searchQueryOptimizationFields.push(
                 PropertyPaneTextField("nlpServiceUrl", {
                     label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlLabel,
-                    disabled: !this.properties.enableNlpService,
+                    disabled: !this.wbProperties.enableNlpService,
                     onGetErrorMessage: this._validateServiceUrl.bind(this),
                     description: Text.format(webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlDescription, window.location.host)
                 }),
                 PropertyPaneToggle("isStaging", {
                     label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.UseStagingEndpoint,
-                    disabled: !this.properties.enableNlpService,
+                    disabled: !this.wbProperties.enableNlpService,
                 }),
             );
         }
@@ -616,7 +616,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                 panelHeader: webPartStrings.PropertyPane.InformationPage.Extensibility.PanelHeader,
                 panelDescription: webPartStrings.PropertyPane.InformationPage.Extensibility.PanelDescription,
                 label: commonStrings.PropertyPane.InformationPage.Extensibility.FieldLabel,
-                value: this.properties.extensibilityLibraryConfiguration,
+                value: this.wbProperties.extensibilityLibraryConfiguration,
                 fields: [
                     {
                         id: 'name',
@@ -663,7 +663,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
      */
     private _validatePageUrl(value: string) {
 
-        if ((!(/^(https?):\/\/[^\s/$.?#].[^\s]*/).test(value) || !value) && this.properties.searchInNewPage) {
+        if ((!(/^(https?):\/\/[^\s/$.?#].[^\s]*/).test(value) || !value) && this.wbProperties.searchInNewPage) {
             return webPartStrings.PropertyPane.SearchBoxSettingsGroup.UrlErrorMessage;
         }
 
@@ -671,21 +671,21 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
     }
 
     /**
-     * Initializes required Web Part properties
+     * Initializes required Web Part wbProperties
      */
     private initializeProperties() {
-        this.properties.queryText = this.properties.queryText ? this.properties.queryText : new DynamicProperty<string>(this.context.dynamicDataProvider);
-        this.properties.inputTemplate = this.properties.inputTemplate ? this.properties.inputTemplate : `{${BuiltinTokenNames.inputQueryText}}`;
+        this.wbProperties.queryText = this.wbProperties.queryText ? this.wbProperties.queryText : new DynamicProperty<string>(this.context.dynamicDataProvider);
+        this.wbProperties.inputTemplate = this.wbProperties.inputTemplate ? this.wbProperties.inputTemplate : `{${BuiltinTokenNames.inputQueryText}}`;
 
-        this.properties.openBehavior = this.properties.openBehavior ? this.properties.openBehavior : PageOpenBehavior.Self;
-        this.properties.queryPathBehavior = this.properties.queryPathBehavior ? this.properties.queryPathBehavior : QueryPathBehavior.URLFragment;
+        this.wbProperties.openBehavior = this.wbProperties.openBehavior ? this.wbProperties.openBehavior : PageOpenBehavior.Self;
+        this.wbProperties.queryPathBehavior = this.wbProperties.queryPathBehavior ? this.wbProperties.queryPathBehavior : QueryPathBehavior.URLFragment;
 
-        this.properties.suggestionProviderConfiguration = this.properties.suggestionProviderConfiguration ? this.properties.suggestionProviderConfiguration : [];
-        this.properties.numberOfSuggestionsPerGroup = this.properties.numberOfSuggestionsPerGroup ? this.properties.numberOfSuggestionsPerGroup : 10;
+        this.wbProperties.suggestionProviderConfiguration = this.wbProperties.suggestionProviderConfiguration ? this.wbProperties.suggestionProviderConfiguration : [];
+        this.wbProperties.numberOfSuggestionsPerGroup = this.wbProperties.numberOfSuggestionsPerGroup ? this.wbProperties.numberOfSuggestionsPerGroup : 10;
 
-        this.properties.providerProperties = this.properties.providerProperties ? this.properties.providerProperties : {};
+        this.wbProperties.providerProperties = this.wbProperties.providerProperties ? this.wbProperties.providerProperties : {};
 
-        this.properties.extensibilityLibraryConfiguration = this.properties.extensibilityLibraryConfiguration ? this.properties.extensibilityLibraryConfiguration : [{
+        this.wbProperties.extensibilityLibraryConfiguration = this.wbProperties.extensibilityLibraryConfiguration ? this.wbProperties.extensibilityLibraryConfiguration : [{
             name: commonStrings.General.Extensibility.DefaultExtensibilityLibraryName,
             enabled: true,
             id: Constants.DEFAULT_EXTENSIBILITY_LIBRARY_COMPONENT_ID
@@ -715,11 +715,11 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         this.context.dynamicDataSourceManager.notifySourceChanged();
 
         // Update URL with raw search query
-        if (this.properties.useDynamicDataSource && this.properties.queryText && this.properties.queryText.reference) {
+        if (this.wbProperties.useDynamicDataSource && this.wbProperties.queryText && this.wbProperties.queryText.reference) {
 
-            // this.properties.defaultQueryKeywords.reference
+            // this.wbProperties.defaultQueryKeywords.reference
             // "PageContext:UrlData:queryParameters.query"
-            const refChunks = this.properties.queryText.reference.split(':');
+            const refChunks = this.wbProperties.queryText.reference.split(':');
 
             if (refChunks.length >= 3) {
                 const paramType = refChunks[2];
@@ -745,7 +745,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
      */
     private _bindHashChange() {
 
-        if (this.properties.queryText.tryGetSource() && this.properties.queryText.reference.localeCompare('PageContext:UrlData:fragment') === 0) {
+        if (this.wbProperties.queryText.tryGetSource() && this.wbProperties.queryText.reference.localeCompare('PageContext:UrlData:fragment') === 0) {
             // Manually subscribe to hash change since the default property doesn't
             window.addEventListener('hashchange', this.render);
         } else {
@@ -843,7 +843,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     // Initialize the provider
                     if (suggestionsProvider) {
 
-                        suggestionsProvider.properties = this.properties.providerProperties;
+                        suggestionsProvider.properties = this.wbProperties.providerProperties;
                         suggestionsProvider.context = this.context;
                         await suggestionsProvider.onInit();
 
@@ -876,7 +876,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         // Resolve the provider configuration for the property pane according to providers
         this.availableCustomProviders.forEach(provider => {
 
-            if (!this.properties.suggestionProviderConfiguration.some(p => p.key === provider.key)) {
+            if (!this.wbProperties.suggestionProviderConfiguration.some(p => p.key === provider.key)) {
 
                 customSuggestionProviderConfiguration.push({
                     key: provider.key,
@@ -889,7 +889,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
         });
 
         // Add custom providers to the available providers
-        this.properties.suggestionProviderConfiguration = this.properties.suggestionProviderConfiguration.concat(customSuggestionProviderConfiguration);
+        this.wbProperties.suggestionProviderConfiguration = this.wbProperties.suggestionProviderConfiguration.concat(customSuggestionProviderConfiguration);
     }
 
     /**
@@ -913,7 +913,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
 
         // To avoid pushState modification from many components on the page (ex: search box, etc.), 
         // only subscribe to query string changes if the connected source is either the searc queyr or explicit query string parameter
-        if (/^(PageContext:SearchData:searchQuery)|(PageContext:UrlData:queryParameters)/.test(this.properties.queryText.reference)) {
+        if (/^(PageContext:SearchData:searchQuery)|(PageContext:UrlData:queryParameters)/.test(this.wbProperties.queryText.reference)) {
 
             ((h) => {
                 this._pushStateCallback = history.pushState;
@@ -925,11 +925,11 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
     private pushStateHandler(state, key, path) {
 
         this._pushStateCallback.apply(history, [state, key, path]);
-        if (this.properties.queryText.isDisposed) {
+        if (this.wbProperties.queryText.isDisposed) {
             return;
         }
 
-        const source = this.properties.queryText.tryGetSource();
+        const source = this.wbProperties.queryText.tryGetSource();
 
         if (source && source.id === ComponentType.PageEnvironment) {
             this.render();
