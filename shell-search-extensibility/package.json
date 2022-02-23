@@ -9,13 +9,12 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "@microsoft/sp-component-base": "1.12.1",
-    "@microsoft/sp-core-library": "1.12.1",
-    "@microsoft/sp-http": "1.12.1",
-    "@microsoft/sp-lodash-subset": "1.12.1",
-    "@microsoft/sp-property-pane": "1.12.1",
-    "@microsoft/sp-webpart-base": "1.12.1",
-    "@pnp/modern-search-extensibility": "1.0.9",
+    "@microsoft/sp-component-base": "1.13.1",
+    "@microsoft/sp-core-library": "1.13.1",
+    "@microsoft/sp-http": "1.13.1",
+    "@microsoft/sp-lodash-subset": "1.13.1",
+    "@microsoft/sp-property-pane": "1.13.1",
+    "@microsoft/sp-webpart-base": "1.13.1",
     "@pnp/sp": "^2.12.0",
     "@pnp/telemetry-js": "^2.0.0",
     "@webcomponents/custom-elements": "^1.5.0",
@@ -27,16 +26,16 @@
     "react-dom": "16.9.0"
   },
   "devDependencies": {
+    "@microsoft/rush-stack-compiler-4.2": "0.1.1",
     "@microsoft/sp-build-web": "1.13.1",
-    "@microsoft/sp-tslint-rules": "1.13.1",
     "@microsoft/sp-module-interfaces": "1.13.1",
-    "@microsoft/rush-stack-compiler-3.9": "0.4.47",
+    "@microsoft/sp-tslint-rules": "1.13.1",
     "@microsoft/sp-webpart-workbench": "1.12.1",
+    "@types/lodash": "4.14.149",
     "@types/react": "16.9.36",
     "@types/react-dom": "16.9.8",
     "@types/webpack-env": "1.13.1",
-    "@types/lodash": "4.14.149",
-    "gulp": "~4.0.2",
-    "ajv": "~5.2.2"
+    "ajv": "~5.2.2",
+    "gulp": "~4.0.2"
   }
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Guid, ServiceScope } from '@microsoft/sp-core-library';
+import { Guid } from '@microsoft/sp-core-library';
 import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
 import {
   PrimaryButton,
@@ -53,7 +53,7 @@ export interface IModernTaxonomyPickerProps {
   panelTitle: string;
   labelRequired?: boolean;
   label: string;
-  serviceScope: ServiceScope;
+  pageContext: PageContext;
   initialValues?: ITermInfo[];
   termStoreInfo?: ITermStoreInfo;
   termSetInfo?: ITermSetInfo;
@@ -79,16 +79,15 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
   const [currentLanguageTag, setCurrentLanguageTag] = React.useState<string>("");
 
   React.useEffect(() => {
-    const pageContext = props.serviceScope.consume<PageContext>(PageContext.serviceKey);
     sp.setup({
       sp: {
-        baseUrl: pageContext.web.absoluteUrl
+        baseUrl: props.pageContext.web.absoluteUrl
       }
     });
 
     if (!isEmpty(currentTermStoreInfo)) {
-      setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
-        pageContext.cultureInfo.currentUICultureName :
+      setCurrentLanguageTag(props.pageContext.cultureInfo.currentUICultureName !== '' ?
+        props.pageContext.cultureInfo.currentUICultureName :
         currentTermStoreInfo.defaultLanguageTag);
       if (Array.isArray(props.initialValues)) {
         const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
@@ -100,8 +99,8 @@ export function ModernTaxonomyPicker(props: IModernTaxonomyPickerProps) {
       taxonomyService.getTermStoreInfo()
         .then((termStoreInfo) => {
           setCurrentTermStoreInfo(termStoreInfo);
-          setCurrentLanguageTag(pageContext.cultureInfo.currentUICultureName !== '' ?
-            pageContext.cultureInfo.currentUICultureName :
+          setCurrentLanguageTag(props.pageContext.cultureInfo.currentUICultureName !== '' ?
+            props.pageContext.cultureInfo.currentUICultureName :
             currentTermStoreInfo.defaultLanguageTag);
           if (Array.isArray(props.initialValues)) {
             const values = props.initialValues.map(term => { return { ...term, languageTag: currentLanguageTag, termStoreInfo: currentTermStoreInfo } as ITermInfo; });
