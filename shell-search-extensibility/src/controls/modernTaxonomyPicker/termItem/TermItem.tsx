@@ -48,7 +48,7 @@ export const TermItemBase = (props: ITermItemProps) => {
       key={index}
       data-selection-index={index}
       data-is-focusable={(enableTermFocusInDisabledPicker || !disabled) && true}
-      style={{ borderRadius: "9999px", height: "30px", lineHeight: "30px", backgroundColor: "#17717a", color: "#ffffff" }}
+      style={{ borderRadius: "9999px", height: "30px", lineHeight: "30px", backgroundColor: "#0078D4", color: "#ffffff" }}
     >
       <IconButton styles={addTermButtonStyles} iconProps={{ iconName: 'Tag' } as IIconProps} />
       <span className={classNames.text} aria-label={labels[0].name} title={labels[0].name}>

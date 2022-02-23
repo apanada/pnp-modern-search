@@ -99,7 +99,7 @@ export class FilterDateTimeComponent extends React.Component<IFilterDateTimeComp
                             ],
                             onRenderMenuList: this._renderMenuList.bind(this),
                         }}
-                        styles={{ root: { border: "0px", top: "-2px" }, label: { fontSize: "18px", fontWeight: 400 } }} />
+                        styles={{ root: { border: "0px", top: "-2px" }, label: { fontSize: "16px", fontWeight: 400 } }} />
                 </div>
             </>
         );

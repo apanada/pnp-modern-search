@@ -507,7 +507,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             this.setState({ checkAccessCalloutVisible: true });
 
             const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
-            const userHasAccess = sharePointSearchService.checkUserAccessToReports(this.originalPath);
+            const userHasAccess = sharePointSearchService.checkUserAccessToReports(this.siteUrl, this.originalPath);
             userHasAccess.then(hasAccess => {
                 this.setState({
                     isLoading: true,

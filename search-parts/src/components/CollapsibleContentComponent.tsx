@@ -142,7 +142,7 @@ export class CollapsibleContentComponent extends React.Component<ICollapsibleCon
                         }
                     }}
                 >
-                    <Text variant={'large'}>{props.group.name}</Text>
+                    <Text variant={'large'} styles={{ root: { fontSize: 16 } }}>{props.group.name}</Text>
                     <div className={styles.collapsible__filterPanel__body__headerIcon}>
                         {props.group.isCollapsed ?
                             <Icon iconName='ChevronDown' />

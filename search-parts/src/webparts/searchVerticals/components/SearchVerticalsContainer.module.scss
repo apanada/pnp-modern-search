@@ -1,5 +1,5 @@
 .dataVerticals {
-  box-shadow: var(--shadow4,0 0 0px var(--colorNeutralShadowAmbient,rgba(0,0,0,.12)),0 2px 0px var(--colorNeutralShadowAmbient,rgba(0,0,0,.14)));
+  border-bottom: 1px solid #eaeaea;    
   
   div[role=tablist] {
     white-space: normal;

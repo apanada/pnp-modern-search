@@ -1,14 +1,59 @@
 import * as React from 'react';
 import { IPreviewContainerProps, PreviewType } from './IPreviewContainerProps';
 import IPreviewContainerState from './IPreviewContainerState';
-import { CommandBarButton, DefaultButton, Dialog, DialogType, IButtonStyles, Icon, IconButton, IIconProps, ILabelStyles, IModalProps, IOverflowSetItemProps, IStackTokens, IStyleSet, Label, Link, OverflowSet, Pivot, PivotItem, PivotLinkFormat, Stack } from 'office-ui-fabric-react';
+import { CommandBarButton, ContextualMenu, DefaultButton, Dialog, DialogType, FontIcon, FontWeights, getTheme, IButtonStyles, Icon, IconButton, IIconProps, ILabelStyles, IModalProps, IOverflowSetItemProps, IStackTokens, IStyleSet, Label, Link, mergeStyles, mergeStyleSets, Modal, OverflowSet, Pivot, PivotItem, PivotLinkFormat, Stack } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react';
 import previewContainerStyles from './PreviewContainer.module.scss';
 import { Overlay } from 'office-ui-fabric-react';
 import { TestConstants } from '../../common/Constants';
 import { split } from 'lodash';
 
-const modalPropsStyles = { main: { maxWidth: 1300 } };
+const cancelIcon: IIconProps = { iconName: 'Cancel' };
+
+const theme = getTheme();
+const contentStyles = mergeStyleSets({
+    container: {
+        display: 'flex',
+        flexFlow: 'column nowrap',
+        alignItems: 'stretch',
+    },
+    header: [
+        // eslint-disable-next-line deprecation/deprecation
+        theme.fonts.large,
+        {
+            flex: '1 1 auto',
+            borderTop: `4px solid ${theme.palette.themePrimary}`,
+            color: theme.palette.neutralPrimary,
+            display: 'flex',
+            alignItems: 'center',
+            fontWeight: FontWeights.semibold,
+            padding: '12px 12px 14px 24px',
+        },
+    ],
+    body: {
+        flex: '4 4 auto',
+        padding: '0 24px 24px 24px',
+        overflowY: 'hidden',
+        selectors: {
+            p: { margin: '14px 0' },
+            'p:first-child': { marginTop: 0 },
+            'p:last-child': { marginBottom: 0 },
+        },
+    },
+});
+
+const iconButtonStyles: Partial<IButtonStyles> = {
+    root: {
+        color: theme.palette.neutralPrimary,
+        marginLeft: 'auto',
+        marginTop: '4px',
+        marginRight: '2px',
+    },
+    rootHovered: {
+        color: theme.palette.neutralDark,
+    },
+};
+
 const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
     root: { marginTop: 10 },
 };
@@ -23,7 +68,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
             isFollowed: false
         };
 
-        this._onCloseCallout = this._onCloseCallout.bind(this);
+        this._onCloseModal = this._onCloseModal.bind(this);
         this._userActions = this._userActions.bind(this);
         this._followOrUnfollowDocument = this._followOrUnfollowDocument.bind(this);
     }
@@ -46,13 +91,25 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                     <span>
                                         <DefaultButton
                                             toggle
-                                            text={this.state.isFollowed ? 'Unfollow' : 'Follow'}
+                                            text={this.state.isFollowed ? 'Following' : 'Follow'}
                                             iconProps={this.state.isFollowed ? followedIcon : unfollowedIcon}
                                             onClick={this._followOrUnfollowDocument}
                                             allowDisabledFocus
                                             style={{ border: "none" }}
+                                            styles={{ flexContainer: { color: "#0078D4" } }}
                                         />
                                     </span>
+                                    <Stack horizontal styles={{ root: { height: 32, display: "inline-flex" } }}>
+                                        <CommandBarButton
+                                            iconProps={{ iconName: 'RedEye' }}
+                                            text={`${this.props.resultItem["resource"]["fields"]["viewsLifetime"]} Views`}
+                                            styles={{
+                                                label: { fontWeight: "600", color: "#0078D4" },
+                                                icon: { color: "#0078D4", fontWeight: "600" },
+                                                iconHovered: { color: "#0078D4" },
+                                                iconPressed: { color: "#0078D4" }
+                                            }} />
+                                    </Stack>
                                 </div>
                             );
                         },
@@ -95,16 +152,12 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         };
 
         // Dialog props definition
-        const dialogContentProps = {
-            type: DialogType.largeHeader,
-            title: this.props.resultItem["resource"]["fields"]["filename"]
-        };
-        const modalProps: IModalProps = {
-            isBlocking: false,
-            topOffsetFixed: false,
-            styles: modalPropsStyles,
-            dragOptions: undefined,
-        };
+        const dragOptions = {
+            moveMenuItemText: 'Move',
+            closeMenuItemText: 'Close',
+            menu: ContextualMenu,
+            keepInBounds: true,
+        }
 
         const createdDate: string = this._getDate(this.props.resultItem["resource"]["createdDateTime"]);
         const lastModifiedDate: string = this._getDate(this.props.resultItem["resource"]["lastModifiedDateTime"]);
@@ -120,194 +173,206 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         }
 
         return (
-            <Dialog
-                hidden={!showDialog}
-                onDismiss={this.props.previewType === PreviewType.Document ? this._onCloseCallout : null}
-                dialogContentProps={dialogContentProps}
-                modalProps={modalProps}
-                minWidth="1300px"
+            <Modal
+                titleAriaId="documentPreview"
+                isOpen={showDialog}
+                onDismiss={this.props.previewType === PreviewType.Document ? this._onCloseModal : null}
+                isBlocking={false}
+                containerClassName={contentStyles.container}
+                dragOptions={dragOptions}
             >
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    {this._userActions()}
+                <div className={contentStyles.header}>
+                    <span id="documentPreview">{this.props.resultItem["resource"]["fields"]["filename"]}</span>
+                    <IconButton
+                        styles={iconButtonStyles}
+                        iconProps={cancelIcon}
+                        ariaLabel="Close document preview modal"
+                        onClick={this._onCloseModal}
+                    />
                 </div>
-                <div>
-                    <Pivot
-                        aria-label="Select an option"
-                        linkFormat={PivotLinkFormat.links}
-                    >
-                        <PivotItem headerText="Document Preview" itemIcon="RedEye">
-                            <div className={previewContainerStyles.calloutContentContainer} style={{ backgroundImage: backgroundImage }}>
-                                {renderLoading}
-                                {renderPreview}
-                            </div>
-                        </PivotItem>
-                        <PivotItem headerText="Metadata" itemIcon="Tag">
-                            <div>
-                                <Stack horizontal tokens={stackTokens}>
-                                    <div className={previewContainerStyles.keyValueList}>
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["title"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Title:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["title"] ?? ""}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["fileType"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>File Type:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["fileType"] ?? ""}</span>
+                <div className={contentStyles.body}>
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        {this._userActions()}
+                    </div>
+                    <div>
+                        <Pivot
+                            aria-label="Select an option"
+                            linkFormat={PivotLinkFormat.tabs}
+                        >
+                            <PivotItem headerText="Document Preview" itemIcon="Glasses">
+                                <div className={previewContainerStyles.calloutContentContainer} style={{ backgroundImage: backgroundImage }}>
+                                    {renderLoading}
+                                    {renderPreview}
+                                </div>
+                            </PivotItem>
+                            <PivotItem headerText="Metadata" itemIcon="Tag">
+                                <div>
+                                    <Stack horizontal tokens={stackTokens}>
+                                        <div className={previewContainerStyles.keyValueList}>
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["title"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Title:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["title"] ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                        {
-                                            author &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Created By:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{author ?? ""}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                        {
-                                            createdDate &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Created Date:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{createdDate ?? ""}</span>
+                                            }
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["fileType"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>File Type:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["fileType"] ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                    </div>
-                                    <div className={previewContainerStyles.keyValueList}>
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["description"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Description:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["description"] ?? ""}</span>
+                                            }
+                                            {
+                                                author &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Created By:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{author ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["modifiedBy"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Modified By:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["modifiedBy"] ?? ""}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                        {
-                                            lastModifiedDate &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Last Modified Time:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{lastModifiedDate ?? ""}</span>
+                                            }
+                                            {
+                                                createdDate &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Created Date:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{createdDate ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["documentLink"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>DocumentLink:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["filename"] ?? ""}</span>
-                                                        <Link href={this.props.resultItem["resource"]["fields"]["documentLink"]} target='_blank' style={{ marginLeft: "8px" }}>
-                                                            <Icon iconName="OpenInNewTab" title="Open in new tab" ariaLabel="Open in new tab" />
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                    <div className={previewContainerStyles.keyValueList}>
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["siteTitle"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Site Title:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this.props.resultItem["resource"]["fields"]["siteTitle"]}</span>
+                                            }
+                                        </div>
+                                        <div className={previewContainerStyles.keyValueList}>
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["description"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Description:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["description"] ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["size"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>File Size:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue">
-                                                        <span>{this._formatBytes(this.props.resultItem["resource"]["fields"]["size"] ?? 0).toString()}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                        {
-                                            this.props.resultItem["resource"]["fields"]["metadataAuthor"] &&
-                                            <div className="keyValueWrapper">
-                                                <div>
-                                                    <div className="keyValueKey">
-                                                        <Label styles={labelStyles}>Authors:</Label>
-                                                    </div>
-                                                    <div className="keyValueValue" style={{ paddingTop: "5px" }}>
-                                                        {
-                                                            authors && authors.map((authorItem: string) => (
-                                                                <>
-                                                                    <span className={previewContainerStyles.pill}>{authorItem}</span>
-                                                                </>
-                                                            ))
-                                                        }
+                                            }
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["modifiedBy"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Modified By:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["modifiedBy"] ?? ""}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-                                    </div>
-                                </Stack>
-                            </div>
-                        </PivotItem>
-                    </Pivot>
+                                            }
+                                            {
+                                                lastModifiedDate &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Last Modified Time:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{lastModifiedDate ?? ""}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["documentLink"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>DocumentLink:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["filename"] ?? ""}</span>
+                                                            <Link href={this.props.resultItem["resource"]["fields"]["documentLink"]} target='_blank' style={{ marginLeft: "8px" }}>
+                                                                <Icon iconName="OpenInNewTab" title="Open in new tab" ariaLabel="Open in new tab" />
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div className={previewContainerStyles.keyValueList}>
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["siteTitle"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Site Title:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this.props.resultItem["resource"]["fields"]["siteTitle"]}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["size"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>File Size:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue">
+                                                            <span>{this._formatBytes(this.props.resultItem["resource"]["fields"]["size"] ?? 0).toString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            {
+                                                this.props.resultItem["resource"]["fields"]["metadataAuthor"] &&
+                                                <div className="keyValueWrapper">
+                                                    <div>
+                                                        <div className="keyValueKey">
+                                                            <Label styles={labelStyles}>Authors:</Label>
+                                                        </div>
+                                                        <div className="keyValueValue" style={{ paddingTop: "5px" }}>
+                                                            {
+                                                                authors && authors.map((authorItem: string) => (
+                                                                    <>
+                                                                        <span className={previewContainerStyles.pill}>{authorItem}</span>
+                                                                    </>
+                                                                ))
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </Stack>
+                                </div>
+                            </PivotItem>
+                        </Pivot>
+                    </div>
                 </div>
-            </Dialog>
+            </Modal>
         );
     }
 
@@ -332,7 +397,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
         });
     }
 
-    private _onCloseCallout() {
+    private _onCloseModal() {
         this.setState({
             showDialog: false
         });
