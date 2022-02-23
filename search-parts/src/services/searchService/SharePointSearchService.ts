@@ -17,9 +17,9 @@ import { cloneDeep } from "@microsoft/sp-lodash-subset";
 import { Constants } from '../../common/Constants';
 import { ISynonymTable } from '../../models/search/ISynonym';
 import { IHubSite } from '../../models/common/ISIte';
-import { sp, PermissionKind, Web } from "@pnp/sp/presets/all";
+import { PermissionKind, Web } from "@pnp/sp/presets/all";
 import { Social, SocialActorType, SocialFollowResult } from "@pnp/sp/social";
-import { SharingLinkKind, IShareLinkResponse } from "@pnp/sp/sharing";
+import { sp } from "shell-search-extensibility/lib/index";
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -437,13 +437,13 @@ export class SharePointSearchService implements ISharePointSearchService {
         this._synonymTable = value;
     }
 
-    public async checkUserAccessToReports(reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }> {
+    public async checkUserAccessToReports(siteUrl: string, reportUrl: string): Promise<{ hasAccess: boolean, ItemCount: number }> {
 
         try {
-            if (!isEmpty(reportUrl)) {
+            if (!isEmpty(reportUrl) && !isEmpty(siteUrl)) {
                 let reportServerRelativeUrl = reportUrl.replace(window.location.origin, '');
                 reportServerRelativeUrl = `${reportServerRelativeUrl}/Contents`;
-                const web = Web(this.pageContext.web.absoluteUrl);
+                const web = Web(siteUrl ?? this.pageContext.web.absoluteUrl);
                 const folder: any = await web.getFolderByServerRelativeUrl(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions').get();
 
                 if (folder) {
@@ -478,7 +478,7 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // follow a doc
-                const social = Social(this.pageContext.web.absoluteUrl)
+                const social = Social(this.pageContext.web.absoluteUrl);
                 const socialFollowResult: SocialFollowResult = await social.follow({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
@@ -496,7 +496,7 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // check whether the current user is following a specified document                
-                const social = Social(this.pageContext.web.absoluteUrl)
+                const social = Social(this.pageContext.web.absoluteUrl);
                 const isFollowed: boolean = await social.isFollowed({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
@@ -514,7 +514,7 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // makes the current user stop following a document
-                const social = Social(this.pageContext.web.absoluteUrl)
+                const social = Social(this.pageContext.web.absoluteUrl);
                 await social.stopFollowing({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
