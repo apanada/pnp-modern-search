@@ -18,6 +18,8 @@ import { ObjectHelper } from "../../helpers/ObjectHelper";
 import { Constants } from "../../common/Constants";
 import * as handlebarsHelpers from 'handlebars-helpers';
 import { ServiceScopeHelper } from "../../helpers/ServiceScopeHelper";
+import { TaxonomyService } from "../taxonomyService/TaxonomyService";
+import { SharePointSearchService } from "../searchService/SharePointSearchService";
 
 const TemplateService_ServiceKey = 'PnPModernSearchTemplateService';
 
@@ -231,7 +233,9 @@ export class TemplateService implements ITemplateService {
             // Because multiple Web Part types can call the template service in separate bundles, using TemplateService.ServiceKey in a web component would result of a race condition and incoherent results as multiple keys will be created and last created would be used
             // See https://github.com/SharePoint/sp-dev-docs/issues/1419#issuecomment-371584038
             const availableServiceKeys: { [key: string]: ServiceKey<any> } = {
-                TemplateService: TemplateService.ServiceKey
+                TemplateService: TemplateService.ServiceKey,
+                TaxonomyService: TaxonomyService.ServiceKey,
+                SharePointSearchService: SharePointSearchService.ServiceKey
             };
 
             this.serviceScope.whenFinished(() => {

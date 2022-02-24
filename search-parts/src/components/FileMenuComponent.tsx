@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon } from 'office-ui-fabric-react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon, MessageBar, MessageBarType, ProgressIndicator, format, FontIcon } from 'office-ui-fabric-react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { UrlHelper } from '../helpers/UrlHelper';
 import { ServiceScope } from '@microsoft/sp-core-library';
 import { ISharePointSearchService } from '../services/searchService/ISharePointSearchService';
 import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
 import { isEmpty } from '@microsoft/sp-lodash-subset';
+import { IAccessRequestResults, IAccessRequestResultsType, RequestAccessStatus } from '../models/common/IAccessRequest';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
     "doc", "docx", "docm", "dot", "dotm", "dotx",
@@ -56,9 +57,15 @@ export interface IFileMenuState {
 
     reportsDocumentSetItemCount?: number;
 
-    isLoading?: boolean;
+    checkAccessIsLoading?: boolean;
 
     requestForAccess?: boolean;
+
+    accessRequestSubmissionInProgress?: boolean;
+
+    accessRequestLogged?: boolean;
+
+    accessRequestResponse?: { message: string | undefined, responseType: IAccessRequestResultsType };
 }
 
 const checkAccessStyles = mergeStyleSets({
@@ -80,6 +87,11 @@ const checkAccessStyles = mergeStyleSets({
         marginTop: 5,
     }
 });
+
+const ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE = "Unable to validate your access on this report. Please retry after some time.";
+const ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE = "You have already requested for this report, Requst status : {0}";
+const ACCESS_REQUEST_SUCCESS_MESSAGE = "Your access request has been logged successfully. you will receive the notification once your access request has been proccessed.";
+const ACCESS_REQUEST_FAILURE_MESSAGE = "Unable to raise your access request. Please retry after some time."
 
 export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
@@ -104,11 +116,14 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         super(props);
 
         this.state = {
-            isLoading: false,
+            checkAccessIsLoading: false,
             checkAccessCalloutVisible: false,
             userHasAccessToReport: false,
             reportsDocumentSetItemCount: 0,
-            requestForAccess: false
+            requestForAccess: false,
+            accessRequestSubmissionInProgress: false,
+            accessRequestLogged: false,
+            accessRequestResponse: undefined
         };
 
         this._openDocumentInBrowser = this._openDocumentInBrowser.bind(this);
@@ -117,8 +132,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this._openDocumentParentFolder = this._openDocumentParentFolder.bind(this);
         this._searchThisSite = this._searchThisSite.bind(this);
         this._checkReportAccess = this._checkReportAccess.bind(this);
-        this._requestForAccess = this._requestForAccess.bind(this);
+        this._toggleRequestForAccess = this._toggleRequestForAccess.bind(this);
         this._toggleCheckAccessCallout = this._toggleCheckAccessCallout.bind(this);
+        this._requestReportAccess = this._requestReportAccess.bind(this);
     }
 
     public componentDidMount(): void {
@@ -215,6 +231,13 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 text: 'Check access',
                 onClick: this._checkReportAccess
             });
+        } else {
+            menuItems.push({
+                key: 'download',
+                iconProps: { iconName: 'Download' },
+                text: 'Download',
+                onClick: this._downloadDocument
+            });
         }
 
         menuItems.push(
@@ -223,12 +246,6 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 iconProps: { iconName: 'FolderHorizontal' },
                 text: 'Open folder',
                 onClick: this._openDocumentParentFolder
-            },
-            {
-                key: 'download',
-                iconProps: { iconName: 'Download' },
-                text: 'Download',
-                onClick: this._downloadDocument
             },
             {
                 key: 'searchThisSite',
@@ -273,7 +290,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             Reports: Check Permissions
                         </Text>
                         {
-                            this.state.isLoading ?
+                            !this.state.checkAccessIsLoading ?
                                 this.state.userHasAccessToReport ?
                                     <div>
                                         <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
@@ -291,27 +308,42 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                         </div>
                                     </div>
                                     :
-                                    <div>
-                                        <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
-                                            You don't have access to this report.
-                                        </Text>
-                                        <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._requestForAccess} />
-                                        {
-                                            this.state.requestForAccess &&
-                                            <TextField label="Request comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
-                                        }
-                                    </div>
+                                    this.state.accessRequestLogged ?
+                                        <div>
+                                            <MessageBar
+                                                messageBarType={this.state.accessRequestResponse.responseType === IAccessRequestResultsType.Success ? MessageBarType.success : MessageBarType.error}
+                                                isMultiline={true}
+                                            >
+                                                {this.state.accessRequestResponse.message}
+                                            </MessageBar>
+                                        </div>
+                                        :
+                                        <div>
+                                            <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
+                                                You don't have access to this report.
+                                            </Text>
+                                            <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._toggleRequestForAccess} />
+                                            {
+                                                this.state.requestForAccess &&
+                                                <TextField label="Request comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
+                                            }
+                                        </div>
                                 :
                                 <div>
                                     <Spinner size={SpinnerSize.large} label="Verifying your access on this report..." />
                                 </div>
                         }
-
+                        {
+                            this.state.accessRequestSubmissionInProgress &&
+                            <div>
+                                <ProgressIndicator label="Submitting access request..." />
+                            </div>
+                        }
                         <FocusZone handleTabKey={FocusZoneTabbableElements.all} isCircularNavigation>
                             <Stack className={checkAccessStyles.buttons} gap={8} horizontal>
                                 {
-                                    this.state.requestForAccess &&
-                                    <PrimaryButton onClick={this._toggleCheckAccessCallout}>Request Access</PrimaryButton>
+                                    this.state.requestForAccess && !this.state.accessRequestLogged &&
+                                    <PrimaryButton onClick={this._requestReportAccess}>Request Access</PrimaryButton>
                                 }
                                 <DefaultButton onClick={this._toggleCheckAccessCallout}>Cancel</DefaultButton>
                             </Stack>
@@ -480,7 +512,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         try {
             if (this.siteId) {
                 let searchThisSiteUrl: string = UrlHelper.addOrReplaceQueryStringParam(window.location.href, "scope", "site");
-                searchThisSiteUrl = UrlHelper.addOrReplaceQueryStringParam(searchThisSiteUrl, "sid", this.props.toString());
+                searchThisSiteUrl = UrlHelper.addOrReplaceQueryStringParam(searchThisSiteUrl, "sid", this.siteId.toString());
 
                 newTabObject = window.open(searchThisSiteUrl, "_blank");
             }
@@ -493,24 +525,38 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     private _toggleCheckAccessCallout() {
         this.setState({
-            isLoading: false,
+            checkAccessIsLoading: false,
             checkAccessCalloutVisible: false,
             reportsDocumentSetItemCount: 0,
             requestForAccess: false,
-            userHasAccessToReport: false
+            userHasAccessToReport: false,
+            accessRequestLogged: false,
+            accessRequestResponse: undefined,
+            accessRequestSubmissionInProgress: false
         });
     }
 
     private _checkReportAccess() {
 
         if (this.originalPath) {
-            this.setState({ checkAccessCalloutVisible: true });
+            this.setState({ checkAccessCalloutVisible: true, checkAccessIsLoading: true });
 
             const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
             const userHasAccess = sharePointSearchService.checkUserAccessToReports(this.siteUrl, this.originalPath);
             userHasAccess.then(hasAccess => {
+
+                if (hasAccess.hasAccess && this.uniqueId) {
+                    const element = (
+                        <>
+                            <FontIcon aria-label="UnlockSolid" iconName="UnlockSolid" />
+                            <span style={{ color: "green" }}>Access permitted</span>
+                        </>
+                    );
+                    ReactDOM.render(element, document.getElementById(this.uniqueId));
+                }
+
                 this.setState({
-                    isLoading: true,
+                    checkAccessIsLoading: false,
                     reportsDocumentSetItemCount: hasAccess.ItemCount,
                     userHasAccessToReport: hasAccess.hasAccess
                 });
@@ -531,10 +577,90 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         }
     }
 
-    private _requestForAccess(ev: React.MouseEvent<HTMLElement>, checked?: boolean) {
+    private _toggleRequestForAccess(ev: React.MouseEvent<HTMLElement>, checked?: boolean) {
         this.setState({
-            requestForAccess: checked
+            requestForAccess: checked,
+            accessRequestLogged: false,
+            accessRequestResponse: undefined,
+            accessRequestSubmissionInProgress: false
         });
+    }
+
+    private _requestReportAccess(ev?: any) {
+
+        if (this.originalPath) {
+            this.setState({ accessRequestSubmissionInProgress: true });
+            var reportNumber = this.originalPath.split('/')[this.originalPath.split('/').length - 1];  // Name of Document Set
+
+            const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
+            sharePointSearchService.validateAccessRequest("AccessRequest", reportNumber).then((validateAccessRequestResults: IAccessRequestResults | string) => {
+                if (!isEmpty(validateAccessRequestResults)) {
+                    if (typeof validateAccessRequestResults === "string") {
+                        this.setState({
+                            accessRequestLogged: true,
+                            accessRequestSubmissionInProgress: false,
+                            accessRequestResponse: {
+                                message: ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE,
+                                responseType: IAccessRequestResultsType.Failure
+                            }
+                        });
+                    } else {
+
+                        if (this.uniqueId) {
+                            const element = (
+                                <>
+                                    <FontIcon aria-label="CompletedSolid" iconName="CompletedSolid" />
+                                    <span style={{ color: "green" }}>Access Request Status : {validateAccessRequestResults.RequestAccessStatus}</span>
+                                </>
+                            );
+                            ReactDOM.render(element, document.getElementById(this.uniqueId));
+                        }
+
+                        this.setState({
+                            accessRequestLogged: true,
+                            accessRequestSubmissionInProgress: false,
+                            accessRequestResponse: {
+                                message: format(ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE, validateAccessRequestResults.RequestAccessStatus),
+                                responseType: IAccessRequestResultsType.Success
+                            }
+                        });
+                    }
+                } else {
+                    sharePointSearchService.submitAccessRequest("AccessRequest", {}).then((accessRequestResults: IAccessRequestResults | string) => {
+                        if (isEmpty(accessRequestResults) || (!isEmpty(accessRequestResults) && typeof accessRequestResults === "string")) {
+                            this.setState({
+                                accessRequestLogged: true,
+                                accessRequestSubmissionInProgress: false,
+                                accessRequestResponse: {
+                                    message: ACCESS_REQUEST_FAILURE_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Failure
+                                }
+                            });
+                        } else {
+
+                            if (this.uniqueId) {
+                                const element = (
+                                    <>
+                                        <FontIcon aria-label="CheckMark" iconName="CheckMark" />
+                                        <span style={{ color: "green" }}>Access Request Status : {RequestAccessStatus.New}</span>
+                                    </>
+                                );
+                                ReactDOM.render(element, document.getElementById(this.uniqueId));
+                            }
+
+                            this.setState({
+                                accessRequestLogged: true,
+                                accessRequestSubmissionInProgress: false,
+                                accessRequestResponse: {
+                                    message: ACCESS_REQUEST_SUCCESS_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Success
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 }
 

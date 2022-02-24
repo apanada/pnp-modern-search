@@ -120,7 +120,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                     this.props.clientStorage.local.delete(`${this.props.filter.filterName}-terms`);
                     setTimeout(() => {
                         this._updateFilter(this.state.selectedTerms, true);
-                    }, 1500);
+                    }, 500);
                 } else {
                     this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, this.state.selectedTerms, dateAdd(new Date(), 'day', 1));
                 }

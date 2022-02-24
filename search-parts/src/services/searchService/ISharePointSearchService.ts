@@ -3,6 +3,7 @@ import { ISharePointSearchResults } from "../../models/search/ISharePointSearchR
 import { ISharePointSearchQuery } from "../../models/search/ISharePointSearchQuery";
 import { ISynonymTable } from "../../models/search/ISynonym";
 import { IHubSite } from "../../models/common/ISIte";
+import { IAccessRequest, IAccessRequestResults } from "../../models/common/IAccessRequest";
 
 export interface ISharePointSearchService {
 
@@ -46,4 +47,8 @@ export interface ISharePointSearchService {
      isDocumentFollowed(documentUrl: string): Promise<boolean>;
 
      stopFollowingDocument(documentUrl: string): Promise<boolean>;
+
+     validateAccessRequest(listName: string, reportNumber: string): Promise<IAccessRequestResults | string>;
+
+     submitAccessRequest(listName: string, accessRequest: IAccessRequest): Promise<IAccessRequestResults | string>;
 }

@@ -18,10 +18,15 @@ import { Constants } from '../../common/Constants';
 import { ISynonymTable } from '../../models/search/ISynonym';
 import { IHubSite } from '../../models/common/ISIte';
 import { PermissionKind, Web } from "@pnp/sp/presets/all";
-import { Social, SocialActorType, SocialFollowResult } from "@pnp/sp/social";
+import { SocialActorType, SocialFollowResult } from "@pnp/sp/social";
 import { spfi, SPFI, SPFx } from '@pnp/sp';
-import "@pnp/sp/webs";
 import { AssignFrom } from "@pnp/core";
+import "@pnp/sp/webs";
+import "@pnp/sp/lists";
+import "@pnp/sp/items";
+import "@pnp/sp/site-users/web";
+import { IItemAddResult } from "@pnp/sp/items";
+import { IAccessRequest, IAccessRequestResults } from '../../models/common/IAccessRequest';
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -487,7 +492,6 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // follow a doc
-                const social = Social(this.pageContext.web.absoluteUrl);
                 const socialFollowResult: SocialFollowResult = await this._sp.social.follow({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
@@ -505,7 +509,6 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // check whether the current user is following a specified document                
-                const social = Social(this.pageContext.web.absoluteUrl);
                 const isFollowed: boolean = await this._sp.social.isFollowed({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
@@ -523,7 +526,6 @@ export class SharePointSearchService implements ISharePointSearchService {
         try {
             if (!isEmpty(documentUrl)) {
                 // makes the current user stop following a document
-                const social = Social(this.pageContext.web.absoluteUrl);
                 await this._sp.social.stopFollowing({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
@@ -534,6 +536,61 @@ export class SharePointSearchService implements ISharePointSearchService {
         } catch (error) {
             Log.error("[SharePointSearchService.stopFollowingDocument()]", error, this.serviceScope);
             return false;
+        }
+    }
+
+    public async validateAccessRequest(listName: string, reportNumber: string): Promise<IAccessRequestResults | string> {
+        try {
+            if (!isEmpty(listName) && !isEmpty(reportNumber)) {
+                let currentUser = await this._sp.web.currentUser();
+                const allItems: any[] = await this._sp.web.lists.getByTitle(listName).items
+                    .select("ID", "Title", "Requester/Title", "Requester/ID", "RequestAccessStatus", "ReportNumber")
+                    .expand("Requester")
+                    .filter(`ReportNumber eq '${reportNumber}' and Requester/ID eq ${currentUser.Id}`)();
+
+                if (allItems && allItems.length > 0) {
+                    const currentItem = allItems[0];
+                    const exitsingItem = currentItem as IAccessRequestResults;
+                    return exitsingItem;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            Log.error("[SharePointSearchService.validateAccessRequest()]", error, this.serviceScope);
+            return "Unable to validate your access on this report. Please retry after some time.";
+        }
+    }
+
+    public async submitAccessRequest(listName: string, accessRequest: IAccessRequest): Promise<IAccessRequestResults | string> {
+        try {
+            if (!isEmpty(listName) && !isEmpty(accessRequest)) {
+                let currentUser = await this._sp.web.currentUser();
+
+                // add an item to the list
+                const iar: IItemAddResult = await this._sp.web.lists.getByTitle(listName).items
+                    .add({
+                        Title: accessRequest.Title,
+                        Requester: currentUser.Id,
+                        ReportNumber: accessRequest.ReportNumber,
+                        _Author: accessRequest.Author,
+                        _Publisher: accessRequest.Publisher,
+                        ARReportClassification: accessRequest.ReportClassification,
+                        RequestAccessStatus: accessRequest.RequestAccessStatus,
+                        ReportPath: accessRequest.ReportPath,
+                        _Comments: accessRequest.ReportComments,
+                        UserJustification: accessRequest.UserComments
+                    });
+
+                if (iar) {
+                    return iar as IAccessRequestResults;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            Log.error("[SharePointSearchService.submitAccessRequest()]", error, this.serviceScope);
+            return "Unable to raise your access request. Please retry after some time.";
         }
     }
 

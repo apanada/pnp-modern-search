@@ -120,7 +120,7 @@ export class FilePreviewWebComponent extends BaseWebComponent {
 
             // Get the service scope and keys associated to the current Web Part displaying the component
             serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
-            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : sharePointSearchServiceKey;
+            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).SharePointSearchService : sharePointSearchServiceKey;
         }
 
         const sharePointSearchService = serviceScope.consume<ISharePointSearchService>(sharePointSearchServiceKey);
