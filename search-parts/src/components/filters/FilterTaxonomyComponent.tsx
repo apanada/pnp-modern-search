@@ -4,11 +4,14 @@ import * as ReactDOM from 'react-dom';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { MessageBar, MessageBarType } from "office-ui-fabric-react";
 import { ModernTaxonomyPicker } from 'shell-search-extensibility/lib/controls/modernTaxonomyPicker';
-import { Guid, ServiceScope } from '@microsoft/sp-core-library';
+import { Guid, ServiceKey, ServiceScope } from '@microsoft/sp-core-library';
 import { ITermInfo, ITermStoreInfo, ITermSetInfo } from '@pnp/sp/taxonomy';
-import { sp } from "shell-search-extensibility/lib/index";
 import "@pnp/sp/taxonomy";
 import { dateAdd, PnPClientStorage } from '@pnp/common';
+import { spfi, SPFI, SPFx } from '@pnp/sp';
+import { PageContext } from '@microsoft/sp-page-context';
+import { TaxonomyService } from '../../services/taxonomyService/TaxonomyService';
+import { ITaxonomyService } from '../../services/taxonomyService/ITaxonomyService';
 
 export interface IFilterTaxonomyComponentProps {
 
@@ -28,18 +31,29 @@ export interface IFilterTaxonomyComponentProps {
     onUpdate: (filterValues: IDataFilterValueInfo[]) => void;
 
     /**
-     * The current service scope reference
+     * The current page context reference
      */
-    serviceScope: ServiceScope;
+    pageContext: PageContext;
 
+    /**
+     * The term store info
+     */
     termStoreInfo?: ITermStoreInfo;
 
+    /**
+     * The termset info
+     */
     termSetInfo?: ITermSetInfo;
 
     /**
      * The client storage instance
      */
     clientStorage: PnPClientStorage;
+
+    /**
+     * The taxonomy service instance
+     */
+    taxonomyService: ITaxonomyService;
 }
 
 export interface IFilterTaxonomyComponentState {
@@ -86,7 +100,7 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
                 termStoreInfo={this.props.termStoreInfo}
                 termSetInfo={this.props.termSetInfo}
                 labelRequired={false}
-                serviceScope={this.props.serviceScope}
+                pageContext={this.props.pageContext}
                 onChange={this._onModernPickerChange.bind(this)} />
         </div>;
     }
@@ -147,22 +161,10 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
         this.props.onUpdate(updatedValues);
     }
 
-    private async getTermById(termSetId: Guid, termId: Guid): Promise<ITermInfo> {
-        if (termId === Guid.empty) {
-            return undefined;
-        }
-        try {
-            const termInfo = await sp.termStore.sets.getById(termSetId.toString()).terms.getById(termId.toString()).expand("parent")();
-            return termInfo;
-        } catch (error) {
-            return undefined;
-        }
-    }
-
     private _setInitialTerms = async (initialValues: ITermDetails[]): Promise<ITermInfo[]> => {
         if (Array.isArray(initialValues) && initialValues.length > 0) {
             var promises: Promise<ITermInfo>[] = initialValues.map(async (termDetails: ITermDetails) => {
-                const term = await this.getTermById(Guid.parse(this.props.filter.termSetId), Guid.parse(termDetails.id));
+                const term = await this.props.taxonomyService.getTermInfoById(Guid.parse(this.props.filter.termSetId), Guid.parse(termDetails.id));
                 return new Promise<ITermInfo>((resolve, reject) => resolve(term));
             });
 
@@ -217,24 +219,43 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
      */
     private clientStorage: PnPClientStorage;
 
+    private _pageContext: PageContext;
+
     public constructor() {
         super();
 
         this.clientStorage = new PnPClientStorage();
+
+        this._serviceScope.whenFinished(() => {
+
+            const pageContext = this._serviceScope.consume<PageContext>(PageContext.serviceKey);
+            this._pageContext = pageContext;
+        });
     }
 
     public async connectedCallback() {
 
         let props = this.resolveAttributes();
         let renderTaxonomyPicker: JSX.Element = null;
+        let serviceScope: ServiceScope = this._serviceScope; // Default is the root shared service scope regardless the current Web Part 
+        let taxonomyServiceKey: ServiceKey<any> = TaxonomyService.ServiceKey; // Defaut service key for TaxonomyService
+
+        if (props.instanceId) {
+
+            // Get the service scope and keys associated to the current Web Part displaying the component
+            serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
+            taxonomyServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TaxonomyService : taxonomyServiceKey;
+        }
 
         if (props.filter) {
+
+            const taxonomyService = serviceScope.consume<ITaxonomyService>(taxonomyServiceKey);
 
             let termStoreInfo = null;
             if (this.clientStorage.local.get("termStoreInfo")) {
                 termStoreInfo = this.clientStorage.local.get("termStoreInfo");
             } else {
-                termStoreInfo = await this.getTermStoreInfo();
+                termStoreInfo = await taxonomyService.getTermStoreInfo();
                 this.clientStorage.local.put("termStoreInfo", termStoreInfo, dateAdd(new Date(), 'day', 1));
             }
 
@@ -242,7 +263,7 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
             if (this.clientStorage.local.get("termSetInfo")) {
                 termSetInfo = this.clientStorage.local.get("termSetInfo");
             } else {
-                termSetInfo = await this.getTermSetInfo(props.filter.termSetId);
+                termSetInfo = await taxonomyService.getTermSetInfo(props.filter.termSetId);
                 this.clientStorage.local.put("termSetInfo", termSetInfo, dateAdd(new Date(), 'day', 1));
             }
 
@@ -250,7 +271,8 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
             renderTaxonomyPicker = <FilterTaxonomyComponent
                 {...props}
                 clientStorage={this.clientStorage}
-                serviceScope={this._serviceScope}
+                pageContext={this._pageContext}
+                taxonomyService={taxonomyService}
                 termStoreInfo={termStoreInfo}
                 termSetInfo={termSetInfo}
                 filter={filter} onUpdate={((filterValues: IDataFilterValueInfo[]) => {
@@ -290,15 +312,5 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
         }
 
         ReactDOM.render(renderTaxonomyPicker, this);
-    }
-
-    public async getTermStoreInfo(): Promise<ITermStoreInfo | undefined> {
-        const termStoreInfo = await sp.termStore();
-        return termStoreInfo;
-    }
-
-    public async getTermSetInfo(termSetId: Guid): Promise<ITermSetInfo | undefined> {
-        const tsInfo = await sp.termStore.sets.getById(termSetId.toString()).get();
-        return tsInfo;
     }
 }

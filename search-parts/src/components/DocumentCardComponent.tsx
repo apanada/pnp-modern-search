@@ -288,7 +288,7 @@ export class DocumentCardWebComponent extends BaseWebComponent {
             // Get the service scope and keys associated to the current Web Part displaying the component
             serviceScope = this._webPartServiceScopes.get(props.instanceId) ? this._webPartServiceScopes.get(props.instanceId) : serviceScope;
             templateServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : templateServiceKey;
-            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).TemplateService : sharePointSearchServiceKey;
+            sharePointSearchServiceKey = this._webPartServiceKeys.get(props.instanceId) ? this._webPartServiceKeys.get(props.instanceId).SharePointSearchService : sharePointSearchServiceKey;
         }
 
         const templateService = serviceScope.consume<ITemplateService>(templateServiceKey);

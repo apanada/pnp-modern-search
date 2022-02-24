@@ -164,22 +164,24 @@
 							<template id="collapsible-footer">
 								{{#isnt filter.selectedTemplate 'DateRangeFilterTemplate'}}
 									{{#isnt filter.selectedTemplate 'DateTimeFilterTemplate'}}
-										{{#eq filter.values.length 0}}
-											<div class="filter--message">
-												{{@root.strings.FilterNoValuesMessage}}
-											</div>
-										{{else}}
-											{{#if filter.isMulti}}
-												<pnp-filtermultiselect 
-													data-instance-id="{{@root.instanceId}}" 
-													data-filter-name="{{filter.filterName}}" 
-													data-apply-disabled="{{#if filter.canApply}}false{{else}}true{{/if}}" 
-													data-clear-disabled="{{#if filter.canClear}}false{{else}}true{{/if}}"
-													data-theme-variant="{{JSONstringify @root.theme}}"
-												>
-												</pnp-filtermultiselect>
-											{{/if}}
-										{{/eq}}
+									    {{#isnt filter.selectedTemplate 'TaxonomyPickerFilterTemplate'}}
+    										{{#eq filter.values.length 0}}
+    											<div class="filter--message">
+    												{{@root.strings.FilterNoValuesMessage}}
+    											</div>
+    										{{else}}
+    											{{#if filter.isMulti}}
+    												<pnp-filtermultiselect 
+    													data-instance-id="{{@root.instanceId}}" 
+    													data-filter-name="{{filter.filterName}}" 
+    													data-apply-disabled="{{#if filter.canApply}}false{{else}}true{{/if}}" 
+    													data-clear-disabled="{{#if filter.canClear}}false{{else}}true{{/if}}"
+    													data-theme-variant="{{JSONstringify @root.theme}}"
+    												>
+    												</pnp-filtermultiselect>
+    											{{/if}}
+    										{{/eq}}
+										{{/isnt}}
 									{{/isnt}}
 								{{/isnt}}
 							</template>

@@ -19,7 +19,9 @@ import { ISynonymTable } from '../../models/search/ISynonym';
 import { IHubSite } from '../../models/common/ISIte';
 import { PermissionKind, Web } from "@pnp/sp/presets/all";
 import { Social, SocialActorType, SocialFollowResult } from "@pnp/sp/social";
-import { sp } from "shell-search-extensibility/lib/index";
+import { spfi, SPFI, SPFx } from '@pnp/sp';
+import "@pnp/sp/webs";
+import { AssignFrom } from "@pnp/core";
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -53,6 +55,8 @@ export class SharePointSearchService implements ISharePointSearchService {
      */
     private clientStorage: PnPClientStorage;
 
+    private _sp: SPFI;
+
     private _synonymTable: ISynonymTable = null;
     public set synonymTable(value: ISynonymTable) { this._synonymTable = value; }
     public get synonymTable(): ISynonymTable { return this._synonymTable; }
@@ -69,6 +73,10 @@ export class SharePointSearchService implements ISharePointSearchService {
             this.spHttpClient = serviceScope.consume<SPHttpClient>(SPHttpClient.serviceKey);
 
             this.searchEndpointUrl = `${this.pageContext.web.absoluteUrl}/_api/search/postquery`;
+
+            this._sp = spfi().using(SPFx({
+                pageContext: this.pageContext
+            }));
         });
     }
 
@@ -443,11 +451,12 @@ export class SharePointSearchService implements ISharePointSearchService {
             if (!isEmpty(reportUrl) && !isEmpty(siteUrl)) {
                 let reportServerRelativeUrl = reportUrl.replace(window.location.origin, '');
                 reportServerRelativeUrl = `${reportServerRelativeUrl}/Contents`;
-                const web = Web(siteUrl ?? this.pageContext.web.absoluteUrl);
-                const folder: any = await web.getFolderByServerRelativeUrl(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions').get();
+
+                const spWeb = spfi(siteUrl).using(AssignFrom(this._sp.web));
+                const folder: any = await spWeb.web.getFolderByServerRelativePath(`${reportServerRelativeUrl}`).select('*').expand('ListItemAllFields/EffectiveBasePermissions')();
 
                 if (folder) {
-                    const hasAccess: boolean = sp.web.hasPermissions(
+                    const hasAccess: boolean = spWeb.web.hasPermissions(
                         folder.ListItemAllFields.EffectiveBasePermissions,
                         PermissionKind.ViewListItems
                     );
@@ -479,7 +488,7 @@ export class SharePointSearchService implements ISharePointSearchService {
             if (!isEmpty(documentUrl)) {
                 // follow a doc
                 const social = Social(this.pageContext.web.absoluteUrl);
-                const socialFollowResult: SocialFollowResult = await social.follow({
+                const socialFollowResult: SocialFollowResult = await this._sp.social.follow({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
                 });
@@ -497,7 +506,7 @@ export class SharePointSearchService implements ISharePointSearchService {
             if (!isEmpty(documentUrl)) {
                 // check whether the current user is following a specified document                
                 const social = Social(this.pageContext.web.absoluteUrl);
-                const isFollowed: boolean = await social.isFollowed({
+                const isFollowed: boolean = await this._sp.social.isFollowed({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
                 });
@@ -515,7 +524,7 @@ export class SharePointSearchService implements ISharePointSearchService {
             if (!isEmpty(documentUrl)) {
                 // makes the current user stop following a document
                 const social = Social(this.pageContext.web.absoluteUrl);
-                await social.stopFollowing({
+                await this._sp.social.stopFollowing({
                     ActorType: SocialActorType.Document,
                     ContentUri: documentUrl,
                 });

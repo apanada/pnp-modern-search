@@ -1,5 +1,5 @@
 {
-  "extends": "@microsoft/rush-stack-compiler-3.9/includes/tsconfig-web.json",
+  "extends": "./node_modules/@microsoft/rush-stack-compiler-4.2/includes/tsconfig-web.json",
   "compilerOptions": {
     "rootDir": "src",
     "target": "ES6",
@@ -10,6 +10,7 @@
     "declaration": true,
     "sourceMap": true,
     "experimentalDecorators": true,
+    "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "outDir": "lib",
     "inlineSources": false,

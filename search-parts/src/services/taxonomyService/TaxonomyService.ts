@@ -5,8 +5,9 @@ import { ITaxonomyService } from './ITaxonomyService';
 import { Constants } from '../../common/Constants';
 import { ITerms, ITerm } from './ITaxonomyItems';
 import { ITermGroupInfo, ITermSetInfo, ITermStoreInfo, ITermInfo } from '@pnp/sp/taxonomy';
-import { sp } from "shell-search-extensibility/lib/index";
 import "@pnp/sp/taxonomy";
+import { spfi, SPFI, SPFx } from '@pnp/sp';
+import { PageContext } from '@microsoft/sp-page-context';
 
 const TaxonomyService_ServiceKey = 'PnPModernSearchTaxonomyService';
 
@@ -19,10 +20,16 @@ export class TaxonomyService implements ITaxonomyService {
 	 */
 	private spHttpClient: SPHttpClient;
 
+	private _sp: SPFI;
+
 	constructor(serviceScope: ServiceScope) {
 
 		serviceScope.whenFinished(() => {
 			this.spHttpClient = serviceScope.consume<SPHttpClient>(SPHttpClient.serviceKey);
+			const pageContext = serviceScope.consume<PageContext>(PageContext.serviceKey);
+			this._sp = spfi().using(SPFx({
+				pageContext: pageContext
+			}));
 		});
 	}
 
@@ -75,18 +82,23 @@ export class TaxonomyService implements ITaxonomyService {
 	}
 
 	public async getTermGroups(): Promise<ITermGroupInfo[]> {
-		const termGroups: ITermGroupInfo[] = await sp.termStore.groups();
+		const termGroups: ITermGroupInfo[] = await this._sp.termStore.groups();
 		return termGroups;
 	}
 
 	public async getTermSets(groupId: string): Promise<ITermSetInfo[]> {
-		const termSets: ITermSetInfo[] = await sp.termStore.groups.getById(groupId).sets();
+		const termSets: ITermSetInfo[] = await this._sp.termStore.groups.getById(groupId).sets();
 		return termSets;
 	}
 
 	public async getTermStoreInfo(): Promise<ITermStoreInfo | undefined> {
-		const termStoreInfo = await sp.termStore();
+		const termStoreInfo = await this._sp.termStore();
 		return termStoreInfo;
+	}
+
+	public async getTermSetInfo(termSetId: Guid): Promise<ITermSetInfo | undefined> {
+		const tsInfo = await this._sp.termStore.sets.getById(termSetId.toString())();
+		return tsInfo;
 	}
 
 	public async getTermById(termSetId: Guid, termId: Guid): Promise<ITermInfo> {
@@ -94,10 +106,22 @@ export class TaxonomyService implements ITaxonomyService {
 			return undefined;
 		}
 		try {
-			const termInfo = await sp.termStore.sets.getById(termSetId.toString())
+			const termInfo = await this._sp.termStore.sets.getById(termSetId.toString())
 				.terms
 				.getById(termId.toString())
 				.select('id', 'labels', 'descriptions', 'properties', 'localProperties', 'ShortName', 'createdDateTime', 'lastModifiedDateTime', 'childrenCount', 'isAvailableForTagging', 'customSortOrder', 'isDeprecated', 'topicRequested')();
+			return termInfo;
+		} catch (error) {
+			return undefined;
+		}
+	}
+
+	public async getTermInfoById(termSetId: Guid, termId: Guid): Promise<ITermInfo> {
+		if (termId === Guid.empty) {
+			return undefined;
+		}
+		try {
+			const termInfo = await this._sp.termStore.sets.getById(termSetId.toString()).terms.getById(termId.toString()).expand("parent")();
 			return termInfo;
 		} catch (error) {
 			return undefined;

@@ -19,6 +19,7 @@ const readJson = (path, cb) => {
 }
 
 build.addSuppression(/^Warning - \[sass\].*$/);
+build.addSuppression(`Warning - [sass] The local CSS class 'ms-Grid' is not camelCase and will not be type-safe.`);
 
 // Retrieve the current build config and check if there is a `warnoff` flag set
 const crntConfig = build.getConfig();
@@ -115,5 +116,10 @@ build.rig.getTasks = function() {
 
     return result;
 };
+
+// ********* ADDED *******
+// disable tslint
+build.tslintCmd.enabled = false;
+// ********* ADDED *******
 
 build.initialize(require('gulp'));

@@ -18,5 +18,9 @@ export interface ITaxonomyService {
 
     getTermStoreInfo(): Promise<ITermStoreInfo | undefined>;
 
+    getTermSetInfo(termSetId: Guid): Promise<ITermSetInfo | undefined>;
+
     getTermById(termSetId: Guid, termId: Guid): Promise<ITermInfo>;
+
+    getTermInfoById(termSetId: Guid, termId: Guid): Promise<ITermInfo>;
 }
