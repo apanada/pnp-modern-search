@@ -91,7 +91,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                     <span>
                                         <DefaultButton
                                             toggle
-                                            text={this.state.isFollowed ? 'Following' : 'Follow'}
+                                            text={this.state.isFollowed ? 'Following' : 'Not Following'}
                                             iconProps={this.state.isFollowed ? followedIcon : unfollowedIcon}
                                             onClick={this._followOrUnfollowDocument}
                                             allowDisabledFocus

@@ -108,23 +108,19 @@ export class FilterTaxonomyComponent extends React.Component<IFilterTaxonomyComp
     public async componentDidMount() {
         this.props.clientStorage.local.deleteExpired();
 
-        if (this.props.filter.values && this.props.filter.values.length > 0) {
-            const initialValues = this._getInitialActiveFilterValues(this.props.filter.values);
+        if (this.props.filter.values.length > 0) {
+            let selectedTerms: ITermInfo[] = [];
 
-            let data = await this._setInitialTerms(initialValues);
+            const initialValues = this._getInitialActiveFilterValues(this.props.filter.values);
+            selectedTerms = await this._setInitialTerms(initialValues);
+
+            this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, selectedTerms, dateAdd(new Date(), 'day', 1));
 
             this.setState({
-                selectedTerms: data
-            }, () => {
-                if (this.state.selectedTerms && this.state.selectedTerms.length === 0) {
-                    this.props.clientStorage.local.delete(`${this.props.filter.filterName}-terms`);
-                    setTimeout(() => {
-                        this._updateFilter(this.state.selectedTerms, true);
-                    }, 500);
-                } else {
-                    this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, this.state.selectedTerms, dateAdd(new Date(), 'day', 1));
-                }
+                selectedTerms: selectedTerms
             });
+        } else {
+            this.props.clientStorage.local.put(`${this.props.filter.filterName}-terms`, [], dateAdd(new Date(), 'day', 1));
         }
     }
 

@@ -66,6 +66,10 @@ export interface IFileMenuState {
     accessRequestLogged?: boolean;
 
     accessRequestResponse?: { message: string | undefined, responseType: IAccessRequestResultsType };
+
+    scanRequestSubmissionInProgress?: boolean;
+
+    scanRequestLogged?: boolean;
 }
 
 const checkAccessStyles = mergeStyleSets({
@@ -123,7 +127,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             requestForAccess: false,
             accessRequestSubmissionInProgress: false,
             accessRequestLogged: false,
-            accessRequestResponse: undefined
+            accessRequestResponse: undefined,
+            scanRequestSubmissionInProgress: false,
+            scanRequestLogged: false
         };
 
         this._openDocumentInBrowser = this._openDocumentInBrowser.bind(this);
@@ -135,6 +141,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this._toggleRequestForAccess = this._toggleRequestForAccess.bind(this);
         this._toggleCheckAccessCallout = this._toggleCheckAccessCallout.bind(this);
         this._requestReportAccess = this._requestReportAccess.bind(this);
+        this._requestReportScan = this._requestReportScan.bind(this);
     }
 
     public componentDidMount(): void {
@@ -305,6 +312,21 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                                     <Label styles={{ root: { color: this.props.themeVariant.palette.themePrimary } }}>Report Type | {this.state.reportsDocumentSetItemCount > 0 ? "Electronic" : "Physical"}</Label>
                                                 </Text>
                                             }
+                                            {
+                                                this.state.reportsDocumentSetItemCount === 0 ?
+                                                    this.state.scanRequestLogged ?
+                                                        <div>
+                                                            <MessageBar
+                                                                messageBarType={this.state.accessRequestResponse.responseType === IAccessRequestResultsType.Success ? MessageBarType.success : MessageBarType.error}
+                                                                isMultiline={true}
+                                                            >
+                                                                {this.state.accessRequestResponse.message}
+                                                            </MessageBar>
+                                                        </div>
+                                                        :
+                                                        <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue="Please scan and provide access." />
+                                                    : null
+                                            }
                                         </div>
                                     </div>
                                     :
@@ -325,7 +347,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                             <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._toggleRequestForAccess} />
                                             {
                                                 this.state.requestForAccess &&
-                                                <TextField label="Request comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
+                                                <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
                                             }
                                         </div>
                                 :
@@ -339,11 +361,21 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                 <ProgressIndicator label="Submitting access request..." />
                             </div>
                         }
+                        {
+                            this.state.scanRequestSubmissionInProgress &&
+                            <div>
+                                <ProgressIndicator label="Submitting scan request..." />
+                            </div>
+                        }
                         <FocusZone handleTabKey={FocusZoneTabbableElements.all} isCircularNavigation>
                             <Stack className={checkAccessStyles.buttons} gap={8} horizontal>
                                 {
                                     this.state.requestForAccess && !this.state.accessRequestLogged &&
                                     <PrimaryButton onClick={this._requestReportAccess}>Request Access</PrimaryButton>
+                                }
+                                {
+                                    this.state.reportsDocumentSetItemCount === 0 && !this.state.scanRequestLogged &&
+                                    <PrimaryButton onClick={this._requestReportScan}>Request Scan</PrimaryButton>
                                 }
                                 <DefaultButton onClick={this._toggleCheckAccessCallout}>Cancel</DefaultButton>
                             </Stack>
@@ -532,7 +564,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             userHasAccessToReport: false,
             accessRequestLogged: false,
             accessRequestResponse: undefined,
-            accessRequestSubmissionInProgress: false
+            accessRequestSubmissionInProgress: false,
+            scanRequestLogged: false,
+            scanRequestSubmissionInProgress: false
         });
     }
 
@@ -651,6 +685,83 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             this.setState({
                                 accessRequestLogged: true,
                                 accessRequestSubmissionInProgress: false,
+                                accessRequestResponse: {
+                                    message: ACCESS_REQUEST_SUCCESS_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Success
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    private _requestReportScan(ev?: any) {
+
+        if (this.originalPath) {
+            this.setState({ scanRequestSubmissionInProgress: true });
+            var reportNumber = this.originalPath.split('/')[this.originalPath.split('/').length - 1];  // Name of Document Set
+
+            const sharePointSearchService = this.props.serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
+            sharePointSearchService.validateAccessRequest("AccessRequest", reportNumber).then((validateAccessRequestResults: IAccessRequestResults | string) => {
+                if (!isEmpty(validateAccessRequestResults)) {
+                    if (typeof validateAccessRequestResults === "string") {
+                        this.setState({
+                            scanRequestLogged: true,
+                            scanRequestSubmissionInProgress: false,
+                            accessRequestResponse: {
+                                message: ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE,
+                                responseType: IAccessRequestResultsType.Failure
+                            }
+                        });
+                    } else {
+
+                        if (this.uniqueId) {
+                            const element = (
+                                <>
+                                    <FontIcon aria-label="CompletedSolid" iconName="CompletedSolid" />
+                                    <span style={{ color: "green" }}>Scan Request Status : {validateAccessRequestResults.RequestAccessStatus}</span>
+                                </>
+                            );
+                            ReactDOM.render(element, document.getElementById(this.uniqueId));
+                        }
+
+                        this.setState({
+                            scanRequestLogged: true,
+                            scanRequestSubmissionInProgress: false,
+                            accessRequestResponse: {
+                                message: format(ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE, validateAccessRequestResults.RequestAccessStatus),
+                                responseType: IAccessRequestResultsType.Success
+                            }
+                        });
+                    }
+                } else {
+                    sharePointSearchService.submitAccessRequest("AccessRequest", {}).then((accessRequestResults: IAccessRequestResults | string) => {
+                        if (isEmpty(accessRequestResults) || (!isEmpty(accessRequestResults) && typeof accessRequestResults === "string")) {
+                            this.setState({
+                                scanRequestLogged: true,
+                                scanRequestSubmissionInProgress: false,
+                                accessRequestResponse: {
+                                    message: ACCESS_REQUEST_FAILURE_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Failure
+                                }
+                            });
+                        } else {
+
+                            if (this.uniqueId) {
+                                const element = (
+                                    <>
+                                        <FontIcon aria-label="CheckMark" iconName="CheckMark" />
+                                        <span style={{ color: "green" }}>Scan Request Status : {RequestAccessStatus.New}</span>
+                                    </>
+                                );
+                                ReactDOM.render(element, document.getElementById(this.uniqueId));
+                            }
+
+                            this.setState({
+                                scanRequestLogged: true,
+                                scanRequestSubmissionInProgress: false,
                                 accessRequestResponse: {
                                     message: ACCESS_REQUEST_SUCCESS_MESSAGE,
                                     responseType: IAccessRequestResultsType.Success

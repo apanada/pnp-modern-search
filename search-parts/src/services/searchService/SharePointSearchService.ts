@@ -558,7 +558,7 @@ export class SharePointSearchService implements ISharePointSearchService {
             return null;
         } catch (error) {
             Log.error("[SharePointSearchService.validateAccessRequest()]", error, this.serviceScope);
-            return "Unable to validate your access on this report. Please retry after some time.";
+            return "Error in SharePointSearchService.validateAccessRequest()";
         }
     }
 
@@ -590,7 +590,7 @@ export class SharePointSearchService implements ISharePointSearchService {
             return null;
         } catch (error) {
             Log.error("[SharePointSearchService.submitAccessRequest()]", error, this.serviceScope);
-            return "Unable to raise your access request. Please retry after some time.";
+            return "Error in SharePointSearchService.submitAccessRequest()";
         }
     }
 
