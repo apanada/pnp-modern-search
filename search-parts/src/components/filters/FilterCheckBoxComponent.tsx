@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BaseWebComponent, IDataFilterInfo, IDataFilterValueInfo, ExtensibilityConstants } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { Checkbox, ChoiceGroup, IChoiceGroupOption, ITheme, Text } from 'office-ui-fabric-react';
+import { Checkbox, ChoiceGroup, IChoiceGroupOption, ITheme, Text } from '@fluentui/react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 export interface IFilterCheckBoxProps {
@@ -120,11 +120,10 @@ export class FilterCheckBoxComponent extends React.Component<IFilterCheckBoxProp
                                     {
                                         key: filterValue.value, 
                                         text: filterValue.name,
-                                        disabled: this.props.disabled,
-
-                                        checked: this.props.selected
+                                        disabled: this.props.disabled
                                     }
-                                ]}
+                                ]}    
+                                selectedKey={this.props.selected ? filterValue.value : null}
                                 onChange={(ev?: React.FormEvent<HTMLInputElement>, option?: IChoiceGroupOption) => {
                                     filterValue.selected = ev.currentTarget.checked;
                                     this.props.onChecked(this.props.filterName, filterValue);

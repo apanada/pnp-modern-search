@@ -3,7 +3,7 @@ import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPane
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
 import { TokenService } from "../services/tokenService/TokenService";
 import { Guid, ServiceScope } from '@microsoft/sp-core-library';
-import { IComboBoxOption } from 'office-ui-fabric-react';
+import { IComboBoxOption } from '@fluentui/react';
 import { PropertyPaneAsyncCombo } from "../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo";
 import * as commonStrings from 'CommonStrings';
 import { IMicrosoftSearchRequest, ISearchRequestAggregation, SearchAggregationSortBy, ISearchSortProperty, IMicrosoftSearchQuery, IQueryAlterationOptions, ICustomAadApplicationOptions } from '../models/search/IMicrosoftSearchRequest';

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ISuggestionItemProps } from 'office-ui-fabric-react/lib/Pickers';
+import { ISuggestionItemProps } from '@fluentui/react/lib/Pickers';
 import styles from './TermItemSuggestions.module.scss';
 import * as strings from 'ControlStrings';
 import { Guid } from '@microsoft/sp-core-library';
@@ -18,17 +18,17 @@ export function TermItemSuggestion(props: ITermItemSuggestionProps<ITermInfo>): 
   React.useEffect(() => {
     if (props.onLoadParentLabel) {
       props.onLoadParentLabel(Guid.parse(props.term.id.toString()))
-      .then((localParentInfo) => {
-        setParentLabel(localParentInfo);
-      });
+        .then((localParentInfo) => {
+          setParentLabel(localParentInfo);
+        });
     }
   }, []);
 
   let labels: {
-                name: string;
-                isDefault: boolean;
-                languageTag: string;
-              }[];
+    name: string;
+    isDefault: boolean;
+    languageTag: string;
+  }[];
 
   if (props.languageTag && props.termStoreInfo) {
     labels = props.term.labels.filter((name) => name.languageTag === props.languageTag && name.isDefault);

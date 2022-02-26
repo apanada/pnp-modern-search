@@ -23,7 +23,7 @@ import { TaxonomyService } from "../services/taxonomyService/TaxonomyService";
 import { ISharePointSearchResult } from "../models/search/ISharePointSearchResults";
 import { ILocalizableSearchResult, ILocalizableSearchResultProperty } from "../models/search/ILocalizableSearchResult";
 import { PropertyPaneAsyncCombo } from "../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo";
-import { IComboBoxOption } from "office-ui-fabric-react";
+import { IComboBoxOption } from "@fluentui/react";
 import { ISharePointSearchQuery, SortDirection, ISort } from "../models/search/ISharePointSearchQuery";
 import update from 'immutability-helper';
 import { AsyncCombo } from '../controls/PropertyPaneAsyncCombo/components/AsyncCombo';

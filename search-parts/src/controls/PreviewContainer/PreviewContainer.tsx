@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { IPreviewContainerProps, PreviewType } from './IPreviewContainerProps';
 import IPreviewContainerState from './IPreviewContainerState';
-import { CommandBarButton, ContextualMenu, DefaultButton, Dialog, DialogType, FontIcon, FontWeights, getTheme, IButtonStyles, Icon, IconButton, IIconProps, ILabelStyles, IModalProps, IOverflowSetItemProps, IStackTokens, IStyleSet, Label, Link, mergeStyles, mergeStyleSets, Modal, OverflowSet, Pivot, PivotItem, PivotLinkFormat, Stack } from 'office-ui-fabric-react';
-import { Spinner, SpinnerSize } from 'office-ui-fabric-react';
+import { CommandBarButton, ContextualMenu, DefaultButton, Dialog, DialogType, FontIcon, FontWeights, getTheme, IButtonStyles, Icon, IconButton, IIconProps, ILabelStyles, IModalProps, IOverflowSetItemProps, IStackTokens, IStyleSet, Label, Link, mergeStyles, mergeStyleSets, Modal, OverflowSet, Pivot, PivotItem, PivotLinkFormat, Stack } from '@fluentui/react';
+import { Spinner, SpinnerSize } from '@fluentui/react';
 import previewContainerStyles from './PreviewContainer.module.scss';
-import { Overlay } from 'office-ui-fabric-react';
+import { Overlay } from '@fluentui/react';
 import { TestConstants } from '../../common/Constants';
 import { split } from 'lodash';
 

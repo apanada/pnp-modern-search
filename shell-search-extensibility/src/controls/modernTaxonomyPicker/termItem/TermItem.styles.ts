@@ -1,6 +1,6 @@
-import { ButtonGlobalClassNames } from "office-ui-fabric-react/lib/components/Button/BaseButton.classNames";
-import { getFocusStyle, getGlobalClassNames, HighContrastSelector } from "office-ui-fabric-react/lib/Styling";
-import { getRTL } from "office-ui-fabric-react/lib/Utilities";
+import { ButtonGlobalClassNames } from "@fluentui/react/lib/components/Button/BaseButton.classNames";
+import { getFocusStyle, getGlobalClassNames, HighContrastSelector } from "@fluentui/react/lib/Styling";
+import { getRTL } from "@fluentui/react/lib/Utilities";
 import { ITermItemStyleProps, ITermItemStyles } from "../modernTermPicker/ModernTermPicker.types";
 
 const GlobalClassNames = {
@@ -42,15 +42,15 @@ export function getStyles(props: ITermItemStyleProps): ITermItemStyles {
         selectors: {
           ':hover': [
             !disabled &&
-              !selected && {
-                color: palette.neutralDark,
-                background: palette.neutralLight,
-                selectors: {
-                  '.ms-TagItem-close': {
-                    color: palette.neutralPrimary,
-                  },
+            !selected && {
+              color: palette.neutralDark,
+              background: palette.neutralLight,
+              selectors: {
+                '.ms-TagItem-close': {
+                  color: palette.neutralPrimary,
                 },
               },
+            },
             disabled && { background: palette.neutralLighter },
             selected && !disabled && { background: palette.themePrimary },
           ],
@@ -67,12 +67,12 @@ export function getStyles(props: ITermItemStyleProps): ITermItemStyles {
         },
       },
       selected &&
-        !disabled && [
-          classNames.isSelected,
-          {
-            color: palette.white,
-          },
-        ],
+      !disabled && [
+        classNames.isSelected,
+        {
+          color: palette.white,
+        },
+      ],
       className,
     ],
     text: [

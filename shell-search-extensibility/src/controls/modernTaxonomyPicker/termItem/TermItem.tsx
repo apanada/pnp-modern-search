@@ -1,10 +1,10 @@
-import { IconButton } from 'office-ui-fabric-react/lib/components/Button/IconButton/IconButton';
-import { classNamesFunction, styled } from 'office-ui-fabric-react/lib/Utilities';
+import { IconButton } from '@fluentui/react/lib/components/Button/IconButton/IconButton';
+import { classNamesFunction, styled } from '@fluentui/react/lib/Utilities';
 import * as React from 'react';
 import { ITermItemProps, ITermItemStyleProps, ITermItemStyles } from '../modernTermPicker/ModernTermPicker.types';
 import { getStyles } from './TermItem.styles';
 import styless from "./TermItem.module.scss";
-import { IButtonStyles, IIconProps } from 'office-ui-fabric-react';
+import { IButtonStyles, IIconProps } from '@fluentui/react';
 
 const getClassNames = classNamesFunction<ITermItemStyleProps, ITermItemStyles>();
 
@@ -39,7 +39,7 @@ export const TermItemBase = (props: ITermItemProps) => {
     labels = props.item.labels.filter((name) => name.languageTag === props.termStoreInfo.defaultLanguageTag && name.isDefault);
   }
 
-  const addTermButtonStyles: IButtonStyles = { rootHovered: { backgroundColor: 'transparent' }, rootPressed: { backgroundColor: 'transparent' }, icon: { color: "#ffffff", cursor: "auto" , margin: "0 0 0 12px" } };
+  const addTermButtonStyles: IButtonStyles = { rootHovered: { backgroundColor: 'transparent' }, rootPressed: { backgroundColor: 'transparent' }, icon: { color: "#ffffff", cursor: "auto", margin: "0 0 0 12px" } };
 
   return (
     <div

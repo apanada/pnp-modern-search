@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { INlpSpellCheckPanelProps } from './INlpSpellCheckPanelProps';
-import { Link } from 'office-ui-fabric-react';
+import { Link } from '@fluentui/react';
 
 export default class NlpSpellCheckPanel extends React.Component<INlpSpellCheckPanelProps, null> {
 

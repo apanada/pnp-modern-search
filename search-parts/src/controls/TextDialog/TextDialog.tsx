@@ -1,13 +1,13 @@
 import * as React                               from 'react';
 import { Suspense }                             from 'react';
-import { Dialog, DialogType, DialogFooter } 	from 'office-ui-fabric-react';
-import { ButtonType, PrimaryButton } 			from 'office-ui-fabric-react';
+import { Dialog, DialogType, DialogFooter } 	from '@fluentui/react';
+import { ButtonType, PrimaryButton } 			from '@fluentui/react';
 import { ITextDialogProps }                  	from './ITextDialogProps';
 import { ITextDialogState }                  	from './ITextDialogState';
 import styles                                   from './TextDialog.module.scss';
 import './AceEditor.module.scss';
-import { TextField } from 'office-ui-fabric-react';
-import { Icon } from 'office-ui-fabric-react';
+import { TextField } from '@fluentui/react';
+import { Icon } from '@fluentui/react';
 const AceEditor = React.lazy(() => import('react-ace'));
 
 export default class TextDialog extends React.Component<ITextDialogProps, ITextDialogState> {

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { BaseWebComponent, FilterComparisonOperator, IDataFilterInfo, IDataFilterValueInfo, IDataFilterInternal, ExtensibilityConstants, IDataFilterValueInternal } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import { MessageBar, MessageBarType } from "office-ui-fabric-react";
+import { MessageBar, MessageBarType } from "@fluentui/react";
 import { ModernTaxonomyPicker } from 'shell-search-extensibility/lib/controls/modernTaxonomyPicker';
 import { Guid, ServiceKey, ServiceScope } from '@microsoft/sp-core-library';
 import { ITermInfo, ITermStoreInfo, ITermSetInfo } from '@pnp/sp/taxonomy';

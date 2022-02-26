@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon, MessageBar, MessageBarType, ProgressIndicator, format, FontIcon } from 'office-ui-fabric-react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon, MessageBar, MessageBarType, ProgressIndicator, format, FontIcon, IconButton, Overlay } from '@fluentui/react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { UrlHelper } from '../helpers/UrlHelper';
 import { ServiceScope } from '@microsoft/sp-core-library';
@@ -9,6 +9,7 @@ import { ISharePointSearchService } from '../services/searchService/ISharePointS
 import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
 import { isEmpty } from '@microsoft/sp-lodash-subset';
 import { IAccessRequestResults, IAccessRequestResultsType, RequestAccessStatus } from '../models/common/IAccessRequest';
+import { newGuid } from '@microsoft/applicationinsights-core-js';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
     "doc", "docx", "docm", "dot", "dotm", "dotx",
@@ -158,6 +159,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     public render() {
 
+        const uniqueId = newGuid().slice(0, 8).toString();
         const styles: Partial<IButtonStyles> = {
             root: {
                 width: "24px",
@@ -262,8 +264,6 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             }
         );
 
-        const uniqueId = Math.floor(Math.random() * 1000) + 1;
-
         return <div>
             <div>
                 <CommandBarButton
@@ -279,8 +279,6 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             <div>
                 {this.state.checkAccessCalloutVisible && (
                     <Callout
-                        role="checkaccesscallout"
-                        ariaLabelledBy="check-access-callout-label"
                         className={checkAccessStyles.callout}
                         gapSpace={0}
                         target={`#results-menu-item-${uniqueId}`}
@@ -579,6 +577,12 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             const userHasAccess = sharePointSearchService.checkUserAccessToReports(this.siteUrl, this.originalPath);
             userHasAccess.then(hasAccess => {
 
+                this.setState({
+                    checkAccessIsLoading: false,
+                    reportsDocumentSetItemCount: hasAccess.ItemCount,
+                    userHasAccessToReport: hasAccess.hasAccess
+                });
+
                 if (hasAccess.hasAccess && this.uniqueId) {
                     const element = (
                         <>
@@ -588,12 +592,6 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                     );
                     ReactDOM.render(element, document.getElementById(this.uniqueId));
                 }
-
-                this.setState({
-                    checkAccessIsLoading: false,
-                    reportsDocumentSetItemCount: hasAccess.ItemCount,
-                    userHasAccessToReport: false //hasAccess.hasAccess
-                });
             });
         }
     }

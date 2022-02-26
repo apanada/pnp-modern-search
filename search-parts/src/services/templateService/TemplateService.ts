@@ -10,7 +10,7 @@ import { IComponentDefinition } from "@pnp/modern-search-extensibility";
 import groupBy from 'handlebars-group-by';
 import { IComponentFieldsConfiguration } from "../../models/common/IComponentFieldsConfiguration";
 import { initializeFileTypeIcons } from '@uifabric/file-type-icons';
-import { GlobalSettings } from 'office-ui-fabric-react';
+import { GlobalSettings } from '@fluentui/react';
 import { IDataResultType, ResultTypeOperator } from "../../models/common/IDataResultType";
 import { IDataResultsTemplateContext } from "../../models/common/ITemplateContext";
 import { UrlHelper } from "../../helpers/UrlHelper";

@@ -1,33 +1,33 @@
 import * as React from 'react';
 import { Guid } from '@microsoft/sp-core-library';
-import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
+import { IIconProps } from '@fluentui/react/lib/components/Icon';
 import {
   PrimaryButton,
   DefaultButton,
   IconButton,
   IButtonStyles
-} from 'office-ui-fabric-react/lib/Button';
-import { Label } from 'office-ui-fabric-react/lib/Label';
+} from '@fluentui/react/lib/Button';
+import { Label } from '@fluentui/react/lib/Label';
 import {
   Panel,
   PanelType
-} from 'office-ui-fabric-react/lib/Panel';
+} from '@fluentui/react/lib/Panel';
 import {
   IBasePickerStyleProps,
   IBasePickerStyles,
   ISuggestionItemProps
-} from 'office-ui-fabric-react/lib/Pickers';
+} from '@fluentui/react/lib/Pickers';
 import {
   IStackTokens,
   Stack
-} from 'office-ui-fabric-react/lib/Stack';
-import { IStyleFunctionOrObject } from 'office-ui-fabric-react/lib/Utilities';
+} from '@fluentui/react/lib/Stack';
+import { IStyleFunctionOrObject } from '@fluentui/react/lib/Utilities';
 import { sp } from '@pnp/sp';
 import { SPTaxonomyService } from '../../services/SPTaxonomyService';
 import { TaxonomyPanelContents } from './taxonomyPanelContents';
 import styles from './ModernTaxonomyPicker.module.scss';
 import * as strings from 'ControlStrings';
-import { TooltipHost, ITooltipHostStyles } from 'office-ui-fabric-react/lib/Tooltip';
+import { TooltipHost, ITooltipHostStyles } from '@fluentui/react/lib/Tooltip';
 import { useId, useControllableValue } from '@uifabric/react-hooks';
 import {
   ITermInfo,

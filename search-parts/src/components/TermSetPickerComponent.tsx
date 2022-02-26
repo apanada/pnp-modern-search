@@ -1,10 +1,10 @@
 import { ServiceScope } from "@microsoft/sp-core-library";
 import { ITermGroupInfo, ITermSetInfo, ITermInfo, ITermStoreInfo } from "@pnp/sp/taxonomy";
-import { ChoiceGroup, DefaultButton, DetailsRow, Dialog, DialogFooter, DialogType, FocusZone, GroupedList, GroupHeader, IButtonStyles, IChoiceGroupOption, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles, IColumn, Icon, IconButton, IGroup, IGroupFooterProps, IGroupHeaderProps, IGroupHeaderStyleProps, IGroupHeaderStyles, IGroupRenderProps, IGroupShowAllProps, IIconProps, IIconStyles, ILabelStyleProps, ILabelStyles, IListProps, Label, PrimaryButton, SelectionZone } from "office-ui-fabric-react";
+import { ChoiceGroup, DefaultButton, DetailsRow, Dialog, DialogFooter, DialogType, FocusZone, GroupedList, GroupHeader, IButtonStyles, IChoiceGroupOption, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles, IColumn, Icon, IconButton, IGroup, IGroupFooterProps, IGroupHeaderProps, IGroupHeaderStyleProps, IGroupHeaderStyles, IGroupRenderProps, IGroupShowAllProps, IIconProps, IIconStyles, ILabelStyleProps, ILabelStyles, IListProps, Label, PrimaryButton, SelectionZone } from "@fluentui/react";
 import * as React from "react";
 import { ITaxonomyService } from "../services/taxonomyService/ITaxonomyService";
 import { TaxonomyService } from "../services/taxonomyService/TaxonomyService";
-import { IRenderFunction, IStyleFunctionOrObject, Selection, SelectionMode } from 'office-ui-fabric-react/lib/Utilities';
+import { IRenderFunction, IStyleFunctionOrObject, Selection, SelectionMode } from '@fluentui/react/lib/Utilities';
 import { PageContext } from "@microsoft/sp-page-context";
 import { isEmpty } from "@microsoft/sp-lodash-subset";
 

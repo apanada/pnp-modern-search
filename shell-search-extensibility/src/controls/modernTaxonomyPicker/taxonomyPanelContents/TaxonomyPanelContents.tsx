@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styles from './TaxonomyPanelContents.module.scss';
-import { Checkbox, ICheckboxStyleProps, ICheckboxStyles } from 'office-ui-fabric-react/lib/Checkbox';
-import { ChoiceGroup, IChoiceGroupOption, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles } from 'office-ui-fabric-react/lib/ChoiceGroup';
+import { Checkbox, ICheckboxStyleProps, ICheckboxStyles } from '@fluentui/react/lib/Checkbox';
+import { ChoiceGroup, IChoiceGroupOption, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles } from '@fluentui/react/lib/ChoiceGroup';
 import {
   GroupedList,
   GroupHeader,
@@ -12,22 +12,22 @@ import {
   IGroupHeaderStyles,
   IGroupRenderProps,
   IGroupShowAllProps
-} from 'office-ui-fabric-react/lib/GroupedList';
-import { IBasePickerStyleProps, IBasePickerStyles, IPickerItemProps, ISuggestionItemProps } from 'office-ui-fabric-react/lib/Pickers';
+} from '@fluentui/react/lib/GroupedList';
+import { IBasePickerStyleProps, IBasePickerStyles, IPickerItemProps, ISuggestionItemProps } from '@fluentui/react/lib/Pickers';
 import {
   ILabelStyleProps,
   ILabelStyles,
   Label
-} from 'office-ui-fabric-react/lib/Label';
+} from '@fluentui/react/lib/Label';
 import {
   ILinkStyleProps,
   ILinkStyles,
   Link
-} from 'office-ui-fabric-react/lib/Link';
-import { IListProps } from 'office-ui-fabric-react/lib/List';
-import { IRenderFunction, IStyleFunctionOrObject, Selection, SelectionMode } from 'office-ui-fabric-react/lib/Utilities';
-import { ISpinnerStyleProps, ISpinnerStyles, Spinner } from 'office-ui-fabric-react/lib/Spinner';
-import { SelectionZone } from 'office-ui-fabric-react/lib/Selection';
+} from '@fluentui/react/lib/Link';
+import { IListProps } from '@fluentui/react/lib/List';
+import { IRenderFunction, IStyleFunctionOrObject, Selection, SelectionMode } from '@fluentui/react/lib/Utilities';
+import { ISpinnerStyleProps, ISpinnerStyles, Spinner } from '@fluentui/react/lib/Spinner';
+import { SelectionZone } from '@fluentui/react/lib/Selection';
 import {
   ITermInfo,
   ITermSetInfo,
@@ -41,7 +41,7 @@ import { ModernTermPicker } from '../modernTermPicker/ModernTermPicker';
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 import { IModernTermPickerProps } from '../modernTermPicker/ModernTermPicker.types';
 import { Optional } from '../ModernTaxonomyPicker';
-import { IButtonStyles, IconButton, IIconProps } from 'office-ui-fabric-react';
+import { IButtonStyles, IconButton, IIconProps } from '@fluentui/react';
 
 export interface ITaxonomyPanelContentsProps {
   allowMultipleSelections?: boolean;
@@ -245,7 +245,7 @@ export function TaxonomyPanelContents(props: ITaxonomyPanelContentsProps): React
 
     if (groupHeaderProps.group.level === 0) {
       const labelStyles: IStyleFunctionOrObject<ILabelStyleProps, ILabelStyles> = { root: { fontWeight: childIsSelected ? "bold" : "normal" } };
-      const addTermButtonStyles: IButtonStyles = { rootHovered: { backgroundColor: 'transparent' }, rootPressed: { backgroundColor: 'transparent' }, icon: { color: "#000000", cursor: "auto" }, root: { position: "absolute"} };
+      const addTermButtonStyles: IButtonStyles = { rootHovered: { backgroundColor: 'transparent' }, rootPressed: { backgroundColor: 'transparent' }, icon: { color: "#000000", cursor: "auto" }, root: { position: "absolute" } };
       return (
         <>
           <IconButton styles={addTermButtonStyles} iconProps={{ iconName: 'Package' } as IIconProps} />

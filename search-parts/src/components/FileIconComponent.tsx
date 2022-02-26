@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { Icon, ITheme, IIconStyles, ImageFit } from 'office-ui-fabric-react';
+import { Icon, ITheme, IIconStyles, ImageFit } from '@fluentui/react';
 import { getFileTypeIconProps, FileTypeIconSize, FileIconType } from '@uifabric/file-type-icons';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { isEmpty } from '@microsoft/sp-lodash-subset';

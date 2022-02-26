@@ -2,7 +2,7 @@ import * as React from "react";
 import { BaseLayout } from "@pnp/modern-search-extensibility";
 import * as strings from 'CommonStrings';
 import * as propertyControlStrings from 'PropertyControlStrings';
-import { Checkbox, ICheckboxProps, IComboBoxOption } from 'office-ui-fabric-react';
+import { Checkbox, ICheckboxProps, IComboBoxOption } from '@fluentui/react';
 import { IDetailsListColumnConfiguration } from '../../../components/DetailsListComponent';
 import { IPropertyPaneField, PropertyPaneToggle, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneButton, PropertyPaneButtonType } from '@microsoft/sp-property-pane';
 import { TemplateValueFieldEditor, ITemplateValueFieldEditorProps } from '../../../controls/TemplateValueFieldEditor/TemplateValueFieldEditor';

@@ -1,14 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Fabric, ShimmeredDetailsList, IShimmeredDetailsListProps } from 'office-ui-fabric-react';
-import { ITooltipHostProps, TooltipHost, ITooltipStyles, Shimmer, ShimmerElementsGroup, ShimmerElementType, IShimmerElement, mergeStyleSets, ITheme, Selection } from 'office-ui-fabric-react';
+import { Fabric, ShimmeredDetailsList, IShimmeredDetailsListProps } from '@fluentui/react';
+import { ITooltipHostProps, TooltipHost, ITooltipStyles, Shimmer, ShimmerElementsGroup, ShimmerElementType, IShimmerElement, mergeStyleSets, ITheme, Selection } from '@fluentui/react';
 import * as Handlebars from 'handlebars';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { BaseWebComponent, BuiltinTemplateSlots } from '@pnp/modern-search-extensibility';
 import { groupBy, sortBy, findIndex, isEmpty, cloneDeep } from "@microsoft/sp-lodash-subset";
 import { FileIcon } from '../components/FileIconComponent';
-import { DetailsListLayoutMode, SelectionMode, IColumn, IGroup, IDetailsRowProps, DetailsRow, IDetailsHeaderProps, DetailsHeader, CheckboxVisibility, DetailsRowCheck, IDetailsListCheckboxProps } from 'office-ui-fabric-react/lib/DetailsList';
-import { DEFAULT_CELL_STYLE_PROPS, DEFAULT_ROW_HEIGHTS } from 'office-ui-fabric-react/lib/components/DetailsList/DetailsRow.styles';
+import { DetailsListLayoutMode, SelectionMode, IColumn, IGroup, IDetailsRowProps, DetailsRow, IDetailsHeaderProps, DetailsHeader, CheckboxVisibility, DetailsRowCheck, IDetailsListCheckboxProps } from '@fluentui/react/lib/DetailsList';
+import { DEFAULT_CELL_STYLE_PROPS, DEFAULT_ROW_HEIGHTS } from '@fluentui/react/lib/components/DetailsList/DetailsRow.styles';
 import { IDataResultsTemplateContext } from '../models/common/ITemplateContext';
 import { ObjectHelper } from '../helpers/ObjectHelper';
 import * as DOMPurify from 'dompurify';
@@ -388,7 +388,7 @@ export class DetailsListComponent extends React.Component<IDetailsListComponentP
 
   private _onRenderCustomPlaceholder(rowProps: IDetailsRowProps): JSX.Element {
 
-    // Logic updated from default logic https://github.com/OfficeDev/office-ui-fabric-react/blob/master/packages/office-ui-fabric-react/src/components/DetailsList/ShimmeredDetailsList.base.tsx
+    // Logic updated from default logic https://github.com/OfficeDev/@fluentui/react/blob/master/packages/@fluentui/react/src/components/DetailsList/ShimmeredDetailsList.base.tsx
     // tslint:disable-next-line:no-shadowed-variable
     const { columns , compact, selectionMode, checkboxVisibility, cellStyleProps = DEFAULT_CELL_STYLE_PROPS } = rowProps;
 
