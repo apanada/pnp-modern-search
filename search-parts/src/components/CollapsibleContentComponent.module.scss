@@ -18,6 +18,60 @@
 
                 display: block;
 
+                &__collapsibleSection {
+                    position: absolute;
+                    margin: 0 auto;
+                    text-align: center;
+                    align-items: center;
+                    align-content: center;
+                    left: 50%;
+                    box-shadow: rgb(0 0 0 / 10%) 0px 0.4rem 0.7rem -0.1rem;
+                    background: rgb(250, 250, 250);
+                    width: 9.6rem;
+                    transform: translate(-50%, 0px);
+                    transition: box-shadow 0.467s ease 0s, opacity 0.267s ease 0s;
+                    border-radius: 0px 0px 0.4rem 0.4rem;
+                    height: 2rem;
+                    min-width: 9.6rem;
+                    border-left-width: 1px;
+                    border-bottom-width: 1px;
+                    border-right-width: 1px;
+                    border-top-width: 1px;
+                    max-width: 28rem;
+                    display: flex;
+                    vertical-align: middle;
+                    -webkit-transition: all .3s ease-in-out;
+                    -moz-transition: all .3s ease-in-out;
+                    -o-transition: all .3s ease-in-out;
+                    -ms-transition: all .3s ease-in-out;
+                    transition: all .3s ease-in-out;
+                }
+                &__toggleIcon{
+                    position: relative;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                    left: 0;
+                    margin: 0 auto;
+                    text-align: center;
+                    vertical-align: middle;
+                    flex-wrap: wrap-reverse;
+                    align-content: space-between;
+                    display: inline-flex;
+                    height: 1.6rem;
+                    width: 1.6rem;
+                    -webkit-box-align: center;
+                    align-items: center;
+                    -webkit-box-pack: center;
+                    justify-content: center;
+                    box-sizing: border-box;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    vertical-align: middle;
+                    align-content: center;
+                    transform: rotate(0deg);
+                }
+
                 &__header {
                     display: flex;
                     align-items: center;

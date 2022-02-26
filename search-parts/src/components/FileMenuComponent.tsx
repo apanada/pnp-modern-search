@@ -592,7 +592,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 this.setState({
                     checkAccessIsLoading: false,
                     reportsDocumentSetItemCount: hasAccess.ItemCount,
-                    userHasAccessToReport: hasAccess.hasAccess
+                    userHasAccessToReport: false //hasAccess.hasAccess
                 });
             });
         }
