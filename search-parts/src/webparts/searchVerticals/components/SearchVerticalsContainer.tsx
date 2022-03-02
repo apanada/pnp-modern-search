@@ -31,12 +31,12 @@ export default class SearchVerticalsContainer extends React.Component<ISearchVer
     let renderTitle: JSX.Element = null;
 
     // Web Part title
-    renderTitle = <WebPartTitle 
-                    displayMode={this.props.webPartTitleProps.displayMode} 
-                    title={this.props.webPartTitleProps.title} 
-                    updateProperty={this.props.webPartTitleProps.updateProperty}
-                    className={this.props.webPartTitleProps.className}
-                  />;
+    renderTitle = <WebPartTitle
+      displayMode={this.props.webPartTitleProps.displayMode}
+      title={this.props.webPartTitleProps.title}
+      updateProperty={this.props.webPartTitleProps.updateProperty}
+      className={this.props.webPartTitleProps.className}
+    />;
 
     const renderPivotItems = this.props.verticals.map(vertical => {
 
@@ -49,55 +49,58 @@ export default class SearchVerticalsContainer extends React.Component<ISearchVer
 
       if (vertical.showLinkIcon) {
         renderLinkIcon = vertical.openBehavior === PageOpenBehavior.NewTab ?
-                        <Icon styles={{ root: { fontSize: 10, paddingLeft: 3 }}} iconName='NavigateExternalInline'></Icon>:
-                        <Icon styles={{ root: { fontSize: 10, paddingLeft: 3 }}} iconName='Link'></Icon>;
+          <Icon styles={{ root: { fontSize: 10, paddingLeft: 3 } }} iconName='NavigateExternalInline'></Icon> :
+          <Icon styles={{ root: { fontSize: 10, paddingLeft: 3 } }} iconName='Link'></Icon>;
       }
 
-      return  <PivotItem
-                headerText={vertical.tabName}
-                itemKey={vertical.key}                
-                onRenderItemLink={(props, defaultRender) => {
+      return <PivotItem
+        headerText={vertical.tabName}
+        itemKey={vertical.key}
+        onRenderItemLink={(props, defaultRender) => {
 
-                  if (vertical.isLink) {
-                    return  <div className={styles.isLink}>
-                              {defaultRender(props)}
-                              {renderLinkIcon}
-                            </div>;
-                  } else {
-                    return defaultRender(props);
-                  }              
-                }}
-                {...pivotItemProps}>
-              </PivotItem>;
+          if (vertical.isLink) {
+            return <div className={styles.isLink}>
+              {defaultRender(props)}
+              {renderLinkIcon}
+            </div>;
+          } else {
+            return defaultRender(props);
+          }
+        }}
+        {...pivotItemProps}>
+      </PivotItem>;
     });
 
-    return  <>
-              {renderTitle}
-              <Pivot                
-                className={styles.dataVerticals}
-                onLinkClick={this.onVerticalSelected}
-                selectedKey={this.state.selectedKey}
-                theme={this.props.themeVariant as ITheme}>
-                {renderPivotItems}
-              </Pivot>
-            </>;
+    return <>
+      {renderTitle}
+      <Pivot
+        className={styles.dataVerticals}
+        onLinkClick={this.onVerticalSelected}
+        selectedKey={this.state.selectedKey}
+        theme={this.props.themeVariant as ITheme}
+        overflowBehavior='menu'
+        overflowAriaLabel="more items"
+      >
+        {renderPivotItems}
+      </Pivot>
+    </>;
   }
 
   public onVerticalSelected(item: PivotItem): void {
-    
+
     const verticalIdx = this.props.verticals.map(vertical => vertical.key).indexOf(item.props.itemKey);
-      
+
     if (verticalIdx !== -1) {
 
       const vertical = this.props.verticals[verticalIdx];
       if (vertical.isLink) {
-          // Send the query to the new page
-          const behavior = vertical.openBehavior === PageOpenBehavior.NewTab ? '_blank' : '_self';
-          this.props.tokenService.resolveTokens(vertical.linkUrl).then((resolvedUrl: string) => {           
-            resolvedUrl = resolvedUrl.replace(/\{searchTerms\}|\{SearchBoxQuery\}/gi, GlobalSettings.getValue(BuiltinTokenNames.inputQueryText));
-            window.open(resolvedUrl, behavior);
-          });
-          
+        // Send the query to the new page
+        const behavior = vertical.openBehavior === PageOpenBehavior.NewTab ? '_blank' : '_self';
+        this.props.tokenService.resolveTokens(vertical.linkUrl).then((resolvedUrl: string) => {
+          resolvedUrl = resolvedUrl.replace(/\{searchTerms\}|\{SearchBoxQuery\}/gi, GlobalSettings.getValue(BuiltinTokenNames.inputQueryText));
+          window.open(resolvedUrl, behavior);
+        });
+
       } else {
 
         this.setState({
@@ -106,7 +109,7 @@ export default class SearchVerticalsContainer extends React.Component<ISearchVer
 
         this.props.onVerticalSelected(item.props.itemKey);
       }
-    }   
+    }
   }
 
   public componentDidMount() {

@@ -1,5 +1,5 @@
 import { BaseDataSource, FilterSortType, FilterSortDirection, ITemplateSlot, BuiltinTemplateSlots, IDataContext, ITokenService, FilterBehavior, PagingBehavior, IDataFilterResult, IDataFilterResultValue, FilterComparisonOperator } from "@pnp/modern-search-extensibility";
-import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule, PropertyPaneTextField } from "@microsoft/sp-property-pane";
+import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPaneToggle, PropertyPaneHorizontalRule, PropertyPaneTextField, PropertyPaneSlider } from "@microsoft/sp-property-pane";
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
 import { TokenService } from "../services/tokenService/TokenService";
 import { Guid, ServiceScope } from '@microsoft/sp-core-library';
@@ -27,6 +27,12 @@ import { ITaxonomyService } from "../services/taxonomyService/ITaxonomyService";
 import { TaxonomyService } from "../services/taxonomyService/TaxonomyService";
 import { ITermInfo } from "@pnp/sp/taxonomy";
 
+// for synonyms functionality
+import { SynonymsService } from '../services/synonymsService/SynonymsService';
+import { ISynonymsService } from '../services/synonymsService/ISynonymsService';
+import { ISynonymsListEntry } from '../models/search/ISynonymsListEntry';
+import { ISynonymsProps } from '../models/common/ISynonymsProps';
+
 export enum EntityType {
     Message = 'message',
     Event = 'event',
@@ -39,7 +45,7 @@ export enum EntityType {
     Person = 'person'
 }
 
-export interface IMicrosoftSearchDataSourceProperties {
+export interface IMicrosoftSearchDataSourceProperties extends ISynonymsProps {
 
     /**
      * The entity types to search. See for the complete list
@@ -156,6 +162,10 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
     private _propertyFieldCollectionData: any = null;
     private _customCollectionFieldType: any = null;
 
+    // for synonyms functionality
+    private _synonymsService: ISynonymsService;
+    private _synonymsList: ISynonymsListEntry[];
+
     public constructor(serviceScope: ServiceScope) {
         super(serviceScope);
 
@@ -164,6 +174,9 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             this._sharePointSearchService = serviceScope.consume<ISharePointSearchService>(SharePointSearchService.ServiceKey);
             this._microsoftSearchService = serviceScope.consume<IMicrosoftSearchService>(MicrosoftSearchService.ServiceKey);
             this._taxonomyService = serviceScope.consume<ITaxonomyService>(TaxonomyService.ServiceKey);
+
+            // for synonyms functionality
+            this._synonymsService = serviceScope.consume<ISynonymsService>(SynonymsService.ServiceKey);
         });
     }
 
@@ -187,6 +200,11 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             this._propertyPaneWebPartInformation = PropertyPaneWebPartInformation;
             this._propertyFieldCollectionData = PropertyFieldCollectionData;
             this._customCollectionFieldType = CustomCollectionFieldType;
+        }
+
+        // initialize/Loading the synonyms list at page load...
+        if (this.properties.synonymsEnabled) {
+            this._synonymsList = await this._synonymsService.getItemsFromSharePointSynonymsList(this.properties.synonymsCacheRefreshInterval, this.properties.synonymsSiteUrl, this.properties.synonymsListName, this.properties.synonymsListFieldNameKeyword, this.properties.synonymsListFieldNameSynonyms, this.properties.synonymsListFieldNameMutual);
         }
 
         await this.initProperties();
@@ -444,6 +462,11 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             {
                 groupName: commonStrings.DataSources.MicrosoftSearch.SourceConfigurationGroupName,
                 groupFields: groupFields
+            },
+            // Synonym configuration parameters
+            {
+                groupName: commonStrings.PropertyPane.Synonyms.GroupName,
+                groupFields: this.getSynonymGroupFields()
             }
         ];
     }
@@ -577,7 +600,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
     private async initProperties(): Promise<void> {
         this.properties.entityTypes = this.properties.entityTypes !== undefined ? this.properties.entityTypes : [EntityType.DriveItem];
 
-        const CommonFields = ["name", "title", "webUrl", "filetype", "createdBy", "createdDateTime", "lastModifiedDateTime", "parentReference", "size", "description", "file", "folder", "subject", "bodyPreview", "replyTo", "from", "sender", "start", "end", "displayName", "givenName", "surname", "userPrincipalName", "phones", "department", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "NormSiteID", "NormWebID", "NormListID", "NormUniqueID", "ContentType", "ContentTypeId", "ViewsLifetime", "ViewsLifeTimeUniqueUsers"];
+        const CommonFields = ["name", "title", "webUrl", "filetype", "createdBy", "createdDateTime", "lastModifiedDateTime", "parentReference", "size", "description", "file", "folder", "subject", "bodyPreview", "replyTo", "from", "sender", "start", "end", "displayName", "givenName", "surname", "userPrincipalName", "phones", "department", "ServerRedirectedPreviewURL", "ServerRedirectedEmbedURL", "NormSiteID", "NormWebID", "NormListID", "NormUniqueID", "ContentType", "ContentTypeId", "ViewsLifetime", "ViewsLifeTimeUniqueUsers", "owstaxidmetadataalltagsinfo"];
 
         this.properties.fields = this.properties.fields !== undefined ? this.properties.fields : CommonFields;
         this.properties.sortProperties = this.properties.sortProperties !== undefined ? this.properties.sortProperties : [];
@@ -587,6 +610,14 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         this.properties.queryTemplate = this.properties.queryTemplate ? this.properties.queryTemplate : "{searchTerms}";
         this.properties.useBetaEndpoint = this.properties.useBetaEndpoint !== undefined ? this.properties.useBetaEndpoint : false;
         this.properties.useCustomAadApplication = this.properties.useCustomAadApplication !== undefined ? this.properties.useCustomAadApplication : false;
+
+        this.properties.synonymsEnabled = this.properties.synonymsEnabled !== undefined ? this.properties.synonymsEnabled : false;
+        this.properties.synonymsCacheRefreshInterval = this.properties.synonymsCacheRefreshInterval !== undefined ? this.properties.synonymsCacheRefreshInterval : 1440;
+        this.properties.synonymsSiteUrl = this.properties.synonymsSiteUrl ? this.properties.synonymsSiteUrl : "";
+        this.properties.synonymsListName = this.properties.synonymsListName ? this.properties.synonymsListName : "";
+        this.properties.synonymsListFieldNameKeyword = this.properties.synonymsListFieldNameKeyword ? this.properties.synonymsListFieldNameKeyword : "";
+        this.properties.synonymsListFieldNameSynonyms = this.properties.synonymsListFieldNameSynonyms ? this.properties.synonymsListFieldNameSynonyms : "";
+        this.properties.synonymsListFieldNameMutual = this.properties.synonymsListFieldNameMutual ? this.properties.synonymsListFieldNameMutual : "";
 
         const queryStringParameters: { [parameter: string]: string } = UrlHelper.getQueryStringParams();
         if (queryStringParameters && !isEmpty(queryStringParameters["scope"]) && !isEmpty(queryStringParameters["sid"])) {
@@ -622,6 +653,15 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         // Query text
         if (dataContext.inputQueryText) {
             queryText = await this._tokenService.resolveTokens(dataContext.inputQueryText);
+        }
+
+        // enrich the query with synonyms if enabled....
+        if (this.properties.synonymsEnabled) {
+            if (this._synonymsList === undefined) {
+                // if the synonyms list has not been loaded during startup/initalization (typically ind debug/dev mode) load it again here
+                this._synonymsList = await this._synonymsService.getItemsFromSharePointSynonymsList(this.properties.synonymsCacheRefreshInterval, this.properties.synonymsSiteUrl, this.properties.synonymsListName, this.properties.synonymsListFieldNameKeyword, this.properties.synonymsListFieldNameSynonyms, this.properties.synonymsListFieldNameMutual);
+            }
+            queryText = await this._synonymsService.enrichQueryWithSynonyms(queryText, this._synonymsList);
         }
 
         if (dataContext.filters.selectedFilters.length > 0) {
@@ -822,6 +862,45 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
         const response: IMicrosoftSearchDataSourceData = await this._microsoftSearchService.search(this._microsoftSearchUrl, searchQuery, this.properties.useCustomAadApplication, this.properties.customAadApplicationOptions);
         this._itemsCount = this._microsoftSearchService.itemsCount;
         return response;
+    }
+
+    // additional property group for synonyms processing and SharePoint synonyms list configuration
+    private getSynonymGroupFields(): IPropertyPaneField<any>[] {
+        let synonymGroupFields: IPropertyPaneField<any>[] = [
+            PropertyPaneToggle('dataSourceProperties.synonymsEnabled', {
+                label: commonStrings.PropertyPane.Synonyms.EnableSwitchLabel,
+                checked: this.properties.synonymsEnabled
+            }),
+            PropertyPaneSlider('dataSourceProperties.synonymsCacheRefreshInterval', {
+                label: commonStrings.PropertyPane.Synonyms.CacheRefreshIntervalLabel,
+                min: 0,
+                max: 1440,
+                value: this.properties.synonymsCacheRefreshInterval,
+                showValue: true,
+                step: 1
+            }),
+            PropertyPaneTextField('dataSourceProperties.synonymsSiteUrl', {
+                label: commonStrings.PropertyPane.Synonyms.SiteUrlLabel,
+                value: this.properties.synonymsSiteUrl
+            }),
+            PropertyPaneTextField('dataSourceProperties.synonymsListName', {
+                label: commonStrings.PropertyPane.Synonyms.ListNameLabel,
+                value: this.properties.synonymsListName
+            }),
+            PropertyPaneTextField('dataSourceProperties.synonymsListFieldNameKeyword', {
+                label: commonStrings.PropertyPane.Synonyms.ListFieldNameKeywordLabel,
+                value: this.properties.synonymsListFieldNameKeyword
+            }),
+            PropertyPaneTextField('dataSourceProperties.synonymsListFieldNameSynonyms', {
+                label: commonStrings.PropertyPane.Synonyms.ListFieldNameSynonymsLabel,
+                value: this.properties.synonymsListFieldNameSynonyms
+            }),
+            PropertyPaneTextField('dataSourceProperties.synonymsListFieldNameMutual', {
+                label: commonStrings.PropertyPane.Synonyms.ListFieldNameMutualLabel,
+                value: this.properties.synonymsListFieldNameMutual
+            })
+        ];
+        return synonymGroupFields;
     }
 
     private parseAndCleanOptions(options: IComboBoxOption[]): IComboBoxOption[] {

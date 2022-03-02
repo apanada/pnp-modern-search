@@ -340,6 +340,16 @@ define([], function () {
                     }
                 },
                 ImportExport: "Import/Export settings"
+            },
+            Synonyms: {
+                GroupName: "Synonyms",
+                EnableSwitchLabel: "Enable Synonyms",
+                CacheRefreshIntervalLabel: "Cache Refresh Interval in Minutes",
+                SiteUrlLabel: "Site URL of Synonym List",
+                ListNameLabel: "Synonyms List Name",
+                ListFieldNameKeywordLabel: "Keyword Field Name (normally 'title' field)",
+                ListFieldNameSynonymsLabel: "Synonyms Field Name (text)",
+                ListFieldNameMutualLabel: "Mutual Field Name (yes/no)"
             }
         },
         Filters: {

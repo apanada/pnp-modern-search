@@ -332,6 +332,16 @@ define([], function () {
           }
         },
         ImportExport: "Importera/exportera inställningar"
+      },
+      Synonyms: {
+        GroupName: "Synonymer",
+        EnableSwitchLabel: "Aktivera Synonymer",
+        CacheRefreshIntervalLabel: "Intervall för uppdatering av cacheminnet i minuter",
+        SiteUrlLabel: "Webbplatsens URL för Synonymer Lista",
+        ListNameLabel: "Synonymer Lista Namn",
+        ListFieldNameKeywordLabel: "Nyckelord Fältnamn namn (normalt fältet 'titel')",
+        ListFieldNameSynonymsLabel: "Synonymer Fältnamn (text)",
+        ListFieldNameMutualLabel: "Ömsesidigt fältnamn (ja/nej)"
       }
     },
     Filters: {

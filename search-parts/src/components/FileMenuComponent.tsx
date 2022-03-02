@@ -76,7 +76,11 @@ export interface IFileMenuState {
 const checkAccessStyles = mergeStyleSets({
     callout: {
         width: 320,
-        padding: '0px 0px',
+        padding: '20px 24px',
+        zIndex: 9999,
+        cursor: "default",
+        textAlign: "left"
+
     },
     title: {
         marginBottom: 12,
@@ -285,10 +289,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                         isBeakVisible={true}
                         setInitialFocus
                         onDismiss={this._toggleCheckAccessCallout}
-                        styles={{
-                            calloutMain: {
-                                padding: "20px 24px"
-                            }
+                        layerProps={{
+                            hostId: `results-menu-item-${uniqueId}`
                         }}
                     >
                         <Text block variant="xLarge" className={checkAccessStyles.title}>

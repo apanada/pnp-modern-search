@@ -332,6 +332,16 @@ define([], function () {
                     }
                 },
                 ImportExport: "Indstillinger for import/eksport"
+            },
+            Synonyms: {
+                GroupName: "Synonymer",
+                EnableSwitchLabel: "Aktivere Synonymer",
+                CacheRefreshIntervalLabel: "Cache-opdateringsinterval i minutter",
+                SiteUrlLabel: "Webstedets URL for synonymlisten",
+                ListNameLabel: "Synonymer Liste Navn",
+                ListFieldNameKeywordLabel: "Nøgleord Feltnavn (normalt 'title' feltet)",
+                ListFieldNameSynonymsLabel: "Synonyms Feltnavn (tekst)",
+                ListFieldNameMutualLabel: "Gensidigt feltnavn (ja/nej)"
             }
         },
         Filters: {

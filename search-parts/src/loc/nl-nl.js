@@ -332,6 +332,16 @@ define([], function () {
                     }
                 },
                 ImportExport: "Importeer/Exporteer instellingen"
+            },
+            Synonyms: {
+                GroupName: "Synoniemen",
+                EnableSwitchLabel: "Enable Synoniemen",
+                CacheRefreshIntervalLabel: "Cache verversingsinterval in minuten",
+                SiteUrlLabel: "Site URL van synoniemenlijst",
+                ListNameLabel: "Synoniemenlijst Naam",
+                ListFieldNameKeywordLabel: "Trefwoord Veldnaam (normaliter 'title' veld)",
+                ListFieldNameSynonymsLabel: "Synoniemen (text)",
+                ListFieldNameMutualLabel: "Wederzijds Veldnaam (ja/nee)"
             }
         },
         Filters: {

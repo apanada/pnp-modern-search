@@ -339,6 +339,16 @@ declare interface ICommonStrings {
         }
       },
       ImportExport: string;
+    },
+    Synonyms: {
+      GroupName: string;
+      EnableSwitchLabel: string;
+      CacheRefreshIntervalLabel: string;
+      SiteUrlLabel: string;
+      ListNameLabel: string;
+      ListFieldNameKeywordLabel: string;
+      ListFieldNameSynonymsLabel: string;
+      ListFieldNameMutualLabel: string;
     }
   },
   Filters: {
