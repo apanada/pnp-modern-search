@@ -662,6 +662,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                 this._synonymsList = await this._synonymsService.getItemsFromSharePointSynonymsList(this.properties.synonymsCacheRefreshInterval, this.properties.synonymsSiteUrl, this.properties.synonymsListName, this.properties.synonymsListFieldNameKeyword, this.properties.synonymsListFieldNameSynonyms, this.properties.synonymsListFieldNameMutual);
             }
             queryText = await this._synonymsService.enrichQueryWithSynonyms(queryText, this._synonymsList);
+            queryTemplate = queryTemplate.replace('{searchTerms}', queryText);
         }
 
         if (dataContext.filters.selectedFilters.length > 0) {
