@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import * as ReactDOM from 'react-dom';
-import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon, MessageBar, MessageBarType, ProgressIndicator, format, FontIcon, IconButton, Overlay } from '@fluentui/react';
+import { ITheme, CommandBarButton, IButtonStyles, IContextualMenuItem, IContextualMenuItemProps, IImageProps, Image, Callout, Text, FocusZone, PrimaryButton, DefaultButton, Stack, FocusTrapCallout, mergeStyleSets, FontWeights, FocusZoneTabbableElements, Link, Toggle, Spinner, SpinnerSize, TextField, Label, Icon, MessageBar, MessageBarType, ProgressIndicator, format, FontIcon, IconButton, Overlay, LayerHost, getId } from '@fluentui/react';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { UrlHelper } from '../helpers/UrlHelper';
 import { ServiceScope } from '@microsoft/sp-core-library';
 import { ISharePointSearchService } from '../services/searchService/ISharePointSearchService';
 import { SharePointSearchService } from '../services/searchService/SharePointSearchService';
 import { isEmpty } from '@microsoft/sp-lodash-subset';
-import { IAccessRequestResults, IAccessRequestResultsType, RequestAccessStatus } from '../models/common/IAccessRequest';
+import { IAccessRequest, IAccessRequestResults, IAccessRequestResultsType, RequestAccessStatus } from '../models/common/IAccessRequest';
 import { newGuid } from '@microsoft/applicationinsights-core-js';
 
 const SUPPORTED_OFFICE_EXTENSIONS: string[] = [
@@ -66,41 +66,24 @@ export interface IFileMenuState {
 
     accessRequestLogged?: boolean;
 
-    accessRequestResponse?: { message: string | undefined, responseType: IAccessRequestResultsType };
+    accessRequestResponse?: {
+        message: string | undefined,
+        responseType: IAccessRequestResultsType,
+        responseCategory: string;
+    };
 
     scanRequestSubmissionInProgress?: boolean;
 
     scanRequestLogged?: boolean;
 }
 
-const checkAccessStyles = mergeStyleSets({
-    callout: {
-        width: 320,
-        padding: '20px 24px',
-        zIndex: 9999,
-        cursor: "default",
-        textAlign: "left"
-
-    },
-    title: {
-        marginBottom: 12,
-        fontWeight: FontWeights.semilight,
-    },
-    buttons: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        marginTop: 10,
-    },
-    link: {
-        display: 'inline-flex',
-        marginTop: 5,
-    }
-});
-
 const ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE = "Unable to validate your access on this report. Please retry after some time.";
-const ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE = "You have already requested for this report, Requst status : {0}";
+const ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE = "You have already requested for this report, Requst status : {0}. ";
 const ACCESS_REQUEST_SUCCESS_MESSAGE = "Your access request has been logged successfully. you will receive the notification once your access request has been proccessed.";
 const ACCESS_REQUEST_FAILURE_MESSAGE = "Unable to raise your access request. Please retry after some time."
+
+const SCAN_REQUEST_SUCCESS_MESSAGE = "Your scan request has been logged successfully. you will receive the notification once your scan request has been proccessed.";
+const SCAN_REQUEST_FAILURE_MESSAGE = "Unable to raise your scan request. Please retry after some time."
 
 export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
@@ -121,6 +104,10 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     private parentLink?: string;
 
+    private accessRequestMessage?: string;
+
+    private scanRequestMessage?: string;
+
     constructor(props: IFileMenuProps) {
         super(props);
 
@@ -128,7 +115,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             checkAccessIsLoading: false,
             checkAccessCalloutVisible: false,
             userHasAccessToReport: false,
-            reportsDocumentSetItemCount: 0,
+            reportsDocumentSetItemCount: -1,
             requestForAccess: false,
             accessRequestSubmissionInProgress: false,
             accessRequestLogged: false,
@@ -145,7 +132,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this._checkReportAccess = this._checkReportAccess.bind(this);
         this._toggleRequestForAccess = this._toggleRequestForAccess.bind(this);
         this._toggleCheckAccessCallout = this._toggleCheckAccessCallout.bind(this);
+        this._onAccesRequestMessageChange = this._onAccesRequestMessageChange.bind(this);
         this._requestReportAccess = this._requestReportAccess.bind(this);
+        this._onScanRequestMessageChange = this._onScanRequestMessageChange.bind(this);
         this._requestReportScan = this._requestReportScan.bind(this);
     }
 
@@ -163,7 +152,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
 
     public render() {
 
-        const uniqueId = newGuid().slice(0, 8).toString();
+        this.accessRequestMessage = "I'd like access, please.";
+        this.scanRequestMessage = "Please scan and provide access.";
+
         const styles: Partial<IButtonStyles> = {
             root: {
                 width: "24px",
@@ -190,7 +181,31 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                 opacity: 0
             }
         };
+        const checkAccessStyles = mergeStyleSets({
+            callout: {
+                width: 320,
+                padding: '20px 24px',
+                zIndex: 9999,
+                cursor: "default",
+                textAlign: "left"
 
+            },
+            title: {
+                marginBottom: 12,
+                fontWeight: FontWeights.semilight,
+            },
+            buttons: {
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginTop: 10,
+            },
+            link: {
+                display: 'inline-flex',
+                marginTop: 5,
+            }
+        });
+
+        const uniqueId = newGuid().slice(0, 8).toString();
         const menuItems: IContextualMenuItem[] = [];
 
         const openInBrowserMenuItem: IContextualMenuItem = {
@@ -237,7 +252,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         //If Content Type === <Shell Document Set> OR Content Type === <Shell Report>
         if (this.props.resultItem &&
             !isEmpty(this.props.resultItem["contentType"]) &&
-            (this.props.resultItem["contentType"] === "Document Set" || this.props.resultItem["contentType"] === "Shell Report")) {
+            (this.props.resultItem["contentType"] === "Shell Document Set" || this.props.resultItem["contentType"] === "Shell Report")) {
             menuItems.push({
                 key: 'checkReportAccess',
                 iconProps: { iconName: 'Signin' },
@@ -268,6 +283,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
             }
         );
 
+        const layerHostId = getId('layerHost');
+
         return <div>
             <div>
                 <CommandBarButton
@@ -279,19 +296,23 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                         shouldFocusOnMount: true,
                         items: [...menuItems],
                     }} />
+                <LayerHost id={layerHostId}></LayerHost>
             </div>
             <div>
                 {this.state.checkAccessCalloutVisible && (
                     <Callout
                         className={checkAccessStyles.callout}
                         gapSpace={0}
-                        target={`#results-menu-item-${uniqueId}`}
+                        target={`#${layerHostId}`}
                         isBeakVisible={true}
                         setInitialFocus
                         onDismiss={this._toggleCheckAccessCallout}
                         layerProps={{
-                            hostId: `results-menu-item-${uniqueId}`
+                            hostId: layerHostId,
+                            insertFirst: true,
+                            eventBubblingEnabled: false
                         }}
+                        preventDismissOnEvent={(ev: Event | React.FocusEvent | React.KeyboardEvent | React.MouseEvent) => true}
                     >
                         <Text block variant="xLarge" className={checkAccessStyles.title}>
                             Reports: Check Permissions
@@ -321,10 +342,20 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                                                 isMultiline={true}
                                                             >
                                                                 {this.state.accessRequestResponse.message}
+                                                                {
+                                                                    this.state.accessRequestResponse.responseCategory === "ScanRequestValidationSuccess" &&
+                                                                    <>
+                                                                        Please reach
+                                                                        <Link href={`mailto:PT-Information-Services@shell.com`} target="_blank" style={{ padding: "0 4px" }}>
+                                                                            Service Desk
+                                                                        </Link>
+                                                                        for any query.
+                                                                    </>
+                                                                }
                                                             </MessageBar>
                                                         </div>
                                                         :
-                                                        <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue="Please scan and provide access." />
+                                                        <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue={this.scanRequestMessage} onChange={this._onScanRequestMessageChange} />
                                                     : null
                                             }
                                         </div>
@@ -337,6 +368,16 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                                 isMultiline={true}
                                             >
                                                 {this.state.accessRequestResponse.message}
+                                                {
+                                                    this.state.accessRequestResponse.responseCategory === "AccessRequestValidationSuccess" &&
+                                                    <>
+                                                        Please reach
+                                                        <Link href={`mailto:PT-Information-Services@shell.com`} target="_blank" style={{ padding: "0 4px" }}>
+                                                            Service Desk
+                                                        </Link>
+                                                        for any query.
+                                                    </>
+                                                }
                                             </MessageBar>
                                         </div>
                                         :
@@ -344,10 +385,10 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                             <Text block variant="small" styles={{ root: { fontSize: "13px" } }}>
                                                 You don't have access to this report.
                                             </Text>
-                                            <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._toggleRequestForAccess} />
+                                            <Toggle label="Would you like to request for your access?" inlineLabel onText="Yes" offText="No" styles={{ label: { fontSize: "13px" }, text: { fontSize: "13px" } }} onChange={this._toggleRequestForAccess} defaultChecked={this.state.requestForAccess} />
                                             {
                                                 this.state.requestForAccess &&
-                                                <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue="I'd like access, please." />
+                                                <TextField label="Requester comments:" multiline autoAdjustHeight defaultValue={this.accessRequestMessage} onChange={this._onAccesRequestMessageChange} />
                                             }
                                         </div>
                                 :
@@ -374,7 +415,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                     <PrimaryButton onClick={this._requestReportAccess}>Request Access</PrimaryButton>
                                 }
                                 {
-                                    this.state.reportsDocumentSetItemCount === 0 && !this.state.scanRequestLogged &&
+                                    !this.state.requestForAccess && this.state.userHasAccessToReport && this.state.reportsDocumentSetItemCount === 0 && !this.state.scanRequestLogged &&
                                     <PrimaryButton onClick={this._requestReportScan}>Request Scan</PrimaryButton>
                                 }
                                 <DefaultButton onClick={this._toggleCheckAccessCallout}>Cancel</DefaultButton>
@@ -559,7 +600,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         this.setState({
             checkAccessIsLoading: false,
             checkAccessCalloutVisible: false,
-            reportsDocumentSetItemCount: 0,
+            reportsDocumentSetItemCount: -1,
             requestForAccess: false,
             userHasAccessToReport: false,
             accessRequestLogged: false,
@@ -620,6 +661,18 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
         });
     }
 
+    private _onAccesRequestMessageChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, message: string): void => {
+        if (!isEmpty(message)) {
+            this.accessRequestMessage = message;
+        }
+    };
+
+    private _onScanRequestMessageChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, message: string): void => {
+        if (!isEmpty(message)) {
+            this.scanRequestMessage = message;
+        }
+    };
+
     private _requestReportAccess(ev?: any) {
 
         if (this.originalPath) {
@@ -635,7 +688,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             accessRequestSubmissionInProgress: false,
                             accessRequestResponse: {
                                 message: ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE,
-                                responseType: IAccessRequestResultsType.Failure
+                                responseType: IAccessRequestResultsType.Failure,
+                                responseCategory: "AccessRequestValidationFailure"
                             }
                         });
                     } else {
@@ -655,19 +709,35 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             accessRequestSubmissionInProgress: false,
                             accessRequestResponse: {
                                 message: format(ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE, validateAccessRequestResults.RequestAccessStatus),
-                                responseType: IAccessRequestResultsType.Success
+                                responseType: IAccessRequestResultsType.Success,
+                                responseCategory: "AccessRequestValidationSuccess"
                             }
                         });
                     }
                 } else {
-                    sharePointSearchService.submitAccessRequest("AccessRequest", {}).then((accessRequestResults: IAccessRequestResults | string) => {
+
+                    const reportNumber = this.originalPath.split('/')[this.originalPath.split('/').length - 1];  // Name of Document Set
+                    const documentIdUrl = (this.props.resultItem["dlcDocIdUrlOWSURLH"] as string).split(",").length > 0 ? this.props.resultItem["dlcDocIdUrlOWSURLH"].split(",")[0] : this.props.resultItem["dlcDocIdUrlOWSURLH"] ?? "";
+                    const accessRequest: IAccessRequest = {
+                        ReportNumber: reportNumber,
+                        Title: this.props.resultItem["title"] ?? "",
+                        ReportClassification: this.props.resultItem["refinableString45"] ?? "",
+                        ReportComments: this.props.resultItem["comments"] ? encodeURIComponent(this.props.resultItem["comments"]) : this.props.resultItem["comments"] ?? "",
+                        UserComments: this.accessRequestMessage ? encodeURIComponent(this.accessRequestMessage) : this.accessRequestMessage ?? "",
+                        RequestAccessStatus: RequestAccessStatus.New,
+                        ReportPath: documentIdUrl,
+                        Author: this.props.resultItem["refinableString48"] ?? "",
+                        Publisher: this.props.resultItem["publisherOWSTEXT"] ?? ""
+                    }
+                    sharePointSearchService.submitAccessRequest("AccessRequest", accessRequest).then((accessRequestResults: IAccessRequestResults | string) => {
                         if (isEmpty(accessRequestResults) || (!isEmpty(accessRequestResults) && typeof accessRequestResults === "string")) {
                             this.setState({
                                 accessRequestLogged: true,
                                 accessRequestSubmissionInProgress: false,
                                 accessRequestResponse: {
                                     message: ACCESS_REQUEST_FAILURE_MESSAGE,
-                                    responseType: IAccessRequestResultsType.Failure
+                                    responseType: IAccessRequestResultsType.Failure,
+                                    responseCategory: "AccessRequestFailure"
                                 }
                             });
                         } else {
@@ -676,7 +746,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                 const element = (
                                     <>
                                         <FontIcon aria-label="CheckMark" iconName="CheckMark" />
-                                        <span style={{ color: "green" }}>Access Request Status : {RequestAccessStatus.New}</span>
+                                        <span style={{ color: "green" }}>Access Request Status : {RequestAccessStatus[RequestAccessStatus.New]}</span>
                                     </>
                                 );
                                 ReactDOM.render(element, document.getElementById(this.uniqueId));
@@ -687,7 +757,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                 accessRequestSubmissionInProgress: false,
                                 accessRequestResponse: {
                                     message: ACCESS_REQUEST_SUCCESS_MESSAGE,
-                                    responseType: IAccessRequestResultsType.Success
+                                    responseType: IAccessRequestResultsType.Success,
+                                    responseCategory: "AccessRequestSuccess"
                                 }
                             });
                         }
@@ -712,7 +783,8 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             scanRequestSubmissionInProgress: false,
                             accessRequestResponse: {
                                 message: ACCESS_REQUEST_VALIDATE_FAILURE_MESSAGE,
-                                responseType: IAccessRequestResultsType.Failure
+                                responseType: IAccessRequestResultsType.Failure,
+                                responseCategory: "ScanRequestValidationFailure"
                             }
                         });
                     } else {
@@ -732,19 +804,35 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                             scanRequestSubmissionInProgress: false,
                             accessRequestResponse: {
                                 message: format(ACCESS_REQUEST_VALIDATE_SUCCESS_MESSAGE, validateAccessRequestResults.RequestAccessStatus),
-                                responseType: IAccessRequestResultsType.Success
+                                responseType: IAccessRequestResultsType.Success,
+                                responseCategory: "ScanRequestValidationSuccess"
                             }
                         });
                     }
                 } else {
-                    sharePointSearchService.submitAccessRequest("AccessRequest", {}).then((accessRequestResults: IAccessRequestResults | string) => {
+
+                    const reportNumber = this.originalPath.split('/')[this.originalPath.split('/').length - 1];  // Name of Document Set
+                    const documentIdUrl = (this.props.resultItem["dlcDocIdUrlOWSURLH"] as string).split(",").length > 0 ? this.props.resultItem["dlcDocIdUrlOWSURLH"].split(",")[0] : this.props.resultItem["dlcDocIdUrlOWSURLH"] ?? "";
+                    const scanRequest: IAccessRequest = {
+                        ReportNumber: reportNumber,
+                        Title: this.props.resultItem["title"] ?? "",
+                        ReportClassification: this.props.resultItem["refinableString45"] ?? "",
+                        ReportComments: this.props.resultItem["comments"] ? encodeURIComponent(this.props.resultItem["comments"]) : this.props.resultItem["comments"] ?? "",
+                        UserComments: this.scanRequestMessage ? encodeURIComponent(this.scanRequestMessage) : this.scanRequestMessage ?? "",
+                        RequestAccessStatus: RequestAccessStatus.New,
+                        ReportPath: documentIdUrl,
+                        Author: this.props.resultItem["refinableString48"] ?? "",
+                        Publisher: this.props.resultItem["publisherOWSTEXT"] ?? ""
+                    }
+                    sharePointSearchService.submitAccessRequest("AccessRequest", scanRequest).then((accessRequestResults: IAccessRequestResults | string) => {
                         if (isEmpty(accessRequestResults) || (!isEmpty(accessRequestResults) && typeof accessRequestResults === "string")) {
                             this.setState({
                                 scanRequestLogged: true,
                                 scanRequestSubmissionInProgress: false,
                                 accessRequestResponse: {
-                                    message: ACCESS_REQUEST_FAILURE_MESSAGE,
-                                    responseType: IAccessRequestResultsType.Failure
+                                    message: SCAN_REQUEST_FAILURE_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Failure,
+                                    responseCategory: "ScanRequestFailure"
                                 }
                             });
                         } else {
@@ -753,7 +841,7 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                 const element = (
                                     <>
                                         <FontIcon aria-label="CheckMark" iconName="CheckMark" />
-                                        <span style={{ color: "green" }}>Scan Request Status : {RequestAccessStatus.New}</span>
+                                        <span style={{ color: "green" }}>Scan Request Status : {RequestAccessStatus[RequestAccessStatus.New]}</span>
                                     </>
                                 );
                                 ReactDOM.render(element, document.getElementById(this.uniqueId));
@@ -763,8 +851,9 @@ export class FileMenu extends React.Component<IFileMenuProps, IFileMenuState> {
                                 scanRequestLogged: true,
                                 scanRequestSubmissionInProgress: false,
                                 accessRequestResponse: {
-                                    message: ACCESS_REQUEST_SUCCESS_MESSAGE,
-                                    responseType: IAccessRequestResultsType.Success
+                                    message: SCAN_REQUEST_SUCCESS_MESSAGE,
+                                    responseType: IAccessRequestResultsType.Success,
+                                    responseCategory: "ScanRequestSuccess"
                                 }
                             });
                         }

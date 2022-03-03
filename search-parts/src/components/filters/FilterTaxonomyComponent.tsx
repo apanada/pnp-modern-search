@@ -245,6 +245,7 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
 
         if (props.filter) {
 
+            const filter = props.filter as IDataFilterInternal;
             const taxonomyService = serviceScope.consume<ITaxonomyService>(taxonomyServiceKey);
 
             let termStoreInfo = null;
@@ -256,14 +257,13 @@ export class FilterTaxonomyWebComponent extends BaseWebComponent {
             }
 
             let termSetInfo = null;
-            if (this.clientStorage.local.get("termSetInfo")) {
-                termSetInfo = this.clientStorage.local.get("termSetInfo");
+            if (this.clientStorage.local.get(`${filter.filterName}-termSetInfo`)) {
+                termSetInfo = this.clientStorage.local.get(`${filter.filterName}-termSetInfo`);
             } else {
                 termSetInfo = await taxonomyService.getTermSetInfo(props.filter.termSetId);
-                this.clientStorage.local.put("termSetInfo", termSetInfo, dateAdd(new Date(), 'day', 1));
+                this.clientStorage.local.put(`${filter.filterName}-termSetInfo`, termSetInfo, dateAdd(new Date(), 'day', 1));
             }
 
-            const filter = props.filter as IDataFilterInternal;
             renderTaxonomyPicker = <FilterTaxonomyComponent
                 {...props}
                 clientStorage={this.clientStorage}

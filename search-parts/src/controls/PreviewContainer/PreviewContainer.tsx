@@ -197,7 +197,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                     <div>
                         <Pivot
                             aria-label="Select an option"
-                            linkFormat={PivotLinkFormat.tabs}
+                            linkFormat="links"
                         >
                             <PivotItem headerText="Document Preview" itemIcon="Glasses">
                                 <div className={previewContainerStyles.calloutContentContainer} style={{ backgroundImage: backgroundImage }}>

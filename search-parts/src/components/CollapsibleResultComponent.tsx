@@ -59,7 +59,6 @@ export class CollapsibleResultComponent extends React.Component<ICollapsibleResu
                 !this.state.isCollapsed &&
                 <div className={styles.collapsible__filterPanel__body__group} style={{ margin: "0px 58px", paddingBottom: "10px" }}>
                     <div dangerouslySetInnerHTML={{ __html: this._domPurify.sanitize(this.props.contentTemplate) }}></div>
-
                 </div>
             }
             <div

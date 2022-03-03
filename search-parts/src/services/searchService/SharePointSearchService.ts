@@ -26,7 +26,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import "@pnp/sp/site-users/web";
 import { IItemAddResult } from "@pnp/sp/items";
-import { IAccessRequest, IAccessRequestResults } from '../../models/common/IAccessRequest';
+import { IAccessRequest, IAccessRequestResults, RequestAccessStatus } from '../../models/common/IAccessRequest';
 
 const SearchService_ServiceKey = 'pnpSearchResults:SharePointSearchService';
 const AvailableQueryLanguages_StorageKey = 'pnpSearchResults_AvailableQueryLanguages';
@@ -476,14 +476,14 @@ export class SharePointSearchService implements ISharePointSearchService {
 
                 return {
                     hasAccess: false,
-                    ItemCount: 0
+                    ItemCount: -1
                 };
             }
         } catch (error) {
             Log.error("[SharePointSearchService.checkUserAccessToReports()]", error, this.serviceScope);
             return {
                 hasAccess: false,
-                ItemCount: 0
+                ItemCount: -1
             };
         }
     }
@@ -571,14 +571,14 @@ export class SharePointSearchService implements ISharePointSearchService {
                 const iar: IItemAddResult = await this._sp.web.lists.getByTitle(listName).items
                     .add({
                         Title: accessRequest.Title,
-                        Requester: currentUser.Id,
+                        RequesterId: currentUser.Id,
                         ReportNumber: accessRequest.ReportNumber,
-                        _Author: accessRequest.Author,
-                        _Publisher: accessRequest.Publisher,
+                        Author0: accessRequest.Author,
+                        Publisher: accessRequest.Publisher,
                         ARReportClassification: accessRequest.ReportClassification,
-                        RequestAccessStatus: accessRequest.RequestAccessStatus,
+                        RequestAccessStatus: RequestAccessStatus[accessRequest.RequestAccessStatus],
                         ReportPath: accessRequest.ReportPath,
-                        _Comments: accessRequest.ReportComments,
+                        Comments: accessRequest.ReportComments,
                         UserJustification: accessRequest.UserComments
                     });
 
