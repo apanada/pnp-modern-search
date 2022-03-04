@@ -23,8 +23,7 @@ define([], function () {
                 EnableNlpPropertyLabel: "Use Natural Language Processing service",
                 ServiceUrlLabel: "Service URL",
                 ServiceUrlDescription: "Notice: make sure the server allows cross-origin calls from this domain ('{0}') in CORS settings.",
-                ServiceUrlErrorMessage: "Please specify a valid URL",
-                UseStagingEndpoint: "Use LUIS staging endpoint",
+                ServiceUrlErrorMessage: "Please specify a valid URL",                
                 UrlNotResolvedErrorMessage: "URL '{0}' can't be resolved. Error: '{1}'."
             },
             AvailableConnectionsGroup: {

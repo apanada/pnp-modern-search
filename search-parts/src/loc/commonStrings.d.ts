@@ -349,6 +349,18 @@ declare interface ICommonStrings {
       ListFieldNameKeywordLabel: string;
       ListFieldNameSynonymsLabel: string;
       ListFieldNameMutualLabel: string;
+    },
+    KnowledgeRepositories: {
+      GroupName: string;
+      EnableSwitchLabel: string;
+      EditKnowledgeRepositoryLabel: string;
+      ListDescriptionLabel: string;
+      ListFieldLabel: string;
+      ListNameLabel: string;
+      ListNameExempleLabel: string;
+      ListUrlLabel: string;
+      ListUrlExempleLabel: string;
+      ListEnabledLabel: string;
     }
   },
   Filters: {

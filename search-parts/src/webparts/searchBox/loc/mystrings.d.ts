@@ -23,7 +23,6 @@ declare interface ISearchBoxWebPartStrings {
             ServiceUrlLabel: string;
             ServiceUrlDescription: string;
             ServiceUrlErrorMessage: string;
-            UseStagingEndpoint: string;
             UrlNotResolvedErrorMessage: string;
         },
         AvailableConnectionsGroup: {

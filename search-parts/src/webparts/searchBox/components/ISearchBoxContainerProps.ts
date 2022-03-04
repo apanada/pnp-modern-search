@@ -82,8 +82,6 @@ export interface ISearchBoxContainerProps {
 
     nlpService: INlpService;
 
-    isStaging: boolean;
-
     /**
      * The current service scope
      */

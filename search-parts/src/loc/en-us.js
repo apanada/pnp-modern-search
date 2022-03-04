@@ -343,13 +343,25 @@ define([], function () {
             },
             Synonyms: {
                 GroupName: "Synonyms",
-                EnableSwitchLabel: "Enable Synonyms",
-                CacheRefreshIntervalLabel: "Cache Refresh Interval in Minutes",
-                SiteUrlLabel: "Site URL of Synonym List",
-                ListNameLabel: "Synonyms List Name",
-                ListFieldNameKeywordLabel: "Keyword Field Name (normally 'title' field)",
-                ListFieldNameSynonymsLabel: "Synonyms Field Name (text)",
-                ListFieldNameMutualLabel: "Mutual Field Name (yes/no)"
+                EnableSwitchLabel: "Enable synonyms",
+                CacheRefreshIntervalLabel: "Cache refresh interval in Minutes",
+                SiteUrlLabel: "Site URL of synonym list",
+                ListNameLabel: "Synonyms list name",
+                ListFieldNameKeywordLabel: "Keyword field name (normally 'Title' field)",
+                ListFieldNameSynonymsLabel: "Synonyms field name (text)",
+                ListFieldNameMutualLabel: "Mutual field name (yes/no)"
+            },
+            KnowledgeRepositories: {
+                GroupName: "Knowledge Repositories",
+                EnableSwitchLabel: "Enable knowledge repositories",
+                EditKnowledgeRepositoryLabel: "Edit knowledge repositories",
+                ListDescriptionLabel: "Specify all the knowledge repositories that will be used when searching.",
+                ListFieldLabel: "Configure knowledge repositories",
+                ListNameLabel: "Name",
+                ListNameExempleLabel: "Search KB",
+                ListUrlLabel: "Url",
+                ListUrlExempleLabel: "https://m365x083241.sharepoint.com/sites/SearchKB",
+                ListEnabledLabel: "Enabled"
             }
         },
         Filters: {

@@ -1384,7 +1384,8 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
                                         onText: commonStrings.General.OnTextLabel,
                                         onChange: ((evt, checked) => {
                                             onUpdate(field.id, checked);
-                                        }).bind(this)
+                                        }).bind(this),
+                                        styles: { text: { position: "absolute", top: 0, left: "38px", right: 0, bottom: 0, display: "flex", alignItems: "center", width: "fit-content", cursor: "pointer" } }
                                     } as IToggleProps)
                                 )
                             );

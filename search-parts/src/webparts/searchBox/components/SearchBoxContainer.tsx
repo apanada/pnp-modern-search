@@ -92,7 +92,7 @@ export default class SearchBoxContainer extends React.Component<ISearchBoxContai
             if (this.props.enableNlpService && this.props.nlpService && queryText) {
 
                 try {
-                    let enhancedQuery = await this.props.nlpService.enhanceSearchQuery(queryText, this.props.isStaging);
+                    let enhancedQuery = await this.props.nlpService.enhanceSearchQuery(queryText);
                     if (enhancedQuery && enhancedQuery.enhancedQuery !== queryText) {
                         this.setState({
                             enhancedQuery: enhancedQuery

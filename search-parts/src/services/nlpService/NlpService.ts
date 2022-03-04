@@ -49,12 +49,11 @@ export class NlpService implements INlpService {
      * Interprets the user search query intents and return the optimized SharePoint query counterpart
      * @param rawQuery the user raw query input
      */
-    public async enhanceSearchQuery(rawQuery: string, isStaging: boolean): Promise<INlpResponse> {
+    public async enhanceSearchQuery(rawQuery: string): Promise<INlpResponse> {
 
         const postData: string = JSON.stringify({
             rawQuery: rawQuery,
-            uiLanguage: this.pageContext.cultureInfo.currentUICultureName.split("-")[0],
-            isStaging: isStaging
+            uiLanguage: this.pageContext.cultureInfo.currentUICultureName.split("-")[0]            
         } as INlpRequest);
 
         // Make the call to the optimizer service

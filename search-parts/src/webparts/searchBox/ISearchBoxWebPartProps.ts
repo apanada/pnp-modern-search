@@ -81,6 +81,4 @@ export interface ISearchBoxWebPartProps extends IBaseWebPartProps {
     enableNlpService: boolean;
 
     nlpServiceUrl: string;
-
-    isStaging: boolean;
 }

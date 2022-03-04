@@ -307,7 +307,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                                                 <div className="keyValueWrapper">
                                                     <div>
                                                         <div className="keyValueKey">
-                                                            <Label styles={labelStyles}>DocumentLink:</Label>
+                                                            <Label styles={labelStyles}>Document Link:</Label>
                                                         </div>
                                                         <div className="keyValueValue">
                                                             <Link href={this.props.resultItem["resource"]["fields"]["documentLink"]} target='_blank' style={{ marginLeft: "8px" }}>

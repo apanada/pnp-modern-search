@@ -194,7 +194,6 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
             tokenService: this.tokenService,
             enableNlpService: this.wbProperties.enableNlpService,
             nlpService: this.nlpService,
-            isStaging: this.wbProperties.isStaging,
             serviceScope: this.context.serviceScope
         } as ISearchBoxContainerProps);
 
@@ -459,7 +458,8 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                                                 onUpdate(field.id, checked);
                                             },
                                             offText: commonStrings.General.OffTextLabel,
-                                            onText: commonStrings.General.OnTextLabel
+                                            onText: commonStrings.General.OnTextLabel,
+                                            styles: { text: { position: "absolute", top: 0, left: "38px", right: 0, bottom: 0, display: "flex", alignItems: "center", width: "fit-content", cursor: "pointer" } }
                                         })
                                     )
                                 );
@@ -595,11 +595,7 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                     disabled: !this.wbProperties.enableNlpService,
                     onGetErrorMessage: this._validateServiceUrl.bind(this),
                     description: Text.format(webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.ServiceUrlDescription, window.location.host)
-                }),
-                PropertyPaneToggle("isStaging", {
-                    label: webPartStrings.PropertyPane.SearchBoxQueryNlpSettingsGroup.UseStagingEndpoint,
-                    disabled: !this.wbProperties.enableNlpService,
-                }),
+                })
             );
         }
 
@@ -644,7 +640,8 @@ export default class SearchBoxWebPart extends BaseWebPart<ISearchBoxWebPartProps
                                         onText: commonStrings.General.OnTextLabel,
                                         onChange: ((evt, checked) => {
                                             onUpdate(field.id, checked);
-                                        }).bind(this)
+                                        }).bind(this),
+                                        styles: { text: { position: "absolute", top: 0, left: "38px", right: 0, bottom: 0, display: "flex", alignItems: "center", width: "fit-content", cursor: "pointer" } }
                                     } as IToggleProps)
                                 )
                             );

@@ -24,7 +24,6 @@ define([], function () {
                 ServiceUrlLabel: "Service URL",
                 ServiceUrlDescription: "Notice: make sure the server allows cross-origin calls from this domain ('{0}') in CORS settings.",
                 ServiceUrlErrorMessage: "Please specify a valid URL",
-                UseStagingEndpoint: "Use LUIS staging endpoint",
                 UrlNotResolvedErrorMessage: "URL '{0}' can't be resolved. Error: '{1}'."
             },
             AvailableConnectionsGroup: {

@@ -3,7 +3,7 @@ import { IPropertyPaneGroup, PropertyPaneLabel, IPropertyPaneField, PropertyPane
 import { cloneDeep, isEmpty } from '@microsoft/sp-lodash-subset';
 import { TokenService } from "../services/tokenService/TokenService";
 import { Guid, ServiceScope } from '@microsoft/sp-core-library';
-import { IComboBoxOption } from '@fluentui/react';
+import { IComboBoxOption, Toggle } from '@fluentui/react';
 import { PropertyPaneAsyncCombo } from "../controls/PropertyPaneAsyncCombo/PropertyPaneAsyncCombo";
 import * as commonStrings from 'CommonStrings';
 import { IMicrosoftSearchRequest, ISearchRequestAggregation, SearchAggregationSortBy, ISearchSortProperty, IMicrosoftSearchQuery, IQueryAlterationOptions, ICustomAadApplicationOptions } from '../models/search/IMicrosoftSearchRequest';
@@ -32,6 +32,7 @@ import { SynonymsService } from '../services/synonymsService/SynonymsService';
 import { ISynonymsService } from '../services/synonymsService/ISynonymsService';
 import { ISynonymsListEntry } from '../models/search/ISynonymsListEntry';
 import { ISynonymsProps } from '../models/common/ISynonymsProps';
+import { IKnowledgeRepositoriesProps } from "../models/common/IKnowledgeRepositoriesProps";
 
 export enum EntityType {
     Message = 'message',
@@ -45,7 +46,7 @@ export enum EntityType {
     Person = 'person'
 }
 
-export interface IMicrosoftSearchDataSourceProperties extends ISynonymsProps {
+export interface IMicrosoftSearchDataSourceProperties extends ISynonymsProps, IKnowledgeRepositoriesProps {
 
     /**
      * The entity types to search. See for the complete list
@@ -467,6 +468,11 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             {
                 groupName: commonStrings.PropertyPane.Synonyms.GroupName,
                 groupFields: this.getSynonymGroupFields()
+            },
+            // Knowledge Repository configuration parameters
+            {
+                groupName: commonStrings.PropertyPane.KnowledgeRepositories.GroupName,
+                groupFields: this.getKnowledgeRepositoryGroupFields()
             }
         ];
     }
@@ -902,6 +908,67 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
             })
         ];
         return synonymGroupFields;
+    }
+
+    // additional property group for knowledge repository configurations
+    private getKnowledgeRepositoryGroupFields(): IPropertyPaneField<any>[] {
+        let knowledgeRepositoriesGroupFields: IPropertyPaneField<any>[] = [
+            PropertyPaneToggle('dataSourceProperties.knowledgeRepositoriesEnabled', {
+                label: commonStrings.PropertyPane.KnowledgeRepositories.EnableSwitchLabel,
+                checked: this.properties.knowledgeRepositoriesEnabled
+            })
+        ];
+
+        if (this.properties.knowledgeRepositoriesEnabled) {
+            knowledgeRepositoriesGroupFields.push(
+                this._propertyFieldCollectionData('dataSourceProperties.knowledgeRepositoriesList', {
+                    manageBtnLabel: commonStrings.PropertyPane.KnowledgeRepositories.EditKnowledgeRepositoryLabel,
+                    key: 'knowledgeRepositoriesList',
+                    enableSorting: false,
+                    panelHeader: commonStrings.PropertyPane.KnowledgeRepositories.EditKnowledgeRepositoryLabel,
+                    panelDescription: commonStrings.PropertyPane.KnowledgeRepositories.ListDescriptionLabel,
+                    label: commonStrings.PropertyPane.KnowledgeRepositories.ListFieldLabel,
+                    value: this.properties.knowledgeRepositoriesList,
+                    fields: [
+                        {
+                            id: 'name',
+                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListNameLabel,
+                            type: this._customCollectionFieldType.string,
+                            required: true,
+                            placeholder: commonStrings.PropertyPane.KnowledgeRepositories.ListNameExempleLabel
+                        },
+                        {
+                            id: 'url',
+                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListUrlLabel,
+                            type: this._customCollectionFieldType.url,
+                            required: true,
+                            placeholder: commonStrings.PropertyPane.KnowledgeRepositories.ListUrlExempleLabel
+                        },
+                        {
+                            id: 'enabled',
+                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListEnabledLabel,
+                            type: this._customCollectionFieldType.custom,
+                            onCustomRender: (field, value, onUpdate, item, itemId) => {
+                                return (
+                                    React.createElement("div", null,
+                                        React.createElement(Toggle, {
+                                            key: itemId, checked: value, onChange: (evt, checked) => {
+                                                onUpdate(field.id, checked);
+                                            },
+                                            offText: commonStrings.General.OffTextLabel,
+                                            onText: commonStrings.General.OnTextLabel,
+                                            styles: { text: { position: "absolute", top: 0, left: "38px", right: 0, bottom: 0, display: "flex", alignItems: "center", width: "fit-content", cursor: "pointer" } }
+                                        })
+                                    )
+                                );
+                            }
+                        },
+                    ]
+                })
+            );
+        }
+
+        return knowledgeRepositoriesGroupFields;
     }
 
     private parseAndCleanOptions(options: IComboBoxOption[]): IComboBoxOption[] {
