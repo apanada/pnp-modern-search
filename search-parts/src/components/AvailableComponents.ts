@@ -18,6 +18,7 @@ import { FilterDateRangeWebComponent } from './filters/FilterDateRangeComponent'
 import { FilterComboBoxWebComponent } from './filters/FilterComboBoxComponent';
 import { FilterDateIntervalWebComponent } from './filters/FilterDateIntervalComponent';
 import { FilterTaxonomyWebComponent } from './filters/FilterTaxonomyComponent';
+import { FilterKnowledgeRepositoryWebComponent } from './filters/FilterKnowledgeRepositoryComponent';
 import { PersonaWebComponent } from './PersonaComponent';
 import { PersonaShimmersWebComponent } from './PersonaShimmersComponent';
 import { ImageWebComponent } from './ImageComponent';
@@ -116,6 +117,10 @@ export class AvailableComponents {
         {
             componentName: 'pnp-filtertaxonomy',
             componentClass: FilterTaxonomyWebComponent
+        },
+        {
+            componentName: 'pnp-knowledge-repository',
+            componentClass: FilterKnowledgeRepositoryWebComponent
         },
         {
             componentName: 'pnp-persona',

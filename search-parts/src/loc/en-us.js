@@ -374,7 +374,8 @@ define([], function () {
             ComboBoxPlaceHolder: "Select value",
             UseAndOperatorValues: "Use an AND operator between values",
             UseOrOperatorValues: "Use an OR operator between values",
-            UseValuesOperators: "Select operator to use between this filter values"
+            UseValuesOperators: "Select operator to use between this filter values",
+            KnoledgeRepositoryComboBoxPlaceHolder: "Select knoledge repository"
         },
         SuggestionProviders: {
             SharePointStatic: {

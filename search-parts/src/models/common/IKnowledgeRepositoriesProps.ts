@@ -11,7 +11,7 @@ export interface IKnowledgeRepositoriesProps {
 }
 
 export interface IKnowledgeRepositoriesFieldConfiguration {
-    Name: string;
-    Url: string;
-    Enabled: boolean;
+    name: string;
+    url: string;
+    enabled: boolean;
 }

@@ -374,6 +374,7 @@ declare interface ICommonStrings {
     UseAndOperatorValues: string;
     UseOrOperatorValues: string;
     UseValuesOperators: string;
+    KnoledgeRepositoryComboBoxPlaceHolder: string;
   },
   SuggestionProviders: {
     SharePointStatic: {
