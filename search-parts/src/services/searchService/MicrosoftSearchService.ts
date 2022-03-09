@@ -41,6 +41,11 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
     private serviceScope: ServiceScope;
 
     /**
+     * The HttpClient instance
+     */
+    private httpClient: HttpClient;
+
+    /**
      * The MsalClient instance
      */
     private msalClient: any;
@@ -64,6 +69,7 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
         serviceScope.whenFinished(async () => {
 
             this.pageContext = serviceScope.consume<PageContext>(PageContext.serviceKey);
+            this.httpClient = serviceScope.consume<HttpClient>(HttpClient.serviceKey);
         });
     }
 
@@ -112,9 +118,7 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
 
             // Get an instance to the MsalClient
             await this.initializeMsalClient(useCustomAadApplication, customAadApplicationOptions);
-            const graphAccessToken = await this.msalClient.getToken(GRAPH_SCOPES);
-
-            const httpClient = this.serviceScope.consume<HttpClient>(HttpClient.serviceKey);
+            const graphAccessToken = await this.msalClient.getToken(GRAPH_SCOPES);            
 
             const httpClientPostOptions: IHttpClientOptions = {
                 headers: {
@@ -126,7 +130,7 @@ export class MicrosoftSearchService implements IMicrosoftSearchService {
                 body: JSON.stringify(searchQuery)
             };
 
-            const httpResponse: HttpClientResponse = await httpClient.post(microsoftSearchUrl, HttpClient.configurations.v1, httpClientPostOptions);
+            const httpResponse: HttpClientResponse = await this.httpClient.post(microsoftSearchUrl, HttpClient.configurations.v1, httpClientPostOptions);
             if (httpResponse) {
 
                 const httpResponseJSON: IMicrosoftSearchResponse = await httpResponse.json();

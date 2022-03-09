@@ -3,7 +3,8 @@ import * as strings from 'CommonStrings';
 
 export enum BuiltinDataSourceProviderKeys {
     SharePointSearch = 'SharePointSearch',
-    MicrosoftSearch = 'MicrosoftSearch'
+    MicrosoftSearch = 'MicrosoftSearch',
+    AzureSearch = 'AzureSearch'
 }
 
 export class AvailableDataSources {
@@ -22,6 +23,12 @@ export class AvailableDataSources {
             name: strings.DataSources.MicrosoftSearch.SourceName,
             iconName: 'OfficeLogo',
             key: BuiltinDataSourceProviderKeys.MicrosoftSearch.toString(),
+            serviceKey: null // ServiceKey will be created dynamically for builtin source
+        },
+        {
+            name: strings.DataSources.AzureSearch.SourceName,
+            iconName: 'AzureLogo',
+            key: BuiltinDataSourceProviderKeys.AzureSearch.toString(),
             serviceKey: null // ServiceKey will be created dynamically for builtin source
         }
     ];

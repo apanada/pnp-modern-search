@@ -154,6 +154,13 @@ define([], function () {
                 RedirectUrlFieldLabel: string = "Aad application redirect url",
                 RedirectUrlPlaceholder: string = "Aad application redirect url"
             },
+            AzureSearch: {
+                SourceName: "Azure Search",                
+                SourceConfigurationGroupName: "Azure Search",
+                AzureFunctionEndpointFieldLabel: "Azure function endpoint",
+                AzureFunctionEndpointPlaceholder: "Azure function url",
+                AzureFunctionEndpointFieldDescription: "Provide the azure function url to pull external data into search results"
+            },
             SearchCommon: {
                 Sort: {
                     SortPropertyPaneFieldLabel: "Sort order",

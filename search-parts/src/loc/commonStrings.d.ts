@@ -153,6 +153,13 @@ declare interface ICommonStrings {
       RedirectUrlFieldLabel: string;
       RedirectUrlPlaceholder: string;
     },
+    AzureSearch :{
+      SourceName: string;
+      SourceConfigurationGroupName: string;
+      AzureFunctionEndpointFieldLabel: string;
+      AzureFunctionEndpointPlaceholder: string;
+      AzureFunctionEndpointFieldDescription: string;
+    },
     SearchCommon: {
       Sort: {
         SortPropertyPaneFieldLabel

@@ -1843,6 +1843,17 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
                     serviceKey = ServiceKey.create<IDataSource>('ModernSearch:SharePointSearchDataSource', MicrosoftSearchDataSource);
                     break;
 
+                // Azure Function Search API
+                case BuiltinDataSourceProviderKeys.AzureSearch:
+
+                    const { AzureSearchDataSource } = await import(
+                        /* webpackChunkName: 'pnp-modern-search-azure-search-datasource' */
+                        '../../dataSources/AzureSearchDataSource'
+                    );
+
+                    serviceKey = ServiceKey.create<IDataSource>('ModernSearch:SharePointSearchDataSource', AzureSearchDataSource);
+                    break;
+
                 default:
                     break;
             }
