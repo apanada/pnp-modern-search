@@ -1,8 +1,7 @@
 import { IBaseWebPartProps } from "../../models/common/IBaseWebPartProps";
 import { IDataFilterConfiguration, FilterConditionOperator } from "@pnp/modern-search-extensibility";
-import { IKnowledgeRepositoriesProps } from "../../models/common/IKnowledgeRepositoriesProps";
 
-export default interface ISearchFiltersWebPartProps extends IBaseWebPartProps, IKnowledgeRepositoriesProps {
+export default interface ISearchFiltersWebPartProps extends IBaseWebPartProps {
 
     /**
      * Dynamic data connection references for connected Search Results Web Parts

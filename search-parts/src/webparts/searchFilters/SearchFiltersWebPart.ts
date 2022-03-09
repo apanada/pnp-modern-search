@@ -349,11 +349,6 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                     {
                         groupName: webPartStrings.PropertyPane.FiltersSettingsPage.SettingsGroupName,
                         groupFields: this.getFilterSettings()
-                    },
-                    // Knowledge Repository configuration parameters
-                    {
-                        groupName: commonStrings.PropertyPane.KnowledgeRepositories.GroupName,
-                        groupFields: this.getKnowledgeRepositoryGroupFields()
                     }
                 ],
                 displayGroupsAsAccordion: true
@@ -686,11 +681,7 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
                             {
                                 key: BuiltinFilterTemplates.TaxonomyPicker,
                                 text: webPartStrings.PropertyPane.DataFilterCollection.Templates.TaxonomyPickerTemplate
-                            },
-                            {
-                                key: BuiltinFilterTemplates.KnowledgeRepository,
-                                text: webPartStrings.PropertyPane.DataFilterCollection.Templates.KnowledgeRepositoryTemplate
-                            }                            
+                            }
                         ]
                     },
                     {
@@ -893,67 +884,6 @@ export default class SearchFiltersWebPart extends BaseWebPart<ISearchFiltersWebP
         ];
 
         return filterSettings;
-    }
-
-    // additional property group for knowledge repository configurations
-    private getKnowledgeRepositoryGroupFields(): IPropertyPaneField<any>[] {
-        let knowledgeRepositoriesGroupFields: IPropertyPaneField<any>[] = [
-            PropertyPaneToggle('knowledgeRepositoriesEnabled', {
-                label: commonStrings.PropertyPane.KnowledgeRepositories.EnableSwitchLabel,
-                checked: this.wbProperties.knowledgeRepositoriesEnabled
-            })
-        ];
-
-        if (this.wbProperties.knowledgeRepositoriesEnabled) {
-            knowledgeRepositoriesGroupFields.push(
-                this._propertyFieldCollectionData('knowledgeRepositoriesList', {
-                    manageBtnLabel: commonStrings.PropertyPane.KnowledgeRepositories.EditKnowledgeRepositoryLabel,
-                    key: 'knowledgeRepositoriesList',
-                    enableSorting: false,
-                    panelHeader: commonStrings.PropertyPane.KnowledgeRepositories.EditKnowledgeRepositoryLabel,
-                    panelDescription: commonStrings.PropertyPane.KnowledgeRepositories.ListDescriptionLabel,
-                    label: commonStrings.PropertyPane.KnowledgeRepositories.ListFieldLabel,
-                    value: this.wbProperties.knowledgeRepositoriesList,
-                    fields: [
-                        {
-                            id: 'name',
-                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListNameLabel,
-                            type: this._customCollectionFieldType.string,
-                            required: true,
-                            placeholder: commonStrings.PropertyPane.KnowledgeRepositories.ListNameExempleLabel
-                        },
-                        {
-                            id: 'url',
-                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListUrlLabel,
-                            type: this._customCollectionFieldType.url,
-                            required: true,
-                            placeholder: commonStrings.PropertyPane.KnowledgeRepositories.ListUrlExempleLabel
-                        },
-                        {
-                            id: 'enabled',
-                            title: commonStrings.PropertyPane.KnowledgeRepositories.ListEnabledLabel,
-                            type: this._customCollectionFieldType.custom,
-                            onCustomRender: (field, value, onUpdate, item, itemId) => {
-                                return (
-                                    React.createElement("div", null,
-                                        React.createElement(Toggle, {
-                                            key: itemId, checked: value, onChange: (evt, checked) => {
-                                                onUpdate(field.id, checked);
-                                            },
-                                            offText: commonStrings.General.OffTextLabel,
-                                            onText: commonStrings.General.OnTextLabel,
-                                            styles: { text: { position: "absolute", top: 0, left: "38px", right: 0, bottom: 0, display: "flex", alignItems: "center", width: "fit-content", cursor: "pointer" } }
-                                        })
-                                    )
-                                );
-                            }
-                        },
-                    ]
-                })
-            );
-        }
-
-        return knowledgeRepositoriesGroupFields;
     }
 
     private async getVerticalsConnectionFields(): Promise<IPropertyPaneField<any>[]> {

@@ -155,7 +155,7 @@ define([], function () {
                 RedirectUrlPlaceholder: string = "Aad application redirect url"
             },
             AzureSearch: {
-                SourceName: "Azure Search",                
+                SourceName: "Azure Search",
                 SourceConfigurationGroupName: "Azure Search",
                 AzureFunctionEndpointFieldLabel: "Azure function endpoint",
                 AzureFunctionEndpointPlaceholder: "Azure function url",
@@ -357,18 +357,6 @@ define([], function () {
                 ListFieldNameKeywordLabel: "Keyword field name (normally 'Title' field)",
                 ListFieldNameSynonymsLabel: "Synonyms field name (text)",
                 ListFieldNameMutualLabel: "Mutual field name (yes/no)"
-            },
-            KnowledgeRepositories: {
-                GroupName: "Knowledge Repositories",
-                EnableSwitchLabel: "Enable knowledge repositories",
-                EditKnowledgeRepositoryLabel: "Edit knowledge repositories",
-                ListDescriptionLabel: "Specify all the knowledge repositories that will be used when searching.",
-                ListFieldLabel: "Configure knowledge repositories",
-                ListNameLabel: "Name",
-                ListNameExempleLabel: "Search KB",
-                ListUrlLabel: "Url",
-                ListUrlExempleLabel: "https://m365x083241.sharepoint.com/sites/SearchKB",
-                ListEnabledLabel: "Enabled"
             }
         },
         Filters: {
