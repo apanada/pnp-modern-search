@@ -63,40 +63,26 @@
             border-left-color: transparent;
             background-color: rgb(250, 250, 250);
             z-index: 4;
-        }
+        }        
         
-        .collapsible {
-            width: 100%;
-            display: none;
-        }
-
-         .template--defaultList pnp-select >div:hover .collapsible {
-             display: flex !important;
-         }
-    
-        .filter--value {
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			display: flex;
-			align-items: center;
-		}
-
-        .metadata-key {
-            color: {{@root.theme.palette.themePrimary}};
-        }
-        
-        .metadata-value {
-            font-size: 14px;
-            padding-left: 10px;
-        }
-
         .template--listItem--title a {
             text-decoration: auto;
         }
         
         .template--listItem--title a:hover {
             text-decoration: underline;
+        }
+
+        .accessRequestStatus {
+            display: inline-flex;
+            padding: 0 20px;
+            font-size: 13px;
+            align-items: center;
+        }
+        
+        .accessRequestStatus i {            
+            color: green;
+            padding-right: 3px;
         }
     </style>
 
@@ -148,6 +134,7 @@
                                 <div class="template--listItem--contentContainer">
                                     <span class="template--listItem--title example-themePrimary">
                                         <a href="{{slot item @root.slots.PreviewUrl}}" target="_blank" style="color:{{@root.theme.semanticColors.link}}" data-interception="off">{{slot item @root.slots.Title}}</a>
+                                        <div id="{{item.normUniqueID}}" class="accessRequestStatus"></div>
                                     </span>
                                     <span>                            
                                         <span class="template--listItem--author">
@@ -160,37 +147,10 @@
                                     <div>{{getSummary (slot item @root.slots.Summary)}}</div>                                    
                                 </div>
                             </div>
-                            {{#if @root.properties.layoutProperties.showItemThumbnail}}
-                            <div class="template--listItem--thumbnailContainer">
-                                <div class="thumbnail--image">
-                                    <pnp-filepreview data-preview-url="{{slot item @root.slots.PreviewViewUrl}}" data-preview-image-url="{{slot item @root.slots.PreviewImageUrl}}" data-theme-variant="{{JSONstringify @root.theme}}" data-result-item="{{JSONstringify item}}">
-                                        <pnp-img alt='preview-image' width="120" src="{{slot item @root.slots.PreviewImageUrl}}" loading="lazy" data-error-image="{{@root.utils.defaultImage}}" />
-                                    </pnp-filepreview>
-                                    <div class="thumbnail--hover">
-                                        <div>
-                                            <pnp-icon data-name="DocumentSearch" aria-hidden="true"></pnp-icon>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             <div>
                                 <pnp-filemenu data-extension="{{slot item @root.slots.FileType}}" data-is-container="{{slot item @root.slots.IsFolder}}" data-size="32" data-result-item="{{JSONstringify item}}" data-theme-variant="{{JSONstringify @root.theme}}"></pnp-filemenu>
                             </div>
-                            {{/if}} {{/resultTypes}}
-                        </li>
-                       <li class="template--collapsibleListItem">
-                            <div class="collapsible">
-                                <pnp-collapsible-result data-default-collapsed="true" data-theme-variant="{{JSONstringify @root.theme}}">
-                     	            <template id="collapsible-content" item-class="filter--value">
-					                    <div>
-                                             <div>
-                                                <span class="template--collapsibleListItem--title metadata-key">Total Views : </span>
-                                                <span class="metadata-value">{{item.viewsLifetime}}</span>
-                                            </div>             
-                                        </div>
-					                </template>
-					            </pnp-collapsible-result>
-                            </div>
+                            {{/resultTypes}}
                         </li>
                     </template>
 

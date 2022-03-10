@@ -1,7 +1,12 @@
 declare interface ISearchExtensionLibraryStrings {
-  PropertyPaneDescription: string;
-  BasicGroupName: string;
-  DescriptionFieldLabel: string;
+  Layouts: {
+    EbscoList: {
+      ShowFileIconLabel: string;
+    },
+    ShellReportsList: {
+      ShowFileIconLabel: string;
+    }
+  }
 }
 
 declare module 'SearchExtensionLibraryStrings' {

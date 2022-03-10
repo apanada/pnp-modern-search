@@ -112,7 +112,7 @@ export class TemplateService implements ITemplateService {
 
             // Register icons and pull the fonts from the default SharePoint cdn.
             // Do not load icons twice as it may generate warnings
-            if  (!GlobalSettings.getValue('fileTypeIconsInitialized')) {
+            if (!GlobalSettings.getValue('fileTypeIconsInitialized')) {
                 initializeFileTypeIcons();
                 GlobalSettings.setValue('fileTypeIconsInitialized', true);
             }
@@ -432,7 +432,7 @@ export class TemplateService implements ITemplateService {
         // <p>{{getSummary HitHighlightedSummary}}</p>
         this.Handlebars.registerHelper("getSummary", (hitHighlightedSummary: string) => {
             if (!isEmpty(hitHighlightedSummary)) {
-                return new this.Handlebars.SafeString(hitHighlightedSummary.replace(/<c0\>/g, "<strong>").replace(/<\/c0\>/g, "</strong>").replace(/<ddd\/>/g, "&#8230;").replace(/\w+-\w+-\w+-\w+-\w+/g,""));
+                return new this.Handlebars.SafeString(hitHighlightedSummary.replace(/<c0\>/g, "<strong>").replace(/<\/c0\>/g, "</strong>").replace(/<ddd\/>/g, "&#8230;").replace(/\w+-\w+-\w+-\w+-\w+/g, ""));
             }
         });
 
@@ -442,7 +442,7 @@ export class TemplateService implements ITemplateService {
                 return new Handlebars.SafeString(tag.split("|").pop());
             }
         });
-        
+
         // Return the formatted date according to current locale using moment.js
         // <p>{{getDate Created "LL"}}</p>
         this.Handlebars.registerHelper("getDate", ((date: string, format: string, timeHandling?: number, isZ?: boolean) => {

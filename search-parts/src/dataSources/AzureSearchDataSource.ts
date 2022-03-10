@@ -183,13 +183,4 @@ export class AzureSearchDataSource extends BaseDataSource<IAzureSearchDataSource
         this._itemsCount = this._azureSearchService.itemsCount;
         return response;
     }
-
-    private getValueFromKeyValuePairs = (items: Array<{ name?: string; label?: string; group?: string; data?: string; }>, key: string) => {
-        if (items && items.length > 0 && !isEmpty(key)) {
-            const filteredItems = items.filter(i => i.name === key.toString());
-            return filteredItems && filteredItems.length > 0 ? filteredItems[0] : null;
-        }
-
-        return null;
-    }
 }

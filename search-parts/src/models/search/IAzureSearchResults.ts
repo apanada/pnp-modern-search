@@ -5,11 +5,13 @@ export interface IAzureSearchResults<T> {
 export interface IEbscoSearchResults {
     resultId?: string;
     pLink?: string;
+    header?: {
+        pubType?: string;
+        pubTypeId?: string;
+    },
     fullText?: {
         customLinks?: Array<{
             url?: string;
-            name?: string;
-            category?: string;
             text?: string;
             mouseOverText?: string;
             icon?: string;

@@ -1,7 +1,12 @@
 define([], function() {
   return {
-    "PropertyPaneDescription": "Description",
-    "BasicGroupName": "Group Name",
-    "DescriptionFieldLabel": "Description Field"
+    "Layouts": {
+      "EbscoList": {
+        "ShowFileIconLabel": "Show file icon"
+      },
+      "ShellReportsList": {
+        "ShowFileIconLabel": "Show file icon"
+      }
+    }
   }
 });

@@ -685,13 +685,41 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                         const termInfo = await this._taxonomyService.getTermById(Guid.parse(termSetId), Guid.parse(termId));
 
                         if (termInfo && termInfo.properties && termInfo.properties.length > 0) {
-                            const hubSiteIdProperty = termInfo.properties.filter(o => o.key === "SiteId");
-                            const hubSiteUrlProperty = termInfo.properties.filter(o => o.key === "SiteUrl");
-                            if (hubSiteIdProperty && hubSiteIdProperty.length === 1 && hubSiteUrlProperty && hubSiteUrlProperty.length === 1) {
-                                const hubSiteId = hubSiteIdProperty[0].value;
-                                const hubSiteUrl = hubSiteUrlProperty[0].value;
-                                const hubSiteInfo: IHubSite = await this._sharePointSearchService.getHubSiteInfo(hubSiteUrl, hubSiteId);
+                            let siteName = "", siteId = "", siteUrl = "", isHubSite = false;
+                            const siteNameProperty = termInfo.properties.filter(o => o.key === "SiteName");
+                            const siteIdProperty = termInfo.properties.filter(o => o.key === "SiteId");
+                            const siteUrlProperty = termInfo.properties.filter(o => o.key === "SiteUrl");
+                            const isHubSiteProperty = termInfo.properties.filter(o => o.key === "IsHubSite");
+
+                            if (siteNameProperty && siteNameProperty.length === 1) {
+                                siteName = siteNameProperty[0].value;
+                            }
+
+                            if (siteIdProperty && siteIdProperty.length === 1) {
+                                siteId = siteIdProperty[0].value;
+                            }
+
+                            if (siteUrlProperty && siteUrlProperty.length === 1) {
+                                siteUrl = siteUrlProperty[0].value;
+                            }
+
+                            if (isHubSiteProperty && isHubSiteProperty.length === 1) {
+                                isHubSite = Boolean(JSON.parse(isHubSiteProperty[0].value));
+
+                                const hubSiteInfo: IHubSite = {
+                                    id: siteId,
+                                    siteUrl: siteUrl,
+                                    isHubSite: isHubSite,
+                                    hubSiteId: siteId,
+                                    name: siteName
+                                };
                                 return new Promise<IHubSite>((resolve, reject) => resolve(hubSiteInfo));
+                            } else {
+                                if (siteUrl && siteId && siteName) {
+                                    const hubSiteInfo: IHubSite = await this._sharePointSearchService.getHubSiteInfo(siteUrl, siteId);
+                                    hubSiteInfo.name = siteName;
+                                    return new Promise<IHubSite>((resolve, reject) => resolve(hubSiteInfo));
+                                }
                             }
                         }
                     });
@@ -704,7 +732,7 @@ export class MicrosoftSearchDataSource extends BaseDataSource<IMicrosoftSearchDa
                             if (husSite.isHubSite && husSite.hubSiteId !== "00000000-0000-0000-0000-000000000000") {
                                 return `(DepartmentId:{${husSite.hubSiteId}} OR DepartmentId:${husSite.hubSiteId} OR RelatedHubSites:${husSite.hubSiteId})`;
                             } else {
-                                return `(Path:${husSite.siteUrl})`;
+                                return `(SPSiteUrl:${husSite.name})`;
                             }
                         }
                     }).filter(c => c);
