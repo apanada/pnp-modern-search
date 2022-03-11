@@ -66,6 +66,19 @@
             z-index: 4;
         }
         
+        .template--listItem--contentContainer {
+            overflow: hidden;
+            line-height: 22px;
+            flex: 1;    
+            padding: 0 4px 0 0;
+        }
+        
+        .template--listItem--title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
         .template--listItem--title a {
             text-decoration: auto;
         }
@@ -329,6 +342,11 @@
         
         .ebsco-results-abstract {
             text-align: justify;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .ebsco-full-text {
@@ -362,7 +380,9 @@
                                 <span class="template--listItem--icon pubtype-icon pt-{{item.header.pubTypeId}}" title="{{item.header.pubType}}"></span>
                                 <div class="template--listItem--contentContainer">
                                     <span class="template--listItem--title example-themePrimary">
-                                        <a href="{{slot item @root.slots.PreviewUrl}}" target="_blank" style="color:{{@root.theme.semanticColors.link}}" data-interception="off">{{getEbscoTitle item.items}}</a>
+                                        <a href="{{item.pLink}}" target="_blank" style="color:{{@root.theme.semanticColors.link}}" data-interception="off">
+                                            {{getEbscoTitle item.items}}
+                                        </a>
                                     </span>
                                     <div>
                                         <span>{{getEbscoSource item.items}}</span>
@@ -394,8 +414,15 @@
         </ul>
 
         {{#if @root.properties.paging.showPaging}} {{#gt @root.data.totalItemsCount @root.properties.paging.itemsCountPerPage}}
-        <pnp-pagination data-total-items="{{@root.data.totalItemsCount}}" data-hide-first-last-pages="{{@root.properties.paging.hideFirstLastPages}}" data-hide-disabled="{{@root.properties.paging.hideDisabled}}" data-hide-navigation="{{@root.properties.paging.hideNavigation}}"
-            data-range="{{@root.properties.paging.pagingRange}}" data-items-count-per-page="{{@root.properties.paging.itemsCountPerPage}}" data-current-page-number="{{@root.paging.currentPageNumber}}" data-page-links="{{JSONstringify @root.data.paging.links}}"
+        <pnp-pagination 
+            data-total-items="{{@root.data.totalItemsCount}}" 
+            data-hide-first-last-pages="{{@root.properties.paging.hideFirstLastPages}}"           
+            data-hide-disabled="{{@root.properties.paging.hideDisabled}}" 
+            data-hide-navigation="{{@root.properties.paging.hideNavigation}}"
+            data-range="{{@root.properties.paging.pagingRange}}" 
+            data-items-count-per-page="{{@root.properties.paging.itemsCountPerPage}}" 
+            data-current-page-number="{{@root.paging.currentPageNumber}}" 
+            data-page-links="{{JSONstringify @root.data.paging.links}}"
             data-theme-variant="{{JSONstringify @root.theme}}">
         </pnp-pagination>
         {{/gt}} {{/if}}

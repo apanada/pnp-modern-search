@@ -151,14 +151,6 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
             padding: 10,
         };
 
-        // Dialog props definition
-        const dragOptions = {
-            moveMenuItemText: 'Move',
-            closeMenuItemText: 'Close',
-            menu: ContextualMenu,
-            keepInBounds: true,
-        };
-
         const createdDate: string = this._getDate(this.props.resultItem["resource"]["createdDateTime"]);
         const lastModifiedDate: string = this._getDate(this.props.resultItem["resource"]["lastModifiedDateTime"]);
         let author: string = this.props.resultItem["resource"]["fields"]["authorOWSUSER"];
@@ -179,7 +171,6 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                 onDismiss={this.props.previewType === PreviewType.Document ? this._onCloseModal : null}
                 isBlocking={false}
                 containerClassName={contentStyles.container}
-                dragOptions={dragOptions}
             >
                 <div className={contentStyles.header}>
                     <span id="documentPreview">{this.props.resultItem["resource"]["fields"]["filename"]}</span>
@@ -207,7 +198,7 @@ export default class PreviewContainer extends React.Component<IPreviewContainerP
                             </PivotItem>
                             <PivotItem headerText="Metadata" itemIcon="Tag">
                                 <div>
-                                    <Stack horizontal tokens={stackTokens}>
+                                    <Stack horizontal tokens={stackTokens} style={{ width: "1200px" }}>
                                         <div className={previewContainerStyles.keyValueList}>
                                             {
                                                 this.props.resultItem["resource"]["fields"]["title"] &&

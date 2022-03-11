@@ -141,7 +141,7 @@ export class AzureSearchDataSource extends BaseDataSource<IAzureSearchDataSource
         let searchQuery: IAzureSearchQuery = null;
 
         let queryText = '*'; // Default query string if not specified, the API does not support empty value
-        let from = 0;
+        let from = 1;
 
         // Query text
         if (dataContext.inputQueryText) {
@@ -149,9 +149,7 @@ export class AzureSearchDataSource extends BaseDataSource<IAzureSearchDataSource
         }
 
         // Paging
-        if (dataContext.pageNumber > 1) {
-            from = (dataContext.pageNumber - 1) * dataContext.itemsCountPerPage;
-        }
+        from = dataContext.pageNumber;
 
         // Build search query
         searchQuery = {
@@ -161,13 +159,7 @@ export class AzureSearchDataSource extends BaseDataSource<IAzureSearchDataSource
             userInfo: {
                 UserId: this._pageContext.legacyPageContext.aadUserId as string
             },
-            pageInfo: {
-                aadUserId: this._pageContext.legacyPageContext.aadUserId as string,
-                aadTenantId: this._pageContext.legacyPageContext.aadTenantId as string,
-                farmLabel: this._pageContext.legacyPageContext.farmLabel as string,
-                formDigestValue: this._pageContext.legacyPageContext.formDigestValue as string,
-                siteAbsoluteUrl: this._pageContext.site.absoluteUrl,
-            }
+            pageInfo: this._pageContext.legacyPageContext
         };
 
         return searchQuery;
