@@ -26,4 +26,6 @@ export interface ISearchResultsContainerState {
      * Indicates if the data have already been rendered once.
      */
     renderedOnce: boolean;    
+
+    hasMoreResults: boolean;
 }

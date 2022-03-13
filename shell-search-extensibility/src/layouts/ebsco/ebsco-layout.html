@@ -374,58 +374,46 @@
 
                     <template id="content">
 
-                        <li class="template--listItem">
-                            {{#> resultTypes item=item}}
-                            <div class="template--listItem--result">
-                                <span class="template--listItem--icon pubtype-icon pt-{{item.header.pubTypeId}}" title="{{item.header.pubType}}"></span>
-                                <div class="template--listItem--contentContainer">
-                                    <span class="template--listItem--title example-themePrimary">
-                                        <a href="{{item.pLink}}" target="_blank" style="color:{{@root.theme.semanticColors.link}}" data-interception="off">
-                                            {{getEbscoTitle item.items}}
-                                        </a>
-                                    </span>
-                                    <div>
-                                        <span>{{getEbscoSource item.items}}</span>
-                                    </div>
-                                    <span>   
-                                        <span class="template--listItem--author">
-                                            {{#isnt (getEbscoAuthors item.items) ''}}
-                                                <span class='notbold'>By</span> {{getEbscoAuthors item.items}}
-                                            {{/isnt}}
-                                        </span>
-                                        <span class="template--listItem--date">{{getDate (slot item @root.slots.Date) "LL"}}</span>                            
-                                    </span>                        
-                                    <div class="ebsco-results-abstract">{{getEbscoAbstract item.items}}</div>
-                                    <div class="ebsco-full-text">
-                                        {{#with (getEbscoFullText item.fullText)}}
-                                            <a href="{{fullTextUrl}}" target="_blank" data-interception="off" title="{{mouseOverText}}">
-                                                <img src="{{fullTextImageUrl}}" data-defer-image="{{fullTextImageUrl}}" alt="{{mouseOverText}}" />
+                        <div id="{{#eq ../data.items.length (add @index 1)}}lastSearchResultsItem{{/eq}}">
+                            <li class="template--listItem">
+                                {{#> resultTypes item=item}}
+                                <div class="template--listItem--result">
+                                    <span class="template--listItem--icon pubtype-icon pt-{{item.header.pubTypeId}}" title="{{item.header.pubType}}"></span>
+                                    <div class="template--listItem--contentContainer">
+                                        <span class="template--listItem--title example-themePrimary">
+                                            <a href="{{item.pLink}}" target="_blank" style="color:{{@root.theme.semanticColors.link}}" data-interception="off">
+                                                {{getEbscoTitle item.items}}
                                             </a>
-                                        {{/with}}
+                                        </span>
+                                        <div>
+                                            <span>{{getEbscoSource item.items}}</span>
+                                        </div>
+                                        <span>   
+                                            <span class="template--listItem--author">
+                                                {{#isnt (getEbscoAuthors item.items) ''}}
+                                                    <span class='notbold'>By</span> {{getEbscoAuthors item.items}}
+                                                {{/isnt}}
+                                            </span>
+                                            <span class="template--listItem--date">{{getDate (slot item @root.slots.Date) "LL"}}</span>                            
+                                        </span>                        
+                                        <div class="ebsco-results-abstract">{{getEbscoAbstract item.items}}</div>
+                                        <div class="ebsco-full-text">
+                                            {{#with (getEbscoFullText item.fullText)}}
+                                                <a href="{{fullTextUrl}}" target="_blank" data-interception="off" title="{{mouseOverText}}">
+                                                    <img src="{{fullTextImageUrl}}" data-defer-image="{{fullTextImageUrl}}" alt="{{mouseOverText}}" />
+                                                </a>
+                                            {{/with}}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {{/resultTypes}}
-                        </li>
+                                {{/resultTypes}}
+                            </li>
+                        </div>
                     </template>
 
                 </pnp-select>
             {{/each}}
         </ul>
-
-        {{#if @root.properties.paging.showPaging}} {{#gt @root.data.totalItemsCount @root.properties.paging.itemsCountPerPage}}
-        <pnp-pagination 
-            data-total-items="{{@root.data.totalItemsCount}}" 
-            data-hide-first-last-pages="{{@root.properties.paging.hideFirstLastPages}}"           
-            data-hide-disabled="{{@root.properties.paging.hideDisabled}}" 
-            data-hide-navigation="{{@root.properties.paging.hideNavigation}}"
-            data-range="{{@root.properties.paging.pagingRange}}" 
-            data-items-count-per-page="{{@root.properties.paging.itemsCountPerPage}}" 
-            data-current-page-number="{{@root.paging.currentPageNumber}}" 
-            data-page-links="{{JSONstringify @root.data.paging.links}}"
-            data-theme-variant="{{JSONstringify @root.theme}}">
-        </pnp-pagination>
-        {{/gt}} {{/if}}
 
     </div>
 </content>

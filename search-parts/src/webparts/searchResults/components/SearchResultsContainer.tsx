@@ -17,6 +17,7 @@ import { ObjectHelper } from '../../../helpers/ObjectHelper';
 import { BuiltinLayoutsKeys } from '../../../layouts/AvailableLayouts';
 import { WebPartTitle } from '@pnp/spfx-controls-react/lib/WebPartTitle';
 import * as webPartStrings from 'SearchResultsWebPartStrings';
+import { IPageEventInfo } from '../../../components/PaginationComponent';
 
 const LogSource = "SearchResultsContainer";
 
@@ -53,6 +54,8 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
     private _lastPageNumber: number;
     private _lastPageSelectedKeys: string[] = [];
 
+    private _infiniteScrollObserver: IntersectionObserver;
+
     public constructor(props: ISearchResultsContainerProps) {
 
         super(props);
@@ -62,7 +65,8 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
             isLoading: true,
             errorMessage: '',
             renderedOnce: false,
-            selectedItemKeys: []
+            selectedItemKeys: [],
+            hasMoreResults: false
         };
 
         this.templateService = this.props.serviceScope.consume<ITemplateService>(TemplateService.ServiceKey);
@@ -77,6 +81,8 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
                 return item.key = `${this.props.dataContext.pageNumber}${index}`;
             },
         });
+
+        this.onSearchResultItemIntersection = this.onSearchResultItemIntersection.bind(this);
     }
 
     public render(): React.ReactElement<ISearchResultsContainerProps> {
@@ -213,6 +219,49 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
             this._selection.setItems(this.state.data.items, true);
         }
 
+        if (!this.state.isLoading) {
+            setTimeout(() => {
+                if (this.props.webPartTitleProps.displayMode === DisplayMode.Read) {
+                    this.initializeInfiniteObserver();
+                }
+            }, 200);
+        }
+    }
+
+    componentWillUnmount() {
+        this._infiniteScrollObserver.disconnect();
+    }
+
+    private initializeInfiniteObserver() {
+        if (this._infiniteScrollObserver) {
+            this._infiniteScrollObserver.disconnect();
+        }
+
+        this._infiniteScrollObserver = new IntersectionObserver(this.onSearchResultItemIntersection);
+
+        // Observe when the element enters the page
+        let target = document.querySelector('#lastSearchResultsItem');
+        if (target) {
+            this._infiniteScrollObserver.observe(target);
+        }
+    }
+
+    private onSearchResultItemIntersection(entries: IntersectionObserverEntry[], observer: IntersectionObserver): void {
+        entries.forEach((entry: IntersectionObserverEntry) => {
+            if (entry.isIntersecting && this.state.hasMoreResults) {
+
+                // Bubble event through the DOM
+                this.props.domElement.dispatchEvent(new CustomEvent('pageNumberUpdated', {
+                    detail: {
+                        pageNumber: this.props.dataContext.pageNumber + 1,
+                        pageLink: null,
+                        pageLinks: null
+                    } as IPageEventInfo,
+                    bubbles: true,
+                    cancelable: true
+                }));
+            }
+        });
     }
 
     /**
@@ -236,14 +285,28 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
 
             let availableFilters: IDataFilterResult[] = [];
             let totalItemsCount = 0;
+            let hasMoreResults = false;
 
             let pageLinks: string[] = this.props.dataContext.paging.pageLinks;
             let nextLinkUrl: string = this.props.dataContext.paging.nextLinkUrl;
 
             const localDataContext = cloneDeep(this.props.dataContext);
 
+            if(pageNumber === 1) {
+                this.setState({
+                    data: data
+                });
+            }
+
             // Fetch live data
             data = await this.props.dataSource.getData(localDataContext);
+
+            if (data && data.items) {
+                hasMoreResults = data.items.length > 0 ? true : false;
+                if (this.state.data && this.state.data.items && this.state.data.items.length > 0) {
+                    data.items = [...this.state.data.items, ...data.items]
+                }
+            }
 
             // Compute preview information for items ('AutoXX' properties)
             data = await this.getItemsPreview(data, this.convertTemplateSlotsToHashtable(this.props.properties.templateSlots));
@@ -280,6 +343,7 @@ export default class SearchResultsContainer extends React.Component<ISearchResul
             this.setState({
                 isLoading: false,
                 data: data,
+                hasMoreResults: hasMoreResults,
                 renderedOnce: !this.state.renderedOnce ? true : this.state.renderedOnce,
             });
 

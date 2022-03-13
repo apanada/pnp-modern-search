@@ -336,6 +336,7 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
                 dataContext: dataContext,
                 themeVariant: this._themeVariant,
                 serviceScope: this.webPartInstanceServiceScope,
+                domElement: this.domElement,
                 webPartTitleProps: {
                     displayMode: this.displayMode,
                     title: this.wbProperties.title,
@@ -2267,6 +2268,8 @@ export default class SearchResultsWebPart extends BaseWebPart<ISearchResultsWebP
                 // Reset the page number if filters have been updated by the user
                 if (!isEqual(filtersSourceData.selectedFilters, this._lastSelectedFilters)) {
                     dataContext.pageNumber = 1;
+                    this.currentPageNumber = 1;
+                    this._resetPagingData();
                 }
 
                 // Use the filter confiugration and then get the corresponding values 
